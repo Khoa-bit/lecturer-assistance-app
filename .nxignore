@@ -1,0 +1,6 @@
+# compiled output
+packages/**/.next
+packages/**/dist
+
+# dependencies
+packages/**/node_modules
