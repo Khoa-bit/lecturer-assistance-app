@@ -4,3 +4,7 @@ packages/**/dist
 
 # dependencies
 packages/**/node_modules
+
+# PocketBase
+packages/**/pb_data
+packages/**/pb_migrations
