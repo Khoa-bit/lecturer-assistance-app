@@ -10,8 +10,6 @@ declare global {
 export const pbServer =
   globalThis.pbServer || new PocketBase("http://localhost:8090");
 
-console.log(`Env object: ${JSON.stringify(env)}`);
-
 if (env.NODE_ENV !== "production") {
   globalThis.pbServer = pbServer;
 }

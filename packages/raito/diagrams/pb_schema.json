@@ -1,0 +1,841 @@
+[
+  {
+    "id": "_pb_users_auth_",
+    "name": "users",
+    "type": "auth",
+    "system": false,
+    "schema": [
+      {
+        "id": "tjtkcplz",
+        "name": "person",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": true
+        }
+      }
+    ],
+    "listRule": "id = @request.auth.id",
+    "viewRule": "id = @request.auth.id",
+    "createRule": "",
+    "updateRule": "id = @request.auth.id",
+    "deleteRule": "id = @request.auth.id",
+    "options": {
+      "allowEmailAuth": true,
+      "allowOAuth2Auth": true,
+      "allowUsernameAuth": true,
+      "exceptEmailDomains": null,
+      "manageRule": null,
+      "minPasswordLength": 8,
+      "onlyEmailDomains": null,
+      "requireEmail": false
+    }
+  },
+  {
+    "id": "vks6ezu0clb3qja",
+    "name": "people",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "3url41zb",
+        "name": "personId",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "rcllt17h",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "uobc2ok6",
+        "name": "avatar",
+        "type": "file",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [
+            "image/jpg",
+            "image/jpeg",
+            "image/png",
+            "image/svg+xml",
+            "image/gif",
+            "image/webp"
+          ],
+          "thumbs": []
+        }
+      },
+      {
+        "id": "tqecd1dc",
+        "name": "phone",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": "^\\d+$"
+        }
+      },
+      {
+        "id": "scvvf02v",
+        "name": "personalEmail",
+        "type": "email",
+        "system": false,
+        "required": false,
+        "unique": true,
+        "options": {
+          "exceptDomains": null,
+          "onlyDomains": null
+        }
+      },
+      {
+        "id": "p9j3qlmc",
+        "name": "title",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "ihzcpbqt",
+        "name": "placeOfBirth",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "rvacb4gs",
+        "name": "gender",
+        "type": "select",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": ["Man", "Woman", "Non-Binary", "Not Listed"]
+        }
+      },
+      {
+        "id": "y6l0vv3j",
+        "name": "department",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "rncqe4klgabuo3x",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "fyjj6s2d",
+        "name": "deleted",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "4cqxbw8kab49ay5",
+    "name": "lecturers",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "ujaiaffp",
+        "name": "person",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": true
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "h82fixjy91ga7sw",
+    "name": "advisors",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "uecdpcd1",
+        "name": "person",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": true
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "j4ausx28rc681dq",
+    "name": "documents",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "2uoyxb26",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "1ek0nj8b",
+        "name": "thumbnail",
+        "type": "file",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [],
+          "thumbs": []
+        }
+      },
+      {
+        "id": "6lbioxm6",
+        "name": "category",
+        "type": "select",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "International journals - Rank 1",
+            "International journals - Rank 2",
+            "International journals - Other",
+            "National journals",
+            "Monographs",
+            "Curriculums",
+            "Reference books",
+            "Manual books",
+            "Personal notes"
+          ]
+        }
+      },
+      {
+        "id": "a1ot8na9",
+        "name": "priority",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": ["Lower", "Low", "Medium", "High", "Higher"]
+        }
+      },
+      {
+        "id": "dhueurhe",
+        "name": "status",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": ["Todo", "In progress", "Review", "Done", "Closed"]
+        }
+      },
+      {
+        "id": "lb6sjqrk",
+        "name": "richText",
+        "type": "json",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {}
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "e8b4edpfxo6tszo",
+    "name": "attachments",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "c92e80nh",
+        "name": "file",
+        "type": "file",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [],
+          "thumbs": []
+        }
+      },
+      {
+        "id": "yyzvvscf",
+        "name": "document",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": false
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "d1gfoputrdow7mx",
+    "name": "participants",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "227i0wxj",
+        "name": "permission",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": ["read", "comment", "write"]
+        }
+      },
+      {
+        "id": "l4uzrvdm",
+        "name": "owner",
+        "type": "bool",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {}
+      },
+      {
+        "id": "cq6ifear",
+        "name": "role",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "ranibkpo",
+        "name": "note",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "bnhqtxmx",
+        "name": "document",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "m5yykllq",
+        "name": "person",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": false
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "gcqfd846lugrlnj",
+    "name": "fullDocuments",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "fqz8anf2",
+        "name": "document",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": true
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "fdvpbps19x0r7r0",
+    "name": "eventDocuments",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "t8r5f5g8",
+        "name": "document",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": true
+        }
+      },
+      {
+        "id": "tha3swja",
+        "name": "fullDocument",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "gcqfd846lugrlnj",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "onmc3kts",
+        "name": "startTime",
+        "type": "date",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "ms8hojja",
+        "name": "endTime",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "bece22zk",
+        "name": "recurring",
+        "type": "bool",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {}
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "lbkbtnakhaudvls",
+    "name": "classes",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "9xig2jh5",
+        "name": "classId",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "tfuuyuab",
+        "name": "advisor",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "h82fixjy91ga7sw",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "2lps3f5n",
+        "name": "cohort",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "5xrxsdqv",
+        "name": "department",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "rncqe4klgabuo3x",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "uea7jv6d",
+        "name": "trainingSystem",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": ["Undergraduate"]
+        }
+      },
+      {
+        "id": "wdhjxrtl",
+        "name": "document",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": true
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "2vda8dzur6jhdxy",
+    "name": "courses",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "rp94rzbl",
+        "name": "courseTemplate",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "w1u7k3atie2fwvi",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "xccusokg",
+        "name": "lecturer",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "4cqxbw8kab49ay5",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "mk7oodyt",
+        "name": "semester",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "vtbu4ebk",
+        "name": "document",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": true
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "w1u7k3atie2fwvi",
+    "name": "courseTemplates",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "ufi9u5zx",
+        "name": "courseId",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "oqr2aiwj",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "tiejcs80",
+        "name": "periodsCount",
+        "type": "number",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "8qzwbi8qig96dy3",
+    "name": "majors",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "0r6kke4b",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "rncqe4klgabuo3x",
+    "name": "departments",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "cl2agxi7",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "qwqmdr6a",
+        "name": "major",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "8qzwbi8qig96dy3",
+          "cascadeDelete": false
+        }
+      }
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  }
+]
