@@ -1,0 +1,13 @@
+# compiled output
+dist
+tmp
+/out-tsc
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# database
+/pb_data
+/pb_migrations
