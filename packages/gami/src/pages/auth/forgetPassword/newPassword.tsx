@@ -11,7 +11,7 @@ interface passwordResetInputs {
   newPasswordConfirm: string;
 }
 
-const Login: NextPage = () => {
+const NewPassword: NextPage = () => {
   // const [provider, setProvider] = useState<any>();
   const {
     register,
@@ -23,6 +23,9 @@ const Login: NextPage = () => {
   const [errorMessage, setErrorMessage] = useState<string>();
 
   const { confirmPasswordResetEmail } = useAuthContext();
+
+  // Automatically add token and redirect back to forget password page
+  // if there is no token
 
   const onSubmit: SubmitHandler<passwordResetInputs> = async (data) => {
     try {
@@ -85,4 +88,4 @@ const Login: NextPage = () => {
   );
 };
 
-export default Login;
+export default NewPassword;

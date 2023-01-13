@@ -9,7 +9,7 @@ interface LoginInputs {
   email: string;
 }
 
-const Login: NextPage = () => {
+const ForgetPassword: NextPage = () => {
   // const [provider, setProvider] = useState<any>();
   const {
     register,
@@ -65,4 +65,4 @@ const Login: NextPage = () => {
   );
 };
 
-export default Login;
+export default ForgetPassword;
