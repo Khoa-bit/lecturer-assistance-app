@@ -1,4 +1,4 @@
-import PocketBase from "pocketbase";
+import type PocketBase from "pocketbase";
 import type { UsersResponse } from "raito";
 import { Collections } from "raito";
 import { useContext } from "react";
@@ -11,11 +11,30 @@ interface AuthWithPasswordAndCookieArgs {
   pbClient: PocketBase;
 }
 
+interface requestEmailVerificationArgs {
+  email: string;
+  pbClient: PocketBase;
+}
+interface confirmEmailVerificationArgs {
+  token: string;
+  pbClient: PocketBase;
+}
+interface requestPasswordResetEmailArgs {
+  email: string;
+  pbClient: PocketBase;
+}
+interface confirmPasswordResetEmailArgs {
+  token: string;
+  newPassword: string;
+  newPasswordConfirm: string;
+  pbClient: PocketBase;
+}
+
 interface ClearAuthStoreAndCookieArgs {
   pbClient: PocketBase;
 }
 
-export async function authWithPasswordAndCookie({
+export async function _authWithPasswordAndCookie({
   username,
   password,
   pbClient,
@@ -34,13 +53,75 @@ export async function authWithPasswordAndCookie({
     });
 }
 
-export async function clearAuthStoreAndCookie({
+export async function _clearAuthStoreAndCookie({
   pbClient,
 }: ClearAuthStoreAndCookieArgs) {
   return await fetch("/api/auth/pbClear/", { method: "PUT" })
     .then((res) => {
       pbClient.authStore.clear();
       return res.json() as Promise<PBClearResponse>;
+    })
+    .catch((err: Error) => {
+      throw err;
+    });
+}
+
+export async function _requestEmailVerification({
+  email,
+  pbClient,
+}: requestEmailVerificationArgs) {
+  return await pbClient
+    .collection(Collections.Users)
+    .requestVerification(email)
+    .then((hasSent) => {
+      return hasSent;
+    })
+    .catch((err: Error) => {
+      throw err;
+    });
+}
+
+export async function _confirmEmailVerification({
+  token,
+  pbClient,
+}: confirmEmailVerificationArgs) {
+  return await pbClient
+    .collection(Collections.Users)
+    .confirmVerification(token)
+    .then((isConfirmed) => {
+      return isConfirmed;
+    })
+    .catch((err: Error) => {
+      throw err;
+    });
+}
+
+export async function _requestPasswordResetEmail({
+  email,
+  pbClient,
+}: requestPasswordResetEmailArgs) {
+  return await pbClient
+    .collection(Collections.Users)
+    .requestPasswordReset(email)
+    .then((hasSent) => {
+      return hasSent;
+    })
+    .catch((err: Error) => {
+      throw err;
+    });
+}
+
+export async function _confirmPasswordResetEmail({
+  token,
+  newPassword,
+  newPasswordConfirm,
+  pbClient,
+}: confirmPasswordResetEmailArgs) {
+  return await pbClient
+    .collection(Collections.Users)
+    .confirmPasswordReset(token, newPassword, newPasswordConfirm)
+    .then((isSuccess) => {
+      return isSuccess;
     })
     .catch((err: Error) => {
       throw err;

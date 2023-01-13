@@ -8,20 +8,10 @@ const pbClient = new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL);
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
-  console.log("=====Middleware starts=====");
-
   // load the store data from the request cookie string
-  console.log(
-    `request.cookies.get("pb_auth")?.value: ${
-      request.cookies.get("pb_auth")?.value
-    }`
-  );
-
   pbClient.authStore.loadFromCookie(
-    request.cookies.get("pb_auth")?.value || ""
+    `pb_auth=${request.cookies.get("pb_auth")?.value}`
   );
-
-  console.log(`pbClient.authStore.isValid: ${pbClient.authStore.isValid}`);
 
   try {
     // get an up-to-date auth store state by veryfing and refreshing the loaded auth model (if any)
@@ -32,17 +22,33 @@ export async function middleware(request: NextRequest) {
     pbClient.authStore.clear();
   }
 
-  console.log(JSON.stringify(pbClient.authStore.exportToCookie()));
+  const isValid = pbClient.authStore.isValid;
+
+  if (!isValid && !request.nextUrl.pathname.startsWith("/auth")) {
+    console.log(`Being redirect to http://${request.nextUrl.host}/auth/login/`);
+
+    return NextResponse.redirect(
+      new URL(`http://${request.nextUrl.host}/auth/login/`)
+    );
+  }
+
+  console.log(`Middleware: Updated cookie (at ${request.nextUrl})`);
 
   // You can also set request headers in NextResponse.rewrite
-  const response = NextResponse.next({});
-
+  const response = NextResponse.next();
   // Set a new response header `x-hello-from-middleware2`
-  // response.headers.set("set-cookie", pbClient.authStore.exportToCookie());
+  response.headers.set("set-cookie", pbClient.authStore.exportToCookie());
+
   return response;
 }
 
 // See "Matching Paths" below to learn more
-// export const config = {
-//   matcher: "/about/:path*",
-// };
+/*
+ * Match all request paths except for the ones starting with:
+ * - _next/static (static files)
+ * - _next/image (image optimization files)
+ * - favicon.ico (favicon file)
+ */
+export const config = {
+  matcher: ["/", "/((?!_next/static|_next/image|favicon.ico).+)"],
+};
