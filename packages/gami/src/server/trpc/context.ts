@@ -13,16 +13,18 @@ type CreateContextOptions = {
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  **/
 export const createContextInner = async (opts: CreateContextOptions) => {
-  return { session: opts.session, req: opts.req, res: opts.res };
+  return {
+    session: opts.session,
+    req: opts.req,
+    res: opts.res,
+  };
 };
 
 /**
  * This is the actual context you'll use in your router
  * @link https://trpc.io/docs/context
  **/
-export const createContext = async (
-  opts: CreateNextContextOptions
-): Promise<CreateContextOptions> => {
+export const createContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts;
 
   const pbServer = await getPBServer(req, res);

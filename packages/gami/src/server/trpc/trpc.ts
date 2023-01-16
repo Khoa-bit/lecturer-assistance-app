@@ -24,7 +24,14 @@ export const publicProcedure = t.procedure;
  */
 const isAuth = t.middleware(({ ctx, next }) => {
   if (!ctx.session.isValid) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    console.error("UNAUTHORIZED");
+    return next({
+      ctx: {
+        session: {
+          isValid: false,
+        },
+      },
+    });
   }
 
   return next({
