@@ -24,8 +24,6 @@ function Events({
 
   const dataParse = SuperJSON.parse<EventsData>(data);
 
-  console.log(data);
-
   const eventsList = dataParse.events.items.map((eventDoc) => (
     <li key={eventDoc.id}>{JSON.stringify(eventDoc.expand?.document.name)}</li>
   )) ?? <p>{"Error when fetching event documents :<"}</p>;
