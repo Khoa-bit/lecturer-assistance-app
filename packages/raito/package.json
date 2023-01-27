@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "serve": "./pocketbase serve",
+    "dev": "go run main.go serve",
+    "serve": "./raito-pocketbase serve",
     "build": "pocketbase-typegen --db ./pb_data/data.db --out ./types/pocketbase-types.ts && tsc --outDir ./dist"
   },
   "devDependencies": {

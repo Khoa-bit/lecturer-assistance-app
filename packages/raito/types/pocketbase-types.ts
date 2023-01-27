@@ -16,6 +16,7 @@ export enum Collections {
 	Majors = "majors",
 	Participants = "participants",
 	People = "people",
+	Relationships = "relationships",
 	Users = "users",
 }
 
@@ -170,6 +171,11 @@ export type PeopleRecord = {
 	deleted?: IsoDateString
 }
 
+export type RelationshipsRecord = {
+	fromPerson: RecordIdString
+	toPerson: RecordIdString
+}
+
 export type UsersRecord = {
 	person: RecordIdString
 }
@@ -188,6 +194,7 @@ export type LecturersResponse = LecturersRecord & BaseSystemFields
 export type MajorsResponse = MajorsRecord & BaseSystemFields
 export type ParticipantsResponse = ParticipantsRecord & BaseSystemFields
 export type PeopleResponse = PeopleRecord & BaseSystemFields
+export type RelationshipsResponse = RelationshipsRecord & BaseSystemFields
 export type UsersResponse = UsersRecord & AuthSystemFields
 
 export type CollectionRecords = {
@@ -204,5 +211,6 @@ export type CollectionRecords = {
 	majors: MajorsRecord
 	participants: ParticipantsRecord
 	people: PeopleRecord
+	relationships: RelationshipsRecord
 	users: UsersRecord
 }
