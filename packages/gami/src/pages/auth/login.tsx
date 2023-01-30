@@ -16,7 +16,7 @@ const Login: NextPage = () => {
   } = useForm<LoginInputs>();
   const router = useRouter();
 
-  const { signInWithPassword, signOut } = useAuthContext();
+  const { signInWithPassword, user, signOut } = useAuthContext();
 
   const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
     try {
@@ -59,6 +59,7 @@ const Login: NextPage = () => {
             >
               Sign out
             </button>
+            <p>{JSON.stringify(user)}</p>
             {/* <a
               className="cursor-pointer text-center text-sm text-gray-600"
               onClick={() => {

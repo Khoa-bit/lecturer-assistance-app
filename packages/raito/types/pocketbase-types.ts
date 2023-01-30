@@ -17,6 +17,7 @@ export enum Collections {
 	Participants = "participants",
 	People = "people",
 	Relationships = "relationships",
+	Temp = "temp",
 	Users = "users",
 }
 
@@ -82,18 +83,6 @@ export type DepartmentsRecord = {
 	major: RecordIdString
 }
 
-export enum DocumentsCategoryOptions {
-	"International journals - Rank 1" = "International journals - Rank 1",
-	"International journals - Rank 2" = "International journals - Rank 2",
-	"International journals - Other" = "International journals - Other",
-	"National journals" = "National journals",
-	"Monographs" = "Monographs",
-	"Curriculums" = "Curriculums",
-	"Reference books" = "Reference books",
-	"Manual books" = "Manual books",
-	"Personal notes" = "Personal notes",
-}
-
 export enum DocumentsPriorityOptions {
 	"Lower" = "Lower",
 	"Low" = "Low",
@@ -112,7 +101,6 @@ export enum DocumentsStatusOptions {
 export type DocumentsRecord<TrichText = unknown> = {
 	name: string
 	thumbnail?: string
-	category?: DocumentsCategoryOptions
 	priority: DocumentsPriorityOptions
 	status: DocumentsStatusOptions
 	richText?: null | TrichText
@@ -126,8 +114,20 @@ export type EventDocumentsRecord = {
 	recurring?: boolean
 }
 
+export enum FullDocumentsCategoryOptions {
+	"International journals - Rank 1" = "International journals - Rank 1",
+	"International journals - Rank 2" = "International journals - Rank 2",
+	"International journals - Other" = "International journals - Other",
+	"National journals" = "National journals",
+	"Monographs" = "Monographs",
+	"Curriculums" = "Curriculums",
+	"Reference books" = "Reference books",
+	"Manual books" = "Manual books",
+	"Draft" = "Draft",
+}
 export type FullDocumentsRecord = {
 	document: RecordIdString
+	category: FullDocumentsCategoryOptions
 }
 
 export type LecturersRecord = {
@@ -176,6 +176,11 @@ export type RelationshipsRecord = {
 	toPerson: RecordIdString
 }
 
+export type TempRecord = {
+	name?: string
+	person?: RecordIdString
+}
+
 export type UsersRecord = {
 	person: RecordIdString
 }
@@ -195,6 +200,7 @@ export type MajorsResponse = MajorsRecord & BaseSystemFields
 export type ParticipantsResponse = ParticipantsRecord & BaseSystemFields
 export type PeopleResponse = PeopleRecord & BaseSystemFields
 export type RelationshipsResponse = RelationshipsRecord & BaseSystemFields
+export type TempResponse = TempRecord & BaseSystemFields
 export type UsersResponse = UsersRecord & AuthSystemFields
 
 export type CollectionRecords = {
@@ -212,5 +218,6 @@ export type CollectionRecords = {
 	participants: ParticipantsRecord
 	people: PeopleRecord
 	relationships: RelationshipsRecord
+	temp: TempRecord
 	users: UsersRecord
 }
