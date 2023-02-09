@@ -4,9 +4,9 @@ import type {
 } from "next";
 import ErrorPage from "next/error";
 import Head from "next/head";
+import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type { EventDocumentsResponse } from "raito";
-import { Collections } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
@@ -34,6 +34,9 @@ function Events({
         <title>Events</title>
       </Head>
       <h1>Events</h1>
+      <Link className="text-blue-700 underline" href="/events/new">
+        New event
+      </Link>
       <ol>{eventsList}</ol>
     </>
   );
@@ -43,12 +46,12 @@ export const getServerSideProps = async ({
   req,
   res,
 }: GetServerSidePropsContext) => {
-  const pbServer = await getPBServer(req, res);
-  const events = await pbServer
-    .collection(Collections.EventDocuments)
-    .getList<EventDocumentsResponse>(1, 50, {
-      expand: "document",
-    });
+  const { pbServer, user } = await getPBServer(req, res);
+
+  if (!user) return { props: {} };
+  const events = await pbServer.apiGetList<EventDocumentsResponse>(
+    "/api/user/eventDocuments"
+  );
 
   return {
     props: {

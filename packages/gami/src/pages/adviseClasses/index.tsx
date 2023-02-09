@@ -4,9 +4,9 @@ import type {
 } from "next";
 import ErrorPage from "next/error";
 import Head from "next/head";
+import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { ClassesResponse } from "raito";
-import { Collections } from "raito";
+import type { AdvisorsResponse, ClassesResponse } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
@@ -34,6 +34,9 @@ function AdviseClasses({
         <title>AdviseClasses</title>
       </Head>
       <h1>AdviseClasses</h1>
+      <Link className="text-blue-700 underline" href="/adviseClasses/new">
+        New class
+      </Link>
       <ol>{AdviseClassesList}</ol>
     </>
   );
@@ -43,12 +46,10 @@ export const getServerSideProps = async ({
   req,
   res,
 }: GetServerSidePropsContext) => {
-  const pbServer = await getPBServer(req, res);
-  const adviseClasses = await pbServer
-    .collection(Collections.Classes)
-    .getList<ClassesResponse>(1, 50, {
-      expand: "document",
-    });
+  const { pbServer } = await getPBServer(req, res);
+  const adviseClasses = await pbServer.apiGetList<AdvisorsResponse>(
+    "/api/user/classes"
+  );
 
   return {
     props: {

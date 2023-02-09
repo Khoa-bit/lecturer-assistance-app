@@ -1,6 +1,7 @@
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { SubmitHandler, useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useAuthContext } from "src/lib/auth_client";
 
 interface LoginInputs {
@@ -51,6 +52,7 @@ const Login: NextPage = () => {
               <input
                 className="border bg-indigo-800 p-2 text-white hover:bg-indigo-700"
                 type="submit"
+                value={"Sign in"}
               />
             </form>
             <button

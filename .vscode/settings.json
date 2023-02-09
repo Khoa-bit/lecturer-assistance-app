@@ -1,0 +1,10 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "pb_data_db",
+      "database": "${workspaceFolder:lecturer-assistance-app}/packages/raito/pb_data/data.db"
+    }
+  ]
+}

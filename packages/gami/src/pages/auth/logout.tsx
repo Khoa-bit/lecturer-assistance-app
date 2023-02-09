@@ -1,19 +1,8 @@
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { SubmitHandler, useForm } from "react-hook-form";
 import { useAuthContext } from "src/lib/auth_client";
 
-interface LoginInputs {
-  email: string;
-  password: string;
-}
-
 const Logout: NextPage = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginInputs>();
   const router = useRouter();
 
   const { signOut } = useAuthContext();

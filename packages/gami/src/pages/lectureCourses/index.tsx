@@ -6,7 +6,6 @@ import ErrorPage from "next/error";
 import Head from "next/head";
 import type { ListResult } from "pocketbase";
 import type { CoursesResponse } from "raito";
-import { Collections } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
@@ -45,12 +44,11 @@ export const getServerSideProps = async ({
   req,
   res,
 }: GetServerSidePropsContext) => {
-  const pbServer = await getPBServer(req, res);
-  const lectureCourses = await pbServer
-    .collection(Collections.Courses)
-    .getList<CoursesResponse>(1, 50, {
-      expand: "document",
-    });
+  const { pbServer } = await getPBServer(req, res);
+
+  const lectureCourses = await pbServer.apiGetList<CoursesResponse>(
+    "/api/user/courses"
+  );
 
   return {
     props: {

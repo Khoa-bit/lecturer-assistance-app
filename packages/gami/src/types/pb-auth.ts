@@ -1,5 +1,4 @@
 import type { Admin, Record } from "pocketbase";
-import type PocketBase from "pocketbase";
 
 /**
  * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context

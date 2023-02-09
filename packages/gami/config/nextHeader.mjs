@@ -1,3 +1,5 @@
+// References: https://github.com/trezy/next-safe
+
 /**
  * @param {import("./nextHeaderTypes").NextHeaderProps} NextHeaderProps
  * @returns {import("./nextHeaderTypes").Header[]} Header[]
@@ -14,7 +16,7 @@ export function nextHeader(
     contentSecurityPolicy: {
       "base-uri": ["'none'"],
       "child-src": ["'none'"],
-      "connect-src": ["'self'"],
+      "connect-src": ["'self'", "localhost:8090"],
       "default-src": ["'self'"],
       "font-src": ["'self'"],
       "form-action": ["'self'"],

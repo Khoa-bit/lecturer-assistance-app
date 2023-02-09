@@ -1,5 +1,5 @@
 import { type NextPage } from "next";
-import Tiptap from "src/components/wysiwyg/TipTap";
+import Link from "next/link";
 import { useAuthContext } from "src/lib/auth_client";
 
 const Home: NextPage = () => {
@@ -8,8 +8,15 @@ const Home: NextPage = () => {
   return (
     <>
       <h1>Redirecting...</h1>
+      <p className="flex gap-2">
+        <Link className="text-blue-700 underline" href={"events"}>
+          Events
+        </Link>
+        <Link className="text-blue-700 underline" href={"auth/login"}>
+          Auth Page
+        </Link>
+      </p>
       <p>{JSON.stringify(user)}</p>
-      <Tiptap />
     </>
   );
 };

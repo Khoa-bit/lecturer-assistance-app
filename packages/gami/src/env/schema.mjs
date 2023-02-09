@@ -6,6 +6,7 @@ import { z } from "zod";
  * This way you can ensure the app isn't built with invalid env vars.
  */
 export const serverSchema = z.object({
+  DEBUG_MODE: z.enum(["true", "false"]),
   NODE_ENV: z.enum(["development", "test", "production"]),
   POCKETBASE_URL: z.string().url(),
 });

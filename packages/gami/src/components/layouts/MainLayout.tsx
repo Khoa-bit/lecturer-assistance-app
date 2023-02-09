@@ -9,12 +9,25 @@ export default function MainLayout({ children }: Props) {
     <>
       <aside>
         <nav>
-          <ol>
-            <Link href={"/events"}>Events</Link>
-            <Link href={"/fullDocuments"}>Full Documents</Link>
-            <Link href={"/people"}>People</Link>
-            <Link href={"/lectureCourses"}>Lecture Courses</Link>
-            <Link href={"/adviseClasses"}>Advise Classes</Link>
+          <ol className="flex gap-2">
+            <Link className="text-blue-700 underline" href={"/events"}>
+              Events
+            </Link>
+            <Link className="text-blue-700 underline" href={"/fullDocuments"}>
+              Full Documents
+            </Link>
+            <Link className="text-blue-700 underline" href={"/people"}>
+              People
+            </Link>
+            <Link className="text-blue-700 underline" href={"/lectureCourses"}>
+              Lecture Courses
+            </Link>
+            <Link className="text-blue-700 underline" href={"/adviseClasses"}>
+              Advise Classes
+            </Link>
+            <Link className="text-blue-700 underline" href={"/"}>
+              Home
+            </Link>
           </ol>
         </nav>
       </aside>
