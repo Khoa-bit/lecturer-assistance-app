@@ -12,7 +12,8 @@ import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface AdviseClassesData {
-  adviseClasses: ListResult<ClassesResponse>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adviseClasses: ListResult<ClassesResponse<any>>;
 }
 
 function AdviseClasses({

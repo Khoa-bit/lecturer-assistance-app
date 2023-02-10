@@ -1,8 +1,8 @@
-import { ParticipantsResponse } from './pocketbase-types';
+import { PeopleResponse } from './pocketbase-types';
 
-export interface ContactsResponse extends ParticipantsResponse {
+export interface ContactsResponse extends PeopleResponse {
   expand: {
-    document_id: string;
-    document_name: string;
+    document_id_list: string;
+    document_name_list: string;
   };
 }

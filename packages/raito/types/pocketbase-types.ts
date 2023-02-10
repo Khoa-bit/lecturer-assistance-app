@@ -24,23 +24,24 @@ export enum Collections {
 // Alias types for improved usability
 export type IsoDateString = string
 export type RecordIdString = string
+export type HTMLString = string
 
 // System fields
-export type BaseSystemFields = {
+export type BaseSystemFields<T = never> = {
 	id: RecordIdString
 	created: IsoDateString
 	updated: IsoDateString
 	collectionId: string
 	collectionName: Collections
-	expand?: { [key: string]: any }
+	expand?: T
 }
 
-export type AuthSystemFields = {
+export type AuthSystemFields<T = never> = {
 	email: string
 	emailVisibility: boolean
 	username: string
 	verified: boolean
-} & BaseSystemFields
+} & BaseSystemFields<T>
 
 // Record types for each collection
 
@@ -186,22 +187,22 @@ export type UsersRecord = {
 }
 
 // Response types include system fields and match responses from the PocketBase API
-export type AdvisorsResponse = AdvisorsRecord & BaseSystemFields
-export type AttachmentsResponse = AttachmentsRecord & BaseSystemFields
-export type ClassesResponse = ClassesRecord & BaseSystemFields
+export type AdvisorsResponse<Texpand = unknown> = AdvisorsRecord & BaseSystemFields<Texpand>
+export type AttachmentsResponse<Texpand = unknown> = AttachmentsRecord & BaseSystemFields<Texpand>
+export type ClassesResponse<Texpand = unknown> = ClassesRecord & BaseSystemFields<Texpand>
 export type CourseTemplatesResponse = CourseTemplatesRecord & BaseSystemFields
-export type CoursesResponse = CoursesRecord & BaseSystemFields
-export type DepartmentsResponse = DepartmentsRecord & BaseSystemFields
+export type CoursesResponse<Texpand = unknown> = CoursesRecord & BaseSystemFields<Texpand>
+export type DepartmentsResponse<Texpand = unknown> = DepartmentsRecord & BaseSystemFields<Texpand>
 export type DocumentsResponse<TrichText = unknown> = DocumentsRecord<TrichText> & BaseSystemFields
-export type EventDocumentsResponse = EventDocumentsRecord & BaseSystemFields
-export type FullDocumentsResponse = FullDocumentsRecord & BaseSystemFields
-export type LecturersResponse = LecturersRecord & BaseSystemFields
+export type EventDocumentsResponse<Texpand = unknown> = EventDocumentsRecord & BaseSystemFields<Texpand>
+export type FullDocumentsResponse<Texpand = unknown> = FullDocumentsRecord & BaseSystemFields<Texpand>
+export type LecturersResponse<Texpand = unknown> = LecturersRecord & BaseSystemFields<Texpand>
 export type MajorsResponse = MajorsRecord & BaseSystemFields
-export type ParticipantsResponse = ParticipantsRecord & BaseSystemFields
-export type PeopleResponse = PeopleRecord & BaseSystemFields
-export type RelationshipsResponse = RelationshipsRecord & BaseSystemFields
-export type TempResponse = TempRecord & BaseSystemFields
-export type UsersResponse = UsersRecord & AuthSystemFields
+export type ParticipantsResponse<Texpand = unknown> = ParticipantsRecord & BaseSystemFields<Texpand>
+export type PeopleResponse<Texpand = unknown> = PeopleRecord & BaseSystemFields<Texpand>
+export type RelationshipsResponse<Texpand = unknown> = RelationshipsRecord & BaseSystemFields<Texpand>
+export type TempResponse<Texpand = unknown> = TempRecord & BaseSystemFields<Texpand>
+export type UsersResponse<Texpand = unknown> = UsersRecord & AuthSystemFields<Texpand>
 
 export type CollectionRecords = {
 	advisors: AdvisorsRecord

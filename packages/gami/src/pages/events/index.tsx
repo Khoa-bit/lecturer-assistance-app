@@ -12,7 +12,8 @@ import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface EventsData {
-  events: ListResult<EventDocumentsResponse>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  events: ListResult<EventDocumentsResponse<any>>;
 }
 
 function Events({
