@@ -11,7 +11,8 @@ import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface LectureCoursesData {
-  lectureCourses: ListResult<CoursesResponse>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  lectureCourses: ListResult<CoursesResponse<any>>;
 }
 
 function LectureCourses({
