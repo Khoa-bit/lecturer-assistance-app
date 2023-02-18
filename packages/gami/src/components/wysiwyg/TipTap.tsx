@@ -1,10 +1,27 @@
-import { useEditor, EditorContent } from "@tiptap/react";
+import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import SuperJSON from "superjson";
 
-const Tiptap = () => {
+interface TipTapProps {
+  name: string;
+  onChange: (...event: unknown[]) => void;
+  value?: { json: object };
+}
+
+const Tiptap = ({ name, onChange, value }: TipTapProps) => {
   const editor = useEditor({
+    onCreate: ({ editor }) => {
+      onChange({
+        target: { value: SuperJSON.stringify(editor.getJSON()), name },
+      });
+    },
+    onUpdate: ({ editor }) => {
+      onChange({
+        target: { value: SuperJSON.stringify(editor.getJSON()), name },
+      });
+    },
     extensions: [StarterKit],
-    content: "<p>Hello World! 🌎️</p>",
+    content: value?.json,
   });
 
   return <EditorContent editor={editor} />;

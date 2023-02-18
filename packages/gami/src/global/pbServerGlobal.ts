@@ -15,7 +15,7 @@ declare global {
 
 // Information Logging if a new client is initialized
 if (env.DEBUG_MODE === "true" && !globalThis.pbServer) {
-  console.log("debug - Initializing new PocketBase instance...");
+  console.log("debug - Initializing global PocketBase Server instance...");
 }
 
 // Assign pbServer as :

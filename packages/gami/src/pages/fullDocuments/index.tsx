@@ -4,6 +4,7 @@ import type {
 } from "next";
 import ErrorPage from "next/error";
 import Head from "next/head";
+import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type { FullDocumentsResponse } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
@@ -25,7 +26,11 @@ function FullDocuments({
   const dataParse = SuperJSON.parse<FullDocumentsData>(data);
 
   const FullDocumentsList = dataParse.fullDocuments.items.map((fullDoc) => (
-    <li key={fullDoc.id}>{JSON.stringify(fullDoc.expand?.document.name)}</li>
+    <li key={fullDoc.id}>
+      <Link href={`/fullDocuments/${encodeURIComponent(fullDoc.id)}`}>
+        {JSON.stringify(fullDoc.expand?.documents_name)}
+      </Link>
+    </li>
   )) ?? <p>{"Error when fetching full documents :<"}</p>;
 
   return (
@@ -34,6 +39,9 @@ function FullDocuments({
         <title>FullDocuments</title>
       </Head>
       <h1>FullDocuments</h1>
+      <Link className="text-blue-700 underline" href="/fullDocuments/new">
+        New Full document
+      </Link>
       <ol>{FullDocumentsList}</ol>
     </>
   );
@@ -41,9 +49,8 @@ function FullDocuments({
 
 export const getServerSideProps = async ({
   req,
-  res,
 }: GetServerSidePropsContext) => {
-  const { pbServer } = await getPBServer(req, res);
+  const { pbServer } = await getPBServer(req);
 
   const fullDocuments = await pbServer.apiGetList<FullDocumentsResponse>(
     "/api/user/fullDocuments"

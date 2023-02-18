@@ -18,12 +18,14 @@ importers:
       '@tanstack/react-query': ^4.24.4
       '@tiptap/react': 2.0.0-beta.209
       '@tiptap/starter-kit': 2.0.0-beta.209
+      '@types/crypto-js': ^4.1.1
       '@types/node': ^18.13.0
       '@types/react': ^18.0.27
       '@types/react-dom': ^18.0.10
       '@typescript-eslint/eslint-plugin': ^5.51.0
       '@typescript-eslint/parser': ^5.51.0
       autoprefixer: ^10.4.7
+      crypto-js: ^4.1.1
       eslint: ^8.33.0
       eslint-config-next: 13.1.6
       next: 13.1.6
@@ -55,6 +57,7 @@ importers:
       '@tanstack/react-query': 4.24.4_biqbaboplfbrettd7655fr4n2y
       '@tiptap/react': 2.0.0-beta.209_q2znjafzmb4pvn25xzm5s3hjsu
       '@tiptap/starter-kit': 2.0.0-beta.209_v2arxetlabxixty7j5icgdph74
+      crypto-js: 4.1.1
       next: 13.1.6_biqbaboplfbrettd7655fr4n2y
       pocketbase: 0.10.1
       prosemirror-commands: 1.5.0
@@ -74,6 +77,7 @@ importers:
       superjson: 1.12.2
       zod: 3.20.6
     devDependencies:
+      '@types/crypto-js': 4.1.1
       '@types/node': 18.13.0
       '@types/react': 18.0.27
       '@types/react-dom': 18.0.10
@@ -700,6 +704,10 @@ packages:
     engines: {node: '>= 6'}
     dev: true
     optional: true
+
+  /@types/crypto-js/4.1.1:
+    resolution: {integrity: sha512-BG7fQKZ689HIoc5h+6D2Dgq1fABRa0RbBWKBd9SP/MVRVXROflpm5fhwyATX5duFmbStzyzyycPB8qUYKDH3NA==}
+    dev: true
 
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
@@ -1365,6 +1373,10 @@ packages:
       shebang-command: 2.0.0
       which: 2.0.2
     dev: true
+
+  /crypto-js/4.1.1:
+    resolution: {integrity: sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==}
+    dev: false
 
   /cssesc/3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}

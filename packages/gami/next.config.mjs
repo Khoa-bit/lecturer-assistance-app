@@ -17,6 +17,16 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "8090",
+        pathname: "/api/files/**",
+      },
+    ],
+  },
   async headers() {
     return [
       {

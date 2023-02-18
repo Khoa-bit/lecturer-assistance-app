@@ -36,182 +36,6 @@
     }
   },
   {
-    "id": "vks6ezu0clb3qja",
-    "name": "people",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "3url41zb",
-        "name": "personId",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "unique": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "rcllt17h",
-        "name": "name",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "uobc2ok6",
-        "name": "avatar",
-        "type": "file",
-        "system": false,
-        "required": false,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "maxSize": 5242880,
-          "mimeTypes": [
-            "image/jpg",
-            "image/jpeg",
-            "image/png",
-            "image/svg+xml",
-            "image/gif",
-            "image/webp"
-          ],
-          "thumbs": []
-        }
-      },
-      {
-        "id": "tqecd1dc",
-        "name": "phone",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "unique": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": "^\\d+$"
-        }
-      },
-      {
-        "id": "scvvf02v",
-        "name": "personalEmail",
-        "type": "email",
-        "system": false,
-        "required": false,
-        "unique": true,
-        "options": {
-          "exceptDomains": null,
-          "onlyDomains": null
-        }
-      },
-      {
-        "id": "p9j3qlmc",
-        "name": "title",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "ihzcpbqt",
-        "name": "placeOfBirth",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "rvacb4gs",
-        "name": "gender",
-        "type": "select",
-        "system": false,
-        "required": false,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "values": ["Man", "Woman", "Non-Binary", "Not Listed"]
-        }
-      },
-      {
-        "id": "y6l0vv3j",
-        "name": "department",
-        "type": "relation",
-        "system": false,
-        "required": false,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "collectionId": "rncqe4klgabuo3x",
-          "cascadeDelete": false
-        }
-      },
-      {
-        "id": "fyjj6s2d",
-        "name": "deleted",
-        "type": "date",
-        "system": false,
-        "required": false,
-        "unique": false,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      }
-    ],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {}
-  },
-  {
-    "id": "4cqxbw8kab49ay5",
-    "name": "lecturers",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "ujaiaffp",
-        "name": "person",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "unique": true,
-        "options": {
-          "maxSelect": 1,
-          "collectionId": "vks6ezu0clb3qja",
-          "cascadeDelete": true
-        }
-      }
-    ],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {}
-  },
-  {
     "id": "h82fixjy91ga7sw",
     "name": "advisors",
     "type": "base",
@@ -228,6 +52,298 @@
           "maxSelect": 1,
           "collectionId": "vks6ezu0clb3qja",
           "cascadeDelete": true
+        }
+      }
+    ],
+    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "createRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"write\")",
+    "updateRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"write\")",
+    "deleteRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"write\")",
+    "options": {}
+  },
+  {
+    "id": "e8b4edpfxo6tszo",
+    "name": "attachments",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "c92e80nh",
+        "name": "file",
+        "type": "file",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [],
+          "thumbs": []
+        }
+      },
+      {
+        "id": "yyzvvscf",
+        "name": "document",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": false
+        }
+      }
+    ],
+    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "lbkbtnakhaudvls",
+    "name": "classes",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "9xig2jh5",
+        "name": "classId",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "tfuuyuab",
+        "name": "advisor",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "h82fixjy91ga7sw",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "2lps3f5n",
+        "name": "cohort",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "5xrxsdqv",
+        "name": "department",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "rncqe4klgabuo3x",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "uea7jv6d",
+        "name": "trainingSystem",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "Undergraduate"
+          ]
+        }
+      },
+      {
+        "id": "wdhjxrtl",
+        "name": "document",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": true
+        }
+      }
+    ],
+    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "w1u7k3atie2fwvi",
+    "name": "courseTemplates",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "ufi9u5zx",
+        "name": "courseId",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "oqr2aiwj",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "tiejcs80",
+        "name": "periodsCount",
+        "type": "number",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      }
+    ],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "2vda8dzur6jhdxy",
+    "name": "courses",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "rp94rzbl",
+        "name": "courseTemplate",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "w1u7k3atie2fwvi",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "xccusokg",
+        "name": "lecturer",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "4cqxbw8kab49ay5",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "mk7oodyt",
+        "name": "semester",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "vtbu4ebk",
+        "name": "document",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": true
+        }
+      }
+    ],
+    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "rncqe4klgabuo3x",
+    "name": "departments",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "cl2agxi7",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "qwqmdr6a",
+        "name": "major",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "8qzwbi8qig96dy3",
+          "cascadeDelete": false
         }
       }
     ],
@@ -272,28 +388,6 @@
         }
       },
       {
-        "id": "6lbioxm6",
-        "name": "category",
-        "type": "select",
-        "system": false,
-        "required": false,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "values": [
-            "International journals - Rank 1",
-            "International journals - Rank 2",
-            "International journals - Other",
-            "National journals",
-            "Monographs",
-            "Curriculums",
-            "Reference books",
-            "Manual books",
-            "Personal notes"
-          ]
-        }
-      },
-      {
         "id": "a1ot8na9",
         "name": "priority",
         "type": "select",
@@ -302,7 +396,13 @@
         "unique": false,
         "options": {
           "maxSelect": 1,
-          "values": ["Lower", "Low", "Medium", "High", "Higher"]
+          "values": [
+            "Lower",
+            "Low",
+            "Medium",
+            "High",
+            "Higher"
+          ]
         }
       },
       {
@@ -314,7 +414,13 @@
         "unique": false,
         "options": {
           "maxSelect": 1,
-          "values": ["Todo", "In progress", "Review", "Done", "Closed"]
+          "values": [
+            "Todo",
+            "In progress",
+            "Review",
+            "Done",
+            "Closed"
+          ]
         }
       },
       {
@@ -325,125 +431,23 @@
         "required": false,
         "unique": false,
         "options": {}
-      }
-    ],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {}
-  },
-  {
-    "id": "e8b4edpfxo6tszo",
-    "name": "attachments",
-    "type": "base",
-    "system": false,
-    "schema": [
+      },
       {
-        "id": "c92e80nh",
-        "name": "file",
-        "type": "file",
+        "id": "qprx5ng2",
+        "name": "diffHash",
+        "type": "text",
         "system": false,
-        "required": true,
+        "required": false,
         "unique": false,
         "options": {
-          "maxSelect": 1,
-          "maxSize": 5242880,
-          "mimeTypes": [],
-          "thumbs": []
+          "min": null,
+          "max": null,
+          "pattern": ""
         }
       },
       {
-        "id": "yyzvvscf",
-        "name": "document",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "collectionId": "j4ausx28rc681dq",
-          "cascadeDelete": false
-        }
-      }
-    ],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {}
-  },
-  {
-    "id": "d1gfoputrdow7mx",
-    "name": "participants",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "227i0wxj",
-        "name": "permission",
-        "type": "select",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "values": ["read", "comment", "write"]
-        }
-      },
-      {
-        "id": "l4uzrvdm",
+        "id": "p607nig8",
         "name": "owner",
-        "type": "bool",
-        "system": false,
-        "required": false,
-        "unique": false,
-        "options": {}
-      },
-      {
-        "id": "cq6ifear",
-        "name": "role",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "ranibkpo",
-        "name": "note",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "bnhqtxmx",
-        "name": "document",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "collectionId": "j4ausx28rc681dq",
-          "cascadeDelete": false
-        }
-      },
-      {
-        "id": "m5yykllq",
-        "name": "person",
         "type": "relation",
         "system": false,
         "required": true,
@@ -455,37 +459,10 @@
         }
       }
     ],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {}
-  },
-  {
-    "id": "gcqfd846lugrlnj",
-    "name": "fullDocuments",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "fqz8anf2",
-        "name": "document",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "unique": true,
-        "options": {
-          "maxSelect": 1,
-          "collectionId": "j4ausx28rc681dq",
-          "cascadeDelete": true
-        }
-      }
-    ],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
+    "listRule": "@request.auth.person.id = owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\"))",
+    "viewRule": "@request.auth.person.id = owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\"))",
+    "createRule": "@request.auth.person.id = @request.data.owner",
+    "updateRule": "@request.auth.person.id = owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && @collection.participants.permission = \"write\")",
     "deleteRule": null,
     "options": {}
   },
@@ -555,212 +532,79 @@
         "options": {}
       }
     ],
-    "listRule": null,
-    "viewRule": null,
+    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,
     "options": {}
   },
   {
-    "id": "lbkbtnakhaudvls",
-    "name": "classes",
+    "id": "gcqfd846lugrlnj",
+    "name": "fullDocuments",
     "type": "base",
     "system": false,
     "schema": [
       {
-        "id": "9xig2jh5",
-        "name": "classId",
-        "type": "text",
+        "id": "fqz8anf2",
+        "name": "document",
+        "type": "relation",
         "system": false,
-        "required": false,
+        "required": true,
         "unique": true,
         "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "tfuuyuab",
-        "name": "advisor",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
           "maxSelect": 1,
-          "collectionId": "h82fixjy91ga7sw",
-          "cascadeDelete": false
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": true
         }
       },
       {
-        "id": "2lps3f5n",
-        "name": "cohort",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "5xrxsdqv",
-        "name": "department",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "collectionId": "rncqe4klgabuo3x",
-          "cascadeDelete": false
-        }
-      },
-      {
-        "id": "uea7jv6d",
-        "name": "trainingSystem",
+        "id": "1xozu39q",
+        "name": "category",
         "type": "select",
         "system": false,
         "required": true,
         "unique": false,
         "options": {
           "maxSelect": 1,
-          "values": ["Undergraduate"]
-        }
-      },
-      {
-        "id": "wdhjxrtl",
-        "name": "document",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "unique": true,
-        "options": {
-          "maxSelect": 1,
-          "collectionId": "j4ausx28rc681dq",
-          "cascadeDelete": true
+          "values": [
+            "International journals - Rank 1",
+            "International journals - Rank 2",
+            "International journals - Other",
+            "National journals",
+            "Monographs",
+            "Curriculums",
+            "Reference books",
+            "Manual books",
+            "Draft"
+          ]
         }
       }
     ],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
+    "listRule": "@request.auth.person.id = document.owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\"))",
+    "viewRule": "@request.auth.person.id = document.owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\"))",
+    "createRule": "@request.auth.person.id = document.owner.id",
+    "updateRule": "@request.auth.person.id = document.owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"write\"))",
     "deleteRule": null,
     "options": {}
   },
   {
-    "id": "2vda8dzur6jhdxy",
-    "name": "courses",
+    "id": "4cqxbw8kab49ay5",
+    "name": "lecturers",
     "type": "base",
     "system": false,
     "schema": [
       {
-        "id": "rp94rzbl",
-        "name": "courseTemplate",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "collectionId": "w1u7k3atie2fwvi",
-          "cascadeDelete": false
-        }
-      },
-      {
-        "id": "xccusokg",
-        "name": "lecturer",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "collectionId": "4cqxbw8kab49ay5",
-          "cascadeDelete": false
-        }
-      },
-      {
-        "id": "mk7oodyt",
-        "name": "semester",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "vtbu4ebk",
-        "name": "document",
+        "id": "ujaiaffp",
+        "name": "person",
         "type": "relation",
         "system": false,
         "required": true,
         "unique": true,
         "options": {
           "maxSelect": 1,
-          "collectionId": "j4ausx28rc681dq",
+          "collectionId": "vks6ezu0clb3qja",
           "cascadeDelete": true
-        }
-      }
-    ],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {}
-  },
-  {
-    "id": "w1u7k3atie2fwvi",
-    "name": "courseTemplates",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "ufi9u5zx",
-        "name": "courseId",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "unique": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "oqr2aiwj",
-        "name": "name",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "unique": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "tiejcs80",
-        "name": "periodsCount",
-        "type": "number",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "min": null,
-          "max": null
         }
       }
     ],
@@ -799,18 +643,34 @@
     "options": {}
   },
   {
-    "id": "rncqe4klgabuo3x",
-    "name": "departments",
+    "id": "d1gfoputrdow7mx",
+    "name": "participants",
     "type": "base",
     "system": false,
     "schema": [
       {
-        "id": "cl2agxi7",
-        "name": "name",
-        "type": "text",
+        "id": "227i0wxj",
+        "name": "permission",
+        "type": "select",
         "system": false,
         "required": true,
-        "unique": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "read",
+            "comment",
+            "write"
+          ]
+        }
+      },
+      {
+        "id": "cq6ifear",
+        "name": "role",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
         "options": {
           "min": null,
           "max": null,
@@ -818,21 +678,281 @@
         }
       },
       {
-        "id": "qwqmdr6a",
-        "name": "major",
+        "id": "ranibkpo",
+        "name": "note",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "bnhqtxmx",
+        "name": "document",
         "type": "relation",
         "system": false,
         "required": true,
         "unique": false,
         "options": {
           "maxSelect": 1,
-          "collectionId": "8qzwbi8qig96dy3",
+          "collectionId": "j4ausx28rc681dq",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "m5yykllq",
+        "name": "person",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "vks6ezu0clb3qja",
           "cascadeDelete": false
         }
       }
     ],
     "listRule": null,
     "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "vks6ezu0clb3qja",
+    "name": "people",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "3url41zb",
+        "name": "personId",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "rcllt17h",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "uobc2ok6",
+        "name": "avatar",
+        "type": "file",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [
+            "image/jpg",
+            "image/jpeg",
+            "image/png",
+            "image/svg+xml",
+            "image/gif",
+            "image/webp"
+          ],
+          "thumbs": []
+        }
+      },
+      {
+        "id": "tqecd1dc",
+        "name": "phone",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": "^\\d+$"
+        }
+      },
+      {
+        "id": "scvvf02v",
+        "name": "personalEmail",
+        "type": "email",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "exceptDomains": null,
+          "onlyDomains": null
+        }
+      },
+      {
+        "id": "p9j3qlmc",
+        "name": "title",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "ihzcpbqt",
+        "name": "placeOfBirth",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "rvacb4gs",
+        "name": "gender",
+        "type": "select",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "Man",
+            "Woman",
+            "Non-Binary",
+            "Not Listed"
+          ]
+        }
+      },
+      {
+        "id": "y6l0vv3j",
+        "name": "department",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "rncqe4klgabuo3x",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "fyjj6s2d",
+        "name": "deleted",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      }
+    ],
+    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "q22h280gruk59ry",
+    "name": "relationships",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "4si6gxog",
+        "name": "fromPerson",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": false
+        }
+      },
+      {
+        "id": "uk38iicu",
+        "name": "toPerson",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": false
+        }
+      }
+    ],
+    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "6h0ngwmqmx7ikjz",
+    "name": "temp",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "0nii0ykf",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "v4ns7vdn",
+        "name": "person",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": false
+        }
+      }
+    ],
+    "listRule": "",
+    "viewRule": "",
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,
