@@ -49,8 +49,9 @@ function FullDocuments({
 
 export const getServerSideProps = async ({
   req,
+  resolvedUrl,
 }: GetServerSidePropsContext) => {
-  const { pbServer } = await getPBServer(req);
+  const { pbServer } = await getPBServer(req, resolvedUrl);
 
   const fullDocuments = await pbServer.apiGetList<FullDocumentsResponse>(
     "/api/user/fullDocuments"

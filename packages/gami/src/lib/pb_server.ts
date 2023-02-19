@@ -4,14 +4,17 @@ import { env } from "src/env/server.mjs";
 import type { PBServer } from "../global/pbServerGlobal";
 import { pbServer } from "../global/pbServerGlobal";
 
-export async function getPBServer(req: IncomingMessage): Promise<{
+export async function getPBServer(
+  req: IncomingMessage,
+  resolvedUrl: string
+): Promise<{
   pbServer: PBServer;
   user: UsersResponse | undefined;
 }> {
   // Information Logging if a new client is initialized
   if (env.DEBUG_MODE === "true") {
     console.log(
-      `debug - Initializing new PocketBase Server instance... ${req.headers}`
+      `debug - Initializing new PocketBase Server instance... ${resolvedUrl}`
     );
   }
 

@@ -6,6 +6,7 @@ import type {
 import Head from "next/head";
 import Image from "next/image";
 import type {
+  AttachmentsResponse,
   DocumentsRecord,
   DocumentsResponse,
   FullDocumentsRecord,
@@ -25,19 +26,23 @@ import MainLayout from "src/components/layouts/MainLayout";
 import TipTap from "src/components/wysiwyg/TipTap";
 import { debounce } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
-import { usePBServer } from "src/lib/pb_server";
+import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface DocumentData {
   fullDocument: FullDocumentsResponse<FullDocumentExpand>;
   pbAuthCookie: string;
+  attachments: AttachmentsResponse[];
 }
 
 interface FullDocumentExpand {
   document: DocumentsResponse;
 }
 
-type FullDocumentInput = DocumentsRecord & FullDocumentsRecord & { id: string };
+interface FullDocumentInput extends DocumentsRecord, FullDocumentsRecord {
+  id: string;
+  attachments: AttachmentsResponse[];
+}
 
 function Document({
   data,
@@ -62,16 +67,14 @@ function Document({
         diffHash: baseDocument?.diffHash,
       },
     });
-  const [curFile, setCurFile] = useState<File>();
+  const [thumbnail, setThumbnail] = useState<string | undefined>(
+    baseDocument?.thumbnail
+  );
+  const [curAttachments, setCurAttachments] = useState<AttachmentsResponse[]>(
+    dataParse.attachments
+  );
 
   const { pbClient } = usePBClient(dataParse.pbAuthCookie);
-  let thumbnailUrl: string | undefined;
-  if (baseDocument?.thumbnail) {
-    thumbnailUrl = pbClient.buildUrl(
-      `api/files/documents/${documentId}/${baseDocument.thumbnail}`
-    );
-    console.log(thumbnailUrl);
-  }
 
   const formRef = useRef<HTMLFormElement>(null);
   const onSubmit: SubmitHandler<FullDocumentInput> = useCallback(
@@ -86,7 +89,6 @@ function Document({
       ).toString();
 
       if (prevDiffHash != newDiffHash) {
-        console.log("Saving document...");
         setValue("diffHash", newDiffHash);
         pbClient
           .collection(Collections.FullDocuments)
@@ -109,6 +111,14 @@ function Document({
     },
     [documentId, fullDocumentId, pbClient, setValue]
   );
+
+  const isRejected = (
+    input: PromiseSettledResult<unknown>
+  ): input is PromiseRejectedResult => input.status === "rejected";
+
+  const isFulfilled = <T,>(
+    input: PromiseSettledResult<T>
+  ): input is PromiseFulfilledResult<T> => input.status === "fulfilled";
 
   const submitForm = useCallback(
     () => handleSubmit(onSubmit)(),
@@ -154,21 +164,21 @@ function Document({
                 id="file"
                 type="file"
                 name={name}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                onChange={async (e: ChangeEvent<HTMLInputElement>) => {
                   const file = e.target.files?.item(0);
                   if (!file) return;
 
-                  onChange({
-                    target: { value: file, name },
-                  });
-
                   const formData = new FormData();
                   formData.append("thumbnail", file);
-                  pbClient
+
+                  const thumbnailDoc = await pbClient
                     .collection(Collections.Documents)
                     .update<DocumentsResponse>(documentId, formData);
+                  setThumbnail(thumbnailDoc.thumbnail);
 
-                  setCurFile(file);
+                  onChange({
+                    target: { value: thumbnailDoc.thumbnail, name },
+                  });
                 }}
               />
             </>
@@ -196,6 +206,59 @@ function Document({
           ))}
         </select>
         <Controller
+          name="attachments"
+          control={control}
+          render={({ field: { name, onChange } }) => (
+            <>
+              <label htmlFor="file">Choose attachments</label>
+              <input
+                id="file"
+                type="file"
+                name={name}
+                multiple={true}
+                onChange={async (e: ChangeEvent<HTMLInputElement>) => {
+                  const files = e.target.files;
+                  if (!files) return;
+
+                  const createPromises = Object.values(files).map(
+                    async (file) => {
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      formData.append("document", documentId);
+                      return await pbClient
+                        .collection(Collections.Attachments)
+                        .create<AttachmentsResponse>(formData);
+                    }
+                  );
+                  const results = await Promise.allSettled<AttachmentsResponse>(
+                    createPromises
+                  );
+
+                  const fulfilledValues = results
+                    .filter(isFulfilled)
+                    .map((p) => p.value);
+                  const rejectedReasons = results
+                    .filter(isRejected)
+                    .map((p) => p.reason);
+
+                  if (rejectedReasons.length) {
+                    console.error(rejectedReasons);
+                  }
+
+                  setCurAttachments((curAttachments) => [
+                    ...curAttachments,
+                    ...fulfilledValues,
+                  ]);
+
+                  onChange({
+                    target: { value: curAttachments, name },
+                  });
+                }}
+              />
+            </>
+          )}
+        />
+        <Controller
           name="richText"
           control={control}
           render={({ field: { name, onChange, value } }) => (
@@ -208,19 +271,33 @@ function Document({
         />
         <input type="submit" />
       </form>
-      {curFile && (
+      <ol>
+        {curAttachments.map((attachment) => (
+          <li key={attachment.id}>
+            {attachment.file}{" "}
+            <button
+              onClick={() => {
+                pbClient
+                  .collection(Collections.Attachments)
+                  .delete(attachment.id);
+
+                setCurAttachments((curAttachments) =>
+                  curAttachments.filter(
+                    (curAttachment) => curAttachment.id != attachment.id
+                  )
+                );
+              }}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ol>
+      {thumbnail && (
         <Image
-          key={"File Thumbnail key"}
-          src={URL.createObjectURL(curFile)}
-          alt="Uploaded image thumbnail"
-          width={500}
-          height={500}
-        />
-      )}
-      {!curFile && thumbnailUrl && (
-        <Image
-          key={"File Thumbnail key"}
-          src={thumbnailUrl}
+          src={pbClient.buildUrl(
+            `api/files/documents/${documentId}/${thumbnail}`
+          )}
           alt="Uploaded image thumbnail"
           width={500}
           height={500}
@@ -232,10 +309,10 @@ function Document({
 
 export const getServerSideProps = async ({
   req,
-  res,
   query,
+  resolvedUrl,
 }: GetServerSidePropsContext) => {
-  const { pbServer } = await usePBServer(req, res);
+  const { pbServer } = await getPBServer(req, resolvedUrl);
   const fullDocId = query.fullDocId as string;
 
   const fullDocument = await pbServer
@@ -244,12 +321,19 @@ export const getServerSideProps = async ({
       expand: "document",
     });
 
+  const attachments = await pbServer
+    .collection(Collections.Attachments)
+    .getFullList<AttachmentsResponse>(200, {
+      filter: `document = "${fullDocument.document}"`,
+    });
+
   return {
     props: {
       data: SuperJSON.stringify({
         fullDocument,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
-      }),
+        attachments,
+      } as DocumentData),
     },
   };
 };
