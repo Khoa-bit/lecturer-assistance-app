@@ -6,14 +6,14 @@ import ErrorPage from "next/error";
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { EventDocumentsResponse } from "raito";
+import type { EventDocumentsCustomResponse } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface EventsData {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  events: ListResult<EventDocumentsResponse<any>>;
+  events: ListResult<EventDocumentsCustomResponse>;
 }
 
 function Events({
@@ -26,7 +26,7 @@ function Events({
   const dataParse = SuperJSON.parse<EventsData>(data);
 
   const eventsList = dataParse.events.items.map((eventDoc) => (
-    <li key={eventDoc.id}>{JSON.stringify(eventDoc.expand?.document.name)}</li>
+    <li key={eventDoc.id}>{JSON.stringify(eventDoc.expand.documents_name)}</li>
   )) ?? <p>{"Error when fetching event documents :<"}</p>;
 
   return (
@@ -45,12 +45,11 @@ function Events({
 
 export const getServerSideProps = async ({
   req,
-  res,
+  resolvedUrl,
 }: GetServerSidePropsContext) => {
-  const { pbServer, user } = await getPBServer(req, res);
+  const { pbServer } = await getPBServer(req, resolvedUrl);
 
-  if (!user) return { props: {} };
-  const events = await pbServer.apiGetList<EventDocumentsResponse>(
+  const events = await pbServer.apiGetList<EventDocumentsCustomResponse>(
     "/api/user/eventDocuments"
   );
 

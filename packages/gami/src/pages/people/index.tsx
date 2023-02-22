@@ -5,13 +5,13 @@ import type {
 import ErrorPage from "next/error";
 import Head from "next/head";
 import type { ListResult } from "pocketbase";
-import type { ContactsResponse } from "raito";
+import type { ContactsCustomResponse } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface PeopleData {
-  contacts: ListResult<ContactsResponse>;
+  contacts: ListResult<ContactsCustomResponse>;
 }
 
 function People({
@@ -25,7 +25,7 @@ function People({
 
   const contactsList = dataParse.contacts.items.map((contact) => (
     <li key={contact.id}>
-      {`${contact.name} - ${contact.expand.document_name_list}`}
+      {`${contact.name} - ${contact.expand.documents_name_list}`}
     </li>
   )) ?? <p>{"Error when fetching full documents :<"}</p>;
 
@@ -42,11 +42,11 @@ function People({
 
 export const getServerSideProps = async ({
   req,
-  res,
+  resolvedUrl,
 }: GetServerSidePropsContext) => {
-  const { pbServer } = await getPBServer(req, res);
+  const { pbServer } = await getPBServer(req, resolvedUrl);
 
-  const contacts = await pbServer.apiGetList<ContactsResponse>(
+  const contacts = await pbServer.apiGetList<ContactsCustomResponse>(
     "/api/user/contacts"
   );
 
