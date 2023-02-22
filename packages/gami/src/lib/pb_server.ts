@@ -1,36 +1,41 @@
-import type { IncomingMessage, ServerResponse } from "http";
+import type { IncomingMessage } from "http";
 import type { UsersResponse } from "raito";
-import { Collections } from "raito";
+import { env } from "src/env/server.mjs";
 import type { PBServer } from "../global/pbServerGlobal";
 import { pbServer } from "../global/pbServerGlobal";
-import { getRandomInt } from "./math_utils";
 
 export async function getPBServer(
   req: IncomingMessage,
-  res: ServerResponse
+  resolvedUrl: string
 ): Promise<{
   pbServer: PBServer;
   user: UsersResponse | undefined;
 }> {
+  // Information Logging if a new client is initialized
+  if (env.DEBUG_MODE === "true") {
+    console.log(
+      `debug - Initializing new PocketBase Server instance... ${resolvedUrl}`
+    );
+  }
+
   // load the store data from the request cookie string
-  // const pbServer = new PocketBase("http://localhost:8090");
   pbServer.authStore.loadFromCookie(req?.headers?.cookie || "");
 
-  // Default token expires in 14 days
-  // Approximate 24 clicks/day * 14 days = 336 (clicks/14 days)
-  if (pbServer.authStore.isValid && getRandomInt(336) == 0) {
-    // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
-    // clear the auth store on failed refresh
-    await pbServer
-      .collection(Collections.Users)
-      .authRefresh<UsersResponse>()
-      .catch(() => pbServer.authStore.clear());
-  }
+  // // Default token expires in 14 days
+  // // Approximate 24 clicks/day * 14 days = 336 (clicks/14 days)
+  // if (pbServer.authStore.isValid && getRandomInt(336) == 0) {
+  //   // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
+  //   // clear the auth store on failed refresh
+  //   await pbServer
+  //     .collection(Collections.Users)
+  //     .authRefresh<UsersResponse>()
+  //     .catch(() => pbServer.authStore.clear());
+  // }
 
   const user = pbServer.authStore.model as unknown as UsersResponse | undefined;
 
-  // send back the default 'pb_auth' cookie to the client with the latest store state
-  res?.setHeader("set-cookie", pbServer.authStore.exportToCookie());
+  // // send back the default 'pb_auth' cookie to the client with the latest store state
+  // res?.setHeader("set-cookie", pbServer.authStore.exportToCookie());
 
   return { pbServer, user };
 }

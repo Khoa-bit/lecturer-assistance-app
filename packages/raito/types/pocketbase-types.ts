@@ -105,6 +105,8 @@ export type DocumentsRecord<TrichText = unknown> = {
 	priority: DocumentsPriorityOptions
 	status: DocumentsStatusOptions
 	richText?: null | TrichText
+	diffHash?: string
+	owner: RecordIdString
 }
 
 export type EventDocumentsRecord = {
@@ -146,7 +148,6 @@ export enum ParticipantsPermissionOptions {
 }
 export type ParticipantsRecord = {
 	permission: ParticipantsPermissionOptions
-	owner?: boolean
 	role?: string
 	note?: string
 	document: RecordIdString
@@ -193,7 +194,7 @@ export type ClassesResponse<Texpand = unknown> = ClassesRecord & BaseSystemField
 export type CourseTemplatesResponse = CourseTemplatesRecord & BaseSystemFields
 export type CoursesResponse<Texpand = unknown> = CoursesRecord & BaseSystemFields<Texpand>
 export type DepartmentsResponse<Texpand = unknown> = DepartmentsRecord & BaseSystemFields<Texpand>
-export type DocumentsResponse<TrichText = unknown> = DocumentsRecord<TrichText> & BaseSystemFields
+export type DocumentsResponse<TrichText = unknown, Texpand = unknown> = DocumentsRecord<TrichText> & BaseSystemFields<Texpand>
 export type EventDocumentsResponse<Texpand = unknown> = EventDocumentsRecord & BaseSystemFields<Texpand>
 export type FullDocumentsResponse<Texpand = unknown> = FullDocumentsRecord & BaseSystemFields<Texpand>
 export type LecturersResponse<Texpand = unknown> = LecturersRecord & BaseSystemFields<Texpand>
