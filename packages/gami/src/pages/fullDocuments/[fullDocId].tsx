@@ -227,7 +227,9 @@ function Document({
                       formData.append("document", documentId);
                       return await pbClient
                         .collection(Collections.Attachments)
-                        .create<AttachmentsResponse>(formData);
+                        .create<AttachmentsResponse>(formData, {
+                          $autoCancel: false,
+                        });
                     }
                   );
                   const results = await Promise.allSettled<AttachmentsResponse>(

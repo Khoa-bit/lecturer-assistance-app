@@ -45,9 +45,9 @@ function AdviseClasses({
 
 export const getServerSideProps = async ({
   req,
-  res,
+  resolvedUrl,
 }: GetServerSidePropsContext) => {
-  const { pbServer } = await getPBServer(req, res);
+  const { pbServer } = await getPBServer(req, resolvedUrl);
   const adviseClasses = await pbServer.apiGetList<AdvisorsResponse>(
     "/api/user/classes"
   );
