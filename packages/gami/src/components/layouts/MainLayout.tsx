@@ -10,7 +10,7 @@ export default function MainLayout({ children }: Props) {
       <aside>
         <nav>
           <ol className="flex gap-2">
-            <Link className="text-blue-700 underline" href={"/events"}>
+            <Link className="text-blue-700 underline" href={"/eventDocuments"}>
               Events
             </Link>
             <Link className="text-blue-700 underline" href={"/fullDocuments"}>

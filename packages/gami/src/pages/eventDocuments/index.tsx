@@ -12,11 +12,10 @@ import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface EventsData {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   events: ListResult<EventDocumentsCustomResponse>;
 }
 
-function Events({
+function EventDocuments({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   if (!data) {
@@ -26,7 +25,11 @@ function Events({
   const dataParse = SuperJSON.parse<EventsData>(data);
 
   const eventsList = dataParse.events.items.map((eventDoc) => (
-    <li key={eventDoc.id}>{JSON.stringify(eventDoc.expand.documents_name)}</li>
+    <li key={eventDoc.id}>
+      <Link href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}>
+        {JSON.stringify(eventDoc.expand.documents_name)}
+      </Link>
+    </li>
   )) ?? <p>{"Error when fetching event documents :<"}</p>;
 
   return (
@@ -35,7 +38,7 @@ function Events({
         <title>Events</title>
       </Head>
       <h1>Events</h1>
-      <Link className="text-blue-700 underline" href="/events/new">
+      <Link className="text-blue-700 underline" href="/eventDocuments/new">
         New event
       </Link>
       <ol>{eventsList}</ol>
@@ -60,8 +63,8 @@ export const getServerSideProps = async ({
   };
 };
 
-Events.getLayout = function getLayout(page: React.ReactElement) {
+EventDocuments.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;
 };
 
-export default Events;
+export default EventDocuments;

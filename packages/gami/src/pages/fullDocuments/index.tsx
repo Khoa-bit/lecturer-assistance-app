@@ -12,7 +12,6 @@ import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface FullDocumentsData {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fullDocuments: ListResult<FullDocumentsCustomResponse>;
 }
 

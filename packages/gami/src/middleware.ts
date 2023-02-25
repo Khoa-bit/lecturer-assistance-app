@@ -4,9 +4,12 @@ import { NextResponse } from "next/server";
 import type {
   DocumentsRecord,
   DocumentsResponse,
+  EventDocumentsRecord,
+  EventDocumentsResponse,
+  FullDocumentsRecord,
   FullDocumentsResponse,
 } from "raito";
-import { Collections } from "raito";
+import { Collections, EventDocumentsRecurringOptions } from "raito";
 import { _middlewarePBClient } from "./lib/pb_client";
 
 // This function can be marked `async` if using `await` inside
@@ -37,9 +40,30 @@ export async function middleware(request: NextRequest) {
       .create<FullDocumentsResponse>({
         document: baseDocument.id,
         category: "Draft",
-      });
+      } as FullDocumentsRecord);
 
     url.pathname = `/fullDocuments/${fullDocument.id}`;
+    console.log(`Being redirect to ${url}`);
+
+    return NextResponse.redirect(url);
+  } else if (user && request.nextUrl.pathname === "/eventDocuments/new") {
+    const baseDocument = await pbClient
+      .collection(Collections.Documents)
+      .create<DocumentsResponse>({
+        name: "Untitled",
+        priority: "Medium",
+        status: "Todo",
+        owner: user.person,
+      } as DocumentsRecord);
+
+    const eventDocument = await pbClient
+      .collection(Collections.EventDocuments)
+      .create<EventDocumentsResponse>({
+        document: baseDocument.id,
+        recurring: EventDocumentsRecurringOptions.Once,
+      } as EventDocumentsRecord);
+
+    url.pathname = `/eventDocuments/${eventDocument.id}`;
     console.log(`Being redirect to ${url}`);
 
     return NextResponse.redirect(url);
