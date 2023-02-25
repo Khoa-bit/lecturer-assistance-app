@@ -61,7 +61,7 @@ func main() {
 		)
 
 		subGroup.GET("/eventDocuments", func(c echo.Context) error {
-			return handlers.GetEvents(app, c)
+			return handlers.GetEventDocuments(app, c)
 		})
 
 		subGroup.GET("/fullDocuments", func(c echo.Context) error {

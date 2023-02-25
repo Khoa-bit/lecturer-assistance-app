@@ -10,7 +10,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 )
 
-func GetEvents(app *pocketbase.PocketBase, c echo.Context) error {
+func GetEventDocuments(app *pocketbase.PocketBase, c echo.Context) error {
 	authRecord, err := auth.GetUser(app, c)
 	if err != nil {
 		return err
