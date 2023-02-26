@@ -27,7 +27,11 @@ import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import MainLayout from "src/components/layouts/MainLayout";
 import TipTap from "src/components/wysiwyg/TipTap";
-import { debounce } from "src/lib/input_handling";
+import {
+  dateToISOLikeButLocalOrUndefined,
+  dateToISOOrUndefined,
+  debounce,
+} from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
@@ -71,22 +75,8 @@ function EventDocument({
         fullDocument: eventDocument.fullDocument,
         attachments: undefined,
         owner: undefined,
-        startTime: new Date(
-          new Date(eventDocument.startTime ?? "").valueOf() -
-            new Date(eventDocument.startTime ?? "").getTimezoneOffset() *
-              60 *
-              1000
-        )
-          .toISOString()
-          .slice(0, 19),
-        endTime: new Date(
-          new Date(eventDocument.endTime ?? "").valueOf() -
-            new Date(eventDocument.endTime ?? "").getTimezoneOffset() *
-              60 *
-              1000
-        )
-          .toISOString()
-          .slice(0, 19),
+        startTime: dateToISOLikeButLocalOrUndefined(eventDocument.startTime),
+        endTime: dateToISOLikeButLocalOrUndefined(eventDocument.endTime),
         recurring: eventDocument.recurring,
       },
     });
@@ -118,8 +108,8 @@ function EventDocument({
           .collection(Collections.EventDocuments)
           .update<EventDocumentsResponse>(eventDocumentId, {
             document: inputData.document,
-            startTime: new Date(inputData.startTime ?? "").toJSON(),
-            endTime: new Date(inputData.endTime ?? "").toJSON(),
+            startTime: dateToISOOrUndefined(inputData.startTime),
+            endTime: dateToISOOrUndefined(inputData.endTime),
             recurring: inputData.recurring,
             fullDocument: inputData.fullDocument,
           } as EventDocumentsRecord);
@@ -198,7 +188,12 @@ function EventDocument({
   }, [debouncedSave]);
 
   useEffect(() => {
+    let isFirst = true;
     const subscription = watch(() => {
+      if (isFirst) {
+        isFirst = false;
+        return;
+      }
       setIsSaved(false);
       debouncedSave();
     });

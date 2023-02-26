@@ -5,13 +5,17 @@ import type {
 } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
+import type { ListResult } from "pocketbase";
 import type {
   AttachmentsResponse,
   DocumentsRecord,
   DocumentsResponse,
+  EventDocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
 } from "raito";
+import { EventDocumentsRecurringOptions } from "raito";
 import {
   Collections,
   DocumentsPriorityOptions,
@@ -30,12 +34,14 @@ import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface DocumentData {
-  fullDocument: FullDocumentsResponse<FullDocumentExpand>;
-  pbAuthCookie: string;
+  fullDocument: FullDocumentsResponse<DocumentExpand>;
   attachments: AttachmentsResponse[];
+  upcomingEventDocuments: ListResult<EventDocumentsResponse<DocumentExpand>>;
+  pastEventDocuments: ListResult<EventDocumentsResponse<DocumentExpand>>;
+  pbAuthCookie: string;
 }
 
-interface FullDocumentExpand {
+interface DocumentExpand {
   document: DocumentsResponse;
 }
 
@@ -53,12 +59,14 @@ function Document({
   const baseDocument = dataParse.fullDocument.expand?.document;
   const fullDocumentId = fullDocument.id;
   const documentId = fullDocument.document;
+  const upcomingEventDocuments = dataParse.upcomingEventDocuments;
+  const pastEventDocuments = dataParse.pastEventDocuments;
 
   const { register, control, handleSubmit, watch, setValue } =
     useForm<FullDocumentInput>({
       defaultValues: {
         name: baseDocument?.name,
-        // thumbnail: baseDocument?.thumbnail,
+        thumbnail: undefined,
         category: fullDocument.category,
         priority: baseDocument?.priority,
         status: baseDocument?.status,
@@ -152,6 +160,30 @@ function Document({
         <title>Full Document</title>
       </Head>
       <h1>Full Document</h1>
+      <p>Upcoming</p>
+      <ol>
+        {upcomingEventDocuments.items.map((eventDocument) => (
+          <li key={eventDocument.id}>
+            <Link
+              href={`/eventDocuments/${encodeURIComponent(eventDocument.id)}`}
+            >
+              {`${eventDocument.expand?.document.status} - ${eventDocument.expand?.document.name} - ${eventDocument.startTime} - ${eventDocument.endTime} - ${eventDocument.recurring}`}
+            </Link>
+          </li>
+        ))}
+      </ol>
+      <p>Past</p>
+      <ol>
+        {pastEventDocuments.items.map((eventDocument) => (
+          <li key={eventDocument.id}>
+            <Link
+              href={`/eventDocuments/${encodeURIComponent(eventDocument.id)}`}
+            >
+              {`${eventDocument.expand?.document.status} - ${eventDocument.expand?.document.name} - ${eventDocument.startTime} - ${eventDocument.endTime} - ${eventDocument.recurring}`}
+            </Link>
+          </li>
+        ))}
+      </ol>
       <form ref={formRef} onSubmit={handleSubmit(onSubmit)}>
         <input {...register("name", { required: true })} />
         <Controller
@@ -329,12 +361,32 @@ export const getServerSideProps = async ({
       filter: `document = "${fullDocument.document}"`,
     });
 
+  const nowISO = new Date().toISOString().replace("T", " ");
+
+  const upcomingEventDocuments = await pbServer
+    .collection(Collections.EventDocuments)
+    .getList<EventDocumentsResponse<DocumentExpand>>(undefined, undefined, {
+      filter: `fullDocument = "${fullDocId}" && (startTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
+      expand: "document",
+      sort: "startTime",
+    });
+
+  const pastEventDocuments = await pbServer
+    .collection(Collections.EventDocuments)
+    .getList<EventDocumentsResponse<DocumentExpand>>(undefined, undefined, {
+      filter: `fullDocument = "${fullDocId}" && (startTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
+      expand: "document",
+      sort: "-startTime",
+    });
+
   return {
     props: {
       data: SuperJSON.stringify({
         fullDocument,
-        pbAuthCookie: pbServer.authStore.exportToCookie(),
         attachments,
+        upcomingEventDocuments,
+        pastEventDocuments,
+        pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as DocumentData),
     },
   };
