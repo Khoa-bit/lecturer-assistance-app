@@ -31,3 +31,34 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
     }
   };
 }
+
+export function dateToISOLikeButLocalOrUndefined(
+  dateTimeStr: string | undefined
+): string | undefined {
+  if (dateTimeStr == undefined || dateTimeStr.length == 0) return undefined;
+  try {
+    return dateToISOLikeButLocal(new Date(dateTimeStr));
+  } catch (_) {
+    return undefined;
+  }
+}
+
+export function dateToISOLikeButLocal(dateTime: Date): string {
+  const offsetMs = dateTime.getTimezoneOffset() * 60 * 1000;
+  const msLocal = dateTime.getTime() - offsetMs;
+  const dateLocal = new Date(msLocal);
+  const iso = dateLocal.toISOString();
+  const isoLocal = iso.slice(0, 19);
+  return isoLocal;
+}
+
+export function dateToISOOrUndefined(
+  dateTimeStr: string | undefined
+): string | undefined {
+  if (dateTimeStr == undefined || dateTimeStr.length == 0) return undefined;
+  try {
+    return new Date(dateTimeStr).toISOString();
+  } catch (_) {
+    return undefined;
+  }
+}

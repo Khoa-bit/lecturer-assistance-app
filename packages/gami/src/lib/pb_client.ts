@@ -12,7 +12,7 @@ export function usePBClient(pbAuthCookie: string): {
   // Information Logging if a new client is initialized
   if (env.NEXT_PUBLIC_DEBUG_MODE === "true") {
     console.log(
-      `debug - Initializing new PocketBase Client instance... ${router.pathname}`
+      `debug - Initializing new PocketBase Client instance... ${router.asPath}`
     );
   }
 
@@ -36,7 +36,7 @@ export function _middlewarePBClient(
   // Information Logging if a new client is initialized
   if (env.NEXT_PUBLIC_DEBUG_MODE === "true") {
     console.log(
-      `debug - Initializing new PocketBase Client instance... ${pathname}`
+      `debug - Initializing new PocketBase Client instance... ${pathname} (middleware)`
     );
   }
 

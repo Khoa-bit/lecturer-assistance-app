@@ -103,7 +103,7 @@ const Tiptap = ({ name, onChange, value }: TipTapProps) => {
   };
 
   return (
-    <>
+    <div>
       {editor && (
         <BubbleMenu tippyOptions={{ duration: 100 }} editor={editor}>
           <button
@@ -374,7 +374,7 @@ const Tiptap = ({ name, onChange, value }: TipTapProps) => {
       )}
 
       <EditorContent className="prose" editor={editor} />
-    </>
+    </div>
   );
 };
 

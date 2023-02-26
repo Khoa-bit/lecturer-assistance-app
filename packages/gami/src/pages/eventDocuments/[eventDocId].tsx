@@ -5,22 +5,21 @@ import type {
 } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/router";
 import type { ListResult } from "pocketbase";
 import type {
   AttachmentsResponse,
   DocumentsRecord,
   DocumentsResponse,
+  EventDocumentsRecord,
   EventDocumentsResponse,
-  FullDocumentsRecord,
-  FullDocumentsResponse,
+  FullDocumentsCustomResponse,
 } from "raito";
-import { EventDocumentsRecurringOptions } from "raito";
 import {
   Collections,
   DocumentsPriorityOptions,
   DocumentsStatusOptions,
-  FullDocumentsCategoryOptions,
+  EventDocumentsRecurringOptions,
 } from "raito";
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,16 +27,19 @@ import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import MainLayout from "src/components/layouts/MainLayout";
 import TipTap from "src/components/wysiwyg/TipTap";
-import { debounce } from "src/lib/input_handling";
+import {
+  dateToISOLikeButLocalOrUndefined,
+  dateToISOOrUndefined,
+  debounce,
+} from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface DocumentData {
-  fullDocument: FullDocumentsResponse<DocumentExpand>;
+  eventDocument: EventDocumentsResponse<DocumentExpand>;
+  fullDocuments: ListResult<FullDocumentsCustomResponse>;
   attachments: AttachmentsResponse[];
-  upcomingEventDocuments: ListResult<EventDocumentsResponse<DocumentExpand>>;
-  pastEventDocuments: ListResult<EventDocumentsResponse<DocumentExpand>>;
   pbAuthCookie: string;
 }
 
@@ -45,34 +47,37 @@ interface DocumentExpand {
   document: DocumentsResponse;
 }
 
-interface FullDocumentInput extends DocumentsRecord, FullDocumentsRecord {
-  id: string;
+interface EventDocumentInput extends DocumentsRecord, EventDocumentsRecord {
   attachments: AttachmentsResponse[];
 }
 
-function Document({
+function EventDocument({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
-  const fullDocument = dataParse.fullDocument;
-  const baseDocument = dataParse.fullDocument.expand?.document;
-  const fullDocumentId = fullDocument.id;
-  const documentId = fullDocument.document;
-  const upcomingEventDocuments = dataParse.upcomingEventDocuments;
-  const pastEventDocuments = dataParse.pastEventDocuments;
+  const eventDocument = dataParse.eventDocument;
+  const fullDocuments = dataParse.fullDocuments;
+  const baseDocument = dataParse.eventDocument.expand?.document;
+  const eventDocumentId = eventDocument.id;
+  const documentId = eventDocument.document;
 
-  const { register, control, handleSubmit, watch, setValue } =
-    useForm<FullDocumentInput>({
+  const { register, control, handleSubmit, watch, setValue, trigger } =
+    useForm<EventDocumentInput>({
       defaultValues: {
         name: baseDocument?.name,
         thumbnail: undefined,
-        category: fullDocument.category,
         priority: baseDocument?.priority,
         status: baseDocument?.status,
         richText: baseDocument?.richText as object,
-        document: fullDocument.document,
+        document: eventDocument.document,
         diffHash: baseDocument?.diffHash,
+        fullDocument: eventDocument.fullDocument,
+        attachments: undefined,
+        owner: undefined,
+        startTime: dateToISOLikeButLocalOrUndefined(eventDocument.startTime),
+        endTime: dateToISOLikeButLocalOrUndefined(eventDocument.endTime),
+        recurring: eventDocument.recurring,
       },
     });
   const [thumbnail, setThumbnail] = useState<string | undefined>(
@@ -84,8 +89,9 @@ function Document({
 
   const { pbClient } = usePBClient(dataParse.pbAuthCookie);
 
+  const [isSaved, setIsSaved] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
-  const onSubmit: SubmitHandler<FullDocumentInput> = useCallback(
+  const onSubmit: SubmitHandler<EventDocumentInput> = useCallback(
     (inputData) => {
       const prevDiffHash = inputData.diffHash;
       const newDiffHash = MD5(
@@ -93,32 +99,59 @@ function Document({
           ...inputData,
           thumbnail: undefined,
           diffHash: undefined,
-        } as FullDocumentInput)
+        } as EventDocumentInput)
       ).toString();
 
       if (prevDiffHash != newDiffHash) {
         setValue("diffHash", newDiffHash);
         pbClient
-          .collection(Collections.FullDocuments)
-          .update<FullDocumentsResponse>(fullDocumentId, {
-            category: inputData.category,
+          .collection(Collections.EventDocuments)
+          .update<EventDocumentsResponse>(eventDocumentId, {
             document: inputData.document,
-          } as FullDocumentsRecord);
+            startTime: dateToISOOrUndefined(inputData.startTime),
+            endTime: dateToISOOrUndefined(inputData.endTime),
+            recurring: inputData.recurring,
+            fullDocument: inputData.fullDocument,
+          } as EventDocumentsRecord);
 
         pbClient
           .collection(Collections.Documents)
           .update<DocumentsResponse>(documentId, {
             name: inputData.name,
-            // thumbnail: inputData.thumbnail,
+            thumbnail: undefined,
             priority: inputData.priority,
             status: inputData.status,
             richText: inputData.richText,
             diffHash: newDiffHash,
           } as DocumentsRecord);
       }
+      setIsSaved(true);
     },
-    [documentId, fullDocumentId, pbClient, setValue]
+    [documentId, eventDocumentId, pbClient, setValue]
   );
+
+  const router = useRouter();
+  useEffect(() => {
+    const warningText =
+      "Do you want to leave the site? Changes you made is being saved...";
+    const handleWindowClose = (e: Event) => {
+      if (isSaved) return;
+      e.preventDefault();
+      return warningText;
+    };
+    const handleBrowseAway = () => {
+      if (isSaved) return;
+      if (window.confirm(warningText)) return;
+      router.events.emit("routeChangeError");
+      throw "routeChange aborted.";
+    };
+    window.addEventListener("beforeunload", handleWindowClose);
+    router.events.on("routeChangeStart", handleBrowseAway);
+    return () => {
+      window.removeEventListener("beforeunload", handleWindowClose);
+      router.events.off("routeChangeStart", handleBrowseAway);
+    };
+  }, [isSaved, router.events]);
 
   const isRejected = (
     input: PromiseSettledResult<unknown>
@@ -129,8 +162,14 @@ function Document({
   ): input is PromiseFulfilledResult<T> => input.status === "fulfilled";
 
   const submitForm = useCallback(
-    () => handleSubmit(onSubmit)(),
-    [handleSubmit, onSubmit]
+    () =>
+      // Validate the form before manual submitting
+      trigger(undefined, { shouldFocus: false }).then((isValid) => {
+        if (isValid) {
+          handleSubmit(onSubmit)();
+        }
+      }),
+    [handleSubmit, onSubmit, trigger]
   );
   const debouncedSave = debounce(() => submitForm(), 1000);
 
@@ -148,42 +187,25 @@ function Document({
     return () => document.removeEventListener("keydown", keyDownEvent);
   }, [debouncedSave]);
 
-  // Callback version of watch.  It's your responsibility to unsubscribe when done.
   useEffect(() => {
-    const subscription = watch(() => debouncedSave());
+    let isFirst = true;
+    const subscription = watch(() => {
+      if (isFirst) {
+        isFirst = false;
+        return;
+      }
+      setIsSaved(false);
+      debouncedSave();
+    });
     return () => subscription.unsubscribe();
   }, [watch, debouncedSave]);
 
   return (
     <>
       <Head>
-        <title>Full Document</title>
+        <title>Event Document</title>
       </Head>
-      <h1>Full Document</h1>
-      <p>Upcoming</p>
-      <ol>
-        {upcomingEventDocuments.items.map((eventDocument) => (
-          <li key={eventDocument.id}>
-            <Link
-              href={`/eventDocuments/${encodeURIComponent(eventDocument.id)}`}
-            >
-              {`${eventDocument.expand?.document.status} - ${eventDocument.expand?.document.name} - ${eventDocument.startTime} - ${eventDocument.endTime} - ${eventDocument.recurring}`}
-            </Link>
-          </li>
-        ))}
-      </ol>
-      <p>Past</p>
-      <ol>
-        {pastEventDocuments.items.map((eventDocument) => (
-          <li key={eventDocument.id}>
-            <Link
-              href={`/eventDocuments/${encodeURIComponent(eventDocument.id)}`}
-            >
-              {`${eventDocument.expand?.document.status} - ${eventDocument.expand?.document.name} - ${eventDocument.startTime} - ${eventDocument.endTime} - ${eventDocument.recurring}`}
-            </Link>
-          </li>
-        ))}
-      </ol>
+      <h1>Event Document</h1>
       <form ref={formRef} onSubmit={handleSubmit(onSubmit)}>
         <input {...register("name", { required: true })} />
         <Controller
@@ -216,13 +238,6 @@ function Document({
             </>
           )}
         />
-        <select {...register("category")}>
-          {Object.entries(FullDocumentsCategoryOptions).map(([stringValue]) => (
-            <option key={stringValue} value={stringValue}>
-              {stringValue}
-            </option>
-          ))}
-        </select>
         <select {...register("priority", { required: true })}>
           {Object.entries(DocumentsPriorityOptions).map(([stringValue]) => (
             <option key={stringValue} value={stringValue}>
@@ -234,6 +249,32 @@ function Document({
           {Object.entries(DocumentsStatusOptions).map(([stringValue]) => (
             <option key={stringValue} value={stringValue}>
               {stringValue}
+            </option>
+          ))}
+        </select>
+        <input
+          type="datetime-local"
+          {...register("startTime", {
+            required: true,
+          })}
+        />
+        <input type="datetime-local" {...register("endTime")} />
+        <select {...register("recurring")}>
+          {Object.entries(EventDocumentsRecurringOptions).map(
+            ([stringValue]) => (
+              <option key={stringValue} value={stringValue}>
+                {stringValue}
+              </option>
+            )
+          )}
+        </select>
+        <select {...register("fullDocument")}>
+          <option key="None" value="">
+            None
+          </option>
+          {fullDocuments.items.map((fullDoc) => (
+            <option key={fullDoc.id} value={fullDoc.id}>
+              {fullDoc.expand?.documents_name}
             </option>
           ))}
         </select>
@@ -347,53 +388,38 @@ export const getServerSideProps = async ({
   resolvedUrl,
 }: GetServerSidePropsContext) => {
   const { pbServer } = await getPBServer(req, resolvedUrl);
-  const fullDocId = query.fullDocId as string;
+  const eventDocId = query.eventDocId as string;
 
-  const fullDocument = await pbServer
-    .collection(Collections.FullDocuments)
-    .getOne<FullDocumentsResponse>(fullDocId, {
+  const eventDocument = await pbServer
+    .collection(Collections.EventDocuments)
+    .getOne<EventDocumentsResponse>(eventDocId, {
       expand: "document",
     });
+
+  const fullDocuments = await pbServer.apiGetList<FullDocumentsCustomResponse>(
+    "/api/user/fullDocuments"
+  );
 
   const attachments = await pbServer
     .collection(Collections.Attachments)
     .getFullList<AttachmentsResponse>(200, {
-      filter: `document = "${fullDocument.document}"`,
-    });
-
-  const nowISO = new Date().toISOString().replace("T", " ");
-
-  const upcomingEventDocuments = await pbServer
-    .collection(Collections.EventDocuments)
-    .getList<EventDocumentsResponse<DocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument = "${fullDocId}" && (startTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
-      expand: "document",
-      sort: "startTime",
-    });
-
-  const pastEventDocuments = await pbServer
-    .collection(Collections.EventDocuments)
-    .getList<EventDocumentsResponse<DocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument = "${fullDocId}" && (startTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
-      expand: "document",
-      sort: "-startTime",
+      filter: `document = "${eventDocument.document}"`,
     });
 
   return {
     props: {
       data: SuperJSON.stringify({
-        fullDocument,
+        eventDocument,
         attachments,
-        upcomingEventDocuments,
-        pastEventDocuments,
+        fullDocuments,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as DocumentData),
     },
   };
 };
 
-Document.getLayout = function getLayout(page: React.ReactElement) {
+EventDocument.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;
 };
 
-export default Document;
+export default EventDocument;

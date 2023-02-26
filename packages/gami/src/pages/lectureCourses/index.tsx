@@ -43,9 +43,9 @@ function LectureCourses({
 
 export const getServerSideProps = async ({
   req,
-  res,
+  resolvedUrl,
 }: GetServerSidePropsContext) => {
-  const { pbServer } = await getPBServer(req, res);
+  const { pbServer } = await getPBServer(req, resolvedUrl);
 
   const lectureCourses = await pbServer.apiGetList<CoursesResponse>(
     "/api/user/courses"

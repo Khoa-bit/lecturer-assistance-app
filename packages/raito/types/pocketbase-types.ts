@@ -109,12 +109,19 @@ export type DocumentsRecord<TrichText = unknown> = {
 	owner: RecordIdString
 }
 
+export enum EventDocumentsRecurringOptions {
+	"Once" = "Once",
+	"Daily" = "Daily",
+	"Weekly" = "Weekly",
+	"Monthly" = "Monthly",
+	"Annually" = "Annually",
+}
 export type EventDocumentsRecord = {
 	document: RecordIdString
 	fullDocument?: RecordIdString
-	startTime: IsoDateString
+	startTime?: IsoDateString
 	endTime?: IsoDateString
-	recurring?: boolean
+	recurring: EventDocumentsRecurringOptions
 }
 
 export enum FullDocumentsCategoryOptions {

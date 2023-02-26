@@ -6,5 +6,6 @@
       "name": "pb_data_db",
       "database": "${workspaceFolder:lecturer-assistance-app}/packages/raito/pb_data/data.db"
     }
-  ]
+  ],
+  "editor.formatOnSave": true
 }
