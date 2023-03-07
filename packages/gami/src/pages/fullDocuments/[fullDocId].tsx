@@ -82,7 +82,7 @@ function Document({
     dataParse.attachments
   );
 
-  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
+  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
 
   const formRef = useRef<HTMLFormElement>(null);
   const onSubmit: SubmitHandler<FullDocumentInput> = useCallback(
@@ -153,6 +153,31 @@ function Document({
     const subscription = watch(() => debouncedSave());
     return () => subscription.unsubscribe();
   }, [watch, debouncedSave]);
+
+  const [imageURL, setImageURL] = useState<string | undefined>();
+  const addImage = useCallback(async () => {
+    const url = window.prompt("URL");
+
+    if (url) {
+      const imageRes = await fetch(url);
+
+      const formData = new FormData();
+      formData.append("file", await imageRes.blob());
+      formData.append("document", "15ijp1695dlt2jd");
+
+      const newImage = await pbClient
+        .collection(Collections.Attachments)
+        .create<AttachmentsResponse>(formData, {
+          $autoCancel: false,
+        });
+
+      setImageURL(
+        pbClient.buildUrl(
+          `api/files/attachments/${newImage.id}/${newImage.file}`
+        )
+      );
+    }
+  }, [pbClient]);
 
   return (
     <>
@@ -300,6 +325,10 @@ function Document({
               name={name}
               onChange={onChange}
               value={value as { json: object }}
+              documentId={documentId}
+              pbClient={pbClient}
+              user={user}
+              setCurAttachments={setCurAttachments}
             ></TipTap>
           )}
         />
@@ -337,6 +366,8 @@ function Document({
           height={500}
         />
       )}
+      <button onClick={addImage}>Set Image</button>
+      {imageURL && <Image src={imageURL} alt="" width={500} height={500} />}
     </>
   );
 }

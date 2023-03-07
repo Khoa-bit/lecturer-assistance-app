@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 // https://stackoverflow.com/questions/24004791/what-is-the-debounce-function-in-javascript
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
@@ -61,4 +63,11 @@ export function dateToISOOrUndefined(
   } catch (_) {
     return undefined;
   }
+}
+
+export function formatDate(
+  d: string | number | Date | null | undefined,
+  dateTimeFormat: string
+) {
+  return d ? format(new Date(d), dateTimeFormat) : null;
 }

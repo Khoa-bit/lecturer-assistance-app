@@ -341,6 +341,8 @@ function EventDocument({
               name={name}
               onChange={onChange}
               value={value as { json: object }}
+              documentId={documentId}
+              pbClient={pbClient}
             ></TipTap>
           )}
         />
