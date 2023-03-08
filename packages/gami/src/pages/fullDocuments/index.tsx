@@ -2,7 +2,6 @@ import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import ErrorPage from "next/error";
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
@@ -18,10 +17,6 @@ interface FullDocumentsData {
 function FullDocuments({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  if (!data) {
-    return <ErrorPage statusCode={404} />;
-  }
-
   const dataParse = SuperJSON.parse<FullDocumentsData>(data);
 
   const FullDocumentsList = dataParse.fullDocuments.items.map((fullDoc) => (

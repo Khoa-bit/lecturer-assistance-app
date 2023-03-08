@@ -5,7 +5,7 @@ import { env } from "src/env/client.mjs";
 
 export function usePBClient(pbAuthCookie: string): {
   pbClient: PocketBase;
-  user: UsersResponse | undefined;
+  user: UsersResponse;
 } {
   const router = useRouter();
 
@@ -21,7 +21,13 @@ export function usePBClient(pbAuthCookie: string): {
   // load the store data from the request cookie string
   pbClient.authStore.loadFromCookie(pbAuthCookie);
 
+  // Must have been authenticated by middleware by now
   const user = pbClient.authStore.model as unknown as UsersResponse | undefined;
+
+  if (!user) {
+    router.push("/internalServerError");
+    throw new Error("500 - Unauthenticated user must have been redirect");
+  }
 
   return { pbClient, user };
 }

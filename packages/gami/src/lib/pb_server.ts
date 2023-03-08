@@ -9,7 +9,7 @@ export async function getPBServer(
   resolvedUrl: string
 ): Promise<{
   pbServer: PBServer;
-  user: UsersResponse | undefined;
+  user: UsersResponse;
 }> {
   // Information Logging if a new client is initialized
   if (env.DEBUG_MODE === "true") {
@@ -32,7 +32,12 @@ export async function getPBServer(
   //     .catch(() => pbServer.authStore.clear());
   // }
 
+  // Must have been authenticated by middleware by now
   const user = pbServer.authStore.model as unknown as UsersResponse | undefined;
+
+  if (!user) {
+    throw new Error("500 - Unauthenticated user must have been redirect");
+  }
 
   // // send back the default 'pb_auth' cookie to the client with the latest store state
   // res?.setHeader("set-cookie", pbServer.authStore.exportToCookie());

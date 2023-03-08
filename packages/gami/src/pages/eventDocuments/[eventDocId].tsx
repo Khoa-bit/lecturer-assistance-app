@@ -36,7 +36,7 @@ import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
-interface DocumentData {
+interface EventDocumentData {
   eventDocument: EventDocumentsResponse<DocumentExpand>;
   fullDocuments: ListResult<FullDocumentsCustomResponse>;
   attachments: AttachmentsResponse[];
@@ -54,7 +54,7 @@ interface EventDocumentInput extends DocumentsRecord, EventDocumentsRecord {
 function EventDocument({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const dataParse = SuperJSON.parse<DocumentData>(data);
+  const dataParse = SuperJSON.parse<EventDocumentData>(data);
 
   const eventDocument = dataParse.eventDocument;
   const fullDocuments = dataParse.fullDocuments;
@@ -87,7 +87,7 @@ function EventDocument({
     dataParse.attachments
   );
 
-  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
+  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
 
   const [isSaved, setIsSaved] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
@@ -97,7 +97,7 @@ function EventDocument({
       const newDiffHash = MD5(
         SuperJSON.stringify({
           ...inputData,
-          thumbnail: undefined,
+          thumbnail: undefined, // not included in hash
           diffHash: undefined,
         } as EventDocumentInput)
       ).toString();
@@ -343,6 +343,8 @@ function EventDocument({
               value={value as { json: object }}
               documentId={documentId}
               pbClient={pbClient}
+              user={user}
+              setCurAttachments={setCurAttachments}
             ></TipTap>
           )}
         />
@@ -415,7 +417,7 @@ export const getServerSideProps = async ({
         attachments,
         fullDocuments,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
-      } as DocumentData),
+      } as EventDocumentData),
     },
   };
 };

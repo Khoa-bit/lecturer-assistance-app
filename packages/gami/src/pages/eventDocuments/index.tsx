@@ -2,7 +2,6 @@ import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import ErrorPage from "next/error";
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
@@ -18,10 +17,6 @@ interface EventsData {
 function EventDocuments({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  if (!data) {
-    return <ErrorPage statusCode={404} />;
-  }
-
   const dataParse = SuperJSON.parse<EventsData>(data);
 
   const eventsList = dataParse.events.items.map((eventDoc) => (
@@ -39,7 +34,7 @@ function EventDocuments({
       </Head>
       <h1>Events</h1>
       <Link className="text-blue-700 underline" href="/eventDocuments/new">
-        New event
+        New event document
       </Link>
       <ol>{eventsList}</ol>
     </>

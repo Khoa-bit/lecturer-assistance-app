@@ -91,7 +91,7 @@ function Document({
       const newDiffHash = MD5(
         SuperJSON.stringify({
           ...inputData,
-          thumbnail: undefined,
+          thumbnail: undefined, // not included in hash
           diffHash: undefined,
         } as FullDocumentInput)
       ).toString();
@@ -109,7 +109,7 @@ function Document({
           .collection(Collections.Documents)
           .update<DocumentsResponse>(documentId, {
             name: inputData.name,
-            // thumbnail: inputData.thumbnail,
+            thumbnail: undefined,
             priority: inputData.priority,
             status: inputData.status,
             richText: inputData.richText,
@@ -185,6 +185,11 @@ function Document({
         <title>Full Document</title>
       </Head>
       <h1>Full Document</h1>
+      <p key="newEvent">
+        <Link href={`/eventDocuments/new?fullDocId=${fullDocumentId}`}>
+          New event
+        </Link>
+      </p>
       <p>Upcoming</p>
       <ol>
         {upcomingEventDocuments.items.map((eventDocument) => (
