@@ -22,7 +22,7 @@ function EventDocuments({
   const eventsList = dataParse.events.items.map((eventDoc) => (
     <li key={eventDoc.id}>
       <Link href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}>
-        {JSON.stringify(eventDoc.expand.documents_name)}
+        {JSON.stringify(eventDoc.expand.userDocument_name)}
       </Link>
     </li>
   )) ?? <p>{"Error when fetching event documents :<"}</p>;

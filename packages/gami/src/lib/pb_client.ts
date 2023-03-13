@@ -1,10 +1,13 @@
 import { useRouter } from "next/router";
 import PocketBase from "pocketbase";
 import type { UsersResponse } from "raito";
+import { useMemo } from "react";
 import { env } from "src/env/client.mjs";
+import type { PBCustom } from "src/types/pb-custom";
+import { apiGetList } from "./pb_crud";
 
 export function usePBClient(pbAuthCookie: string): {
-  pbClient: PocketBase;
+  pbClient: PBCustom;
   user: UsersResponse;
 } {
   const router = useRouter();
@@ -16,7 +19,10 @@ export function usePBClient(pbAuthCookie: string): {
     );
   }
 
-  const pbClient = new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL);
+  const pbClient = useMemo(
+    () => new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL) as PBCustom,
+    []
+  );
 
   // load the store data from the request cookie string
   pbClient.authStore.loadFromCookie(pbAuthCookie);
@@ -29,6 +35,9 @@ export function usePBClient(pbAuthCookie: string): {
     throw new Error("500 - Unauthenticated user must have been redirect");
   }
 
+  // Inject functions to PBClient object
+  pbClient.apiGetList = apiGetList;
+
   return { pbClient, user };
 }
 
@@ -36,7 +45,7 @@ export function _middlewarePBClient(
   pbAuthCookie: string,
   pathname: string
 ): {
-  pbClient: PocketBase;
+  pbClient: PBCustom;
   user: UsersResponse | undefined;
 } {
   // Information Logging if a new client is initialized
@@ -46,12 +55,15 @@ export function _middlewarePBClient(
     );
   }
 
-  const pbClient = new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL);
+  const pbClient = new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL) as PBCustom;
 
   // load the store data from the request cookie string
   pbClient.authStore.loadFromCookie(pbAuthCookie);
 
   const user = pbClient.authStore.model as unknown as UsersResponse | undefined;
+
+  // Inject functions to PBClient object
+  pbClient.apiGetList = apiGetList;
 
   return { pbClient, user };
 }

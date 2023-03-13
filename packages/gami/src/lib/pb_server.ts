@@ -1,14 +1,14 @@
 import type { IncomingMessage } from "http";
 import type { UsersResponse } from "raito";
 import { env } from "src/env/server.mjs";
-import type { PBServer } from "../global/pbServerGlobal";
+import type { PBCustom } from "src/types/pb-custom";
 import { pbServer } from "../global/pbServerGlobal";
 
 export async function getPBServer(
   req: IncomingMessage,
   resolvedUrl: string
 ): Promise<{
-  pbServer: PBServer;
+  pbServer: PBCustom;
   user: UsersResponse;
 }> {
   // Information Logging if a new client is initialized

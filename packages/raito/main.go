@@ -33,20 +33,6 @@ type Result struct {
 	Items      any `json:"items"`
 }
 
-type Datatype int
-
-const (
-	STRING Datatype = iota
-	INT    Datatype = iota
-	BOOL   Datatype = iota
-)
-
-type FieldMetaData struct {
-	Column string
-	Alias  string
-	Datatype
-}
-
 func main() {
 	app := pocketbase.New()
 
@@ -351,8 +337,12 @@ func main() {
 			return c.JSON(http.StatusOK, result)
 		})
 
-		subGroup.GET("/contacts", func(c echo.Context) error {
-			return handlers.GetContacts(app, c)
+		subGroup.GET("/relationships", func(c echo.Context) error {
+			return handlers.GetRelationships(app, c)
+		})
+
+		subGroup.GET("/newRelationshipsOptions", func(c echo.Context) error {
+			return handlers.GetNewRelationshipsOptions(app, c)
 		})
 
 		return nil

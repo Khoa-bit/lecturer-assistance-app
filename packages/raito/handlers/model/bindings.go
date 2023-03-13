@@ -30,7 +30,9 @@ func (fieldMetadataList FieldMetaDataList) AppendCollectionByNameOrId(nameOrId s
 		suffix = "_list"
 	}
 
+	// Base Model: id, updated, created
 	baseModelFields := schema.BaseModelFieldNames()
+	// Collection's Unique Fields: name, email, gender, etc.
 	collectionFields := collection.Schema.Fields()
 	newFieldMetadata := make(FieldMetaDataList, len(baseModelFields)+len(collectionFields))
 
@@ -39,7 +41,7 @@ func (fieldMetadataList FieldMetaDataList) AppendCollectionByNameOrId(nameOrId s
 	for _, field := range baseModelFields {
 		newFieldMetadata[index] = FieldMetadata{
 			Column:   fmt.Sprintf("%s.%s", alias, field),
-			Alias:    fmt.Sprintf("%s_%s%s", collection.Name, field, suffix),
+			Alias:    fmt.Sprintf("%s_%s%s", alias, field, suffix),
 			DataType: STRING,
 		}
 		index++
@@ -49,7 +51,7 @@ func (fieldMetadataList FieldMetaDataList) AppendCollectionByNameOrId(nameOrId s
 	for _, field := range collectionFields {
 		newFieldMetadata[index] = FieldMetadata{
 			Column:   fmt.Sprintf("%s.%s", alias, field.Name),
-			Alias:    fmt.Sprintf("%s_%s%s", collection.Name, field.Name, suffix),
+			Alias:    fmt.Sprintf("%s_%s%s", alias, field.Name, suffix),
 			DataType: toDataType(field.Type),
 		}
 		index++

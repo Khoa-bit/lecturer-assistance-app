@@ -1,44 +1,57 @@
 import {
   EventDocumentsResponse,
   FullDocumentsResponse,
-  PeopleResponse,
+  RelationshipsResponse,
 } from './pocketbase-types';
 
-export interface ContactsCustomResponse extends PeopleResponse {
+export interface RelationshipsCustomResponse extends RelationshipsResponse {
   expand: {
-    documents_id_list: string;
-    documents_name_list: string;
-    documents_thumbnail_list: string;
-    documents_priority_list: string;
-    documents_status_list: string;
-    documents_richText_list: string;
-    documents_diffHash_list: string;
-    documents_owner_list: string;
+    fromUser_created: string;
+    fromUser_id: string;
+    fromUser_person: string;
+    fromUser_updated: string;
+    toPerson_avatar: string;
+    toPerson_created: string;
+    toPerson_deleted: string;
+    toPerson_department: string;
+    toPerson_gender: string;
+    toPerson_id: string;
+    toPerson_name: string;
+    toPerson_personId: string;
+    toPerson_personalEmail: string;
+    toPerson_phone: string;
+    toPerson_placeOfBirth: string;
+    toPerson_title: string;
+    toPerson_updated: string;
+    toUser_created: string;
+    toUser_id: string;
+    toUser_person: string;
+    toUser_updated: string;
   };
 }
 
 export interface EventDocumentsCustomResponse extends EventDocumentsResponse {
   expand: {
-    documents_id: string;
-    documents_name: string;
-    documents_thumbnail: string;
-    documents_priority: string;
-    documents_status: string;
-    documents_richText: string;
-    documents_diffHash: string;
-    documents_owner: string;
+    userDocument_id: string;
+    userDocument_name: string;
+    userDocument_thumbnail: string;
+    userDocument_priority: string;
+    userDocument_status: string;
+    userDocument_richText: string;
+    userDocument_diffHash: string;
+    userDocument_owner: string;
   };
 }
 
 export interface FullDocumentsCustomResponse extends FullDocumentsResponse {
   expand: {
-    documents_id: string;
-    documents_name: string;
-    documents_thumbnail: string;
-    documents_priority: string;
-    documents_status: string;
-    documents_richText: string;
-    documents_diffHash: string;
-    documents_owner: string;
+    userDocument_id: string;
+    userDocument_name: string;
+    userDocument_thumbnail: string;
+    userDocument_priority: string;
+    userDocument_status: string;
+    userDocument_richText: string;
+    userDocument_diffHash: string;
+    userDocument_owner: string;
   };
 }

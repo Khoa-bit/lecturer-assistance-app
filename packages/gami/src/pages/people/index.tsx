@@ -2,40 +2,49 @@ import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import ErrorPage from "next/error";
 import Head from "next/head";
+import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { ContactsCustomResponse } from "raito";
+import type { PeopleResponse, UsersResponse } from "raito";
+import { Collections } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface PeopleData {
-  contacts: ListResult<ContactsCustomResponse>;
+  people: ListResult<PeopleResponse<UsersExpand>>;
+}
+
+interface UsersExpand {
+  "users(person)": UsersResponse;
 }
 
 function People({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  if (!data) {
-    return <ErrorPage statusCode={404} />;
-  }
-
   const dataParse = SuperJSON.parse<PeopleData>(data);
 
-  const contactsList = dataParse.contacts.items.map((contact) => (
-    <li key={contact.id}>
-      {`${contact.name} - ${contact.expand.documents_name_list}`}
+  const peopleList = dataParse.people.items.map((person) => (
+    <li key={person.id}>
+      <Link href={`/people/${encodeURIComponent(person.id)}`}>
+        {`${person.name} - ${JSON.stringify(
+          person.expand?.["users(person)"]?.email
+        )}`}
+      </Link>
     </li>
   )) ?? <p>{"Error when fetching full documents :<"}</p>;
 
   return (
     <>
       <Head>
-        <title>People relationship</title>
+        <title>People</title>
       </Head>
-      <h1>People relationship</h1>
-      <ol>{contactsList}</ol>
+      <h1>People</h1>
+      <Link className="text-blue-700 underline" href="/people/new">
+        New Person (This new button should only be visible when user cannot find
+        the people they are looking for)
+      </Link>
+      <ol>{peopleList}</ol>
     </>
   );
 }
@@ -46,13 +55,15 @@ export const getServerSideProps = async ({
 }: GetServerSidePropsContext) => {
   const { pbServer } = await getPBServer(req, resolvedUrl);
 
-  const contacts = await pbServer.apiGetList<ContactsCustomResponse>(
-    "/api/user/contacts"
-  );
+  const people = await pbServer
+    .collection(Collections.People)
+    .getList<PeopleResponse<UsersExpand>>(undefined, undefined, {
+      expand: "users(person)",
+    });
 
   return {
     props: {
-      data: SuperJSON.stringify({ contacts }),
+      data: SuperJSON.stringify({ people } as PeopleData),
     },
   };
 };

@@ -11,12 +11,13 @@ import {
   BubbleMenu,
   EditorContent,
   FloatingMenu,
-  useEditor,
+  useEditor
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import type PocketBase from "pocketbase";
 import type { AttachmentsResponse, UsersResponse } from "raito";
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction} from "react";
+import { useMemo } from "react";
 import { formatDate } from "src/lib/input_handling";
 import SuperJSON from "superjson";
 import CustomImage from "./customImageExtension/image";
@@ -35,7 +36,7 @@ interface TipTapProps {
   setCurAttachments: Dispatch<SetStateAction<AttachmentsResponse<unknown>[]>>;
 }
 
-const dateTimeFormat = "dd-MM-yyyy HH:mm";
+const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
 
 const Tiptap = ({
   name,
@@ -60,7 +61,7 @@ const Tiptap = ({
     },
 
     onUpdate: ({ editor }) => {
-      findCommentsAndStoreValues();
+      findCommentsAndStoreValues(editor);
 
       setCurrentComment(editor);
 
@@ -139,6 +140,17 @@ const Tiptap = ({
     unsetComment,
   } = useComment(editor, user?.username ?? "Anonymous");
 
+  const allUniqueComments = useMemo(() => {
+    const foundUUIDSet = new Set<string>();
+    return allComments.filter((commentParent, index, array) => {
+      const curUUID = commentParent.commentDialog.uuid;
+      if (!curUUID || foundUUIDSet.has(curUUID)) return false;
+
+      foundUUIDSet.add(commentParent.commentDialog.uuid ?? "unknown");
+      return true;
+    });
+  }, [allComments]);
+
   if (!editor) {
     return <></>;
   }
@@ -163,10 +175,17 @@ const Tiptap = ({
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   };
 
+  const focusContent = ({ from, to }: { from: number; to: number }) => {
+    editor.chain().setTextSelection({ from, to }).run();
+  };
+
   return (
     <div>
       {editor && (
-        <BubbleMenu tippyOptions={{ duration: 100 }} editor={editor}>
+        <BubbleMenu
+          tippyOptions={{ duration: 100, hideOnClick: true }}
+          editor={editor}
+        >
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
             className={editor.isActive("bold") ? "is-active" : ""}
@@ -478,17 +497,19 @@ const Tiptap = ({
       <EditorContent className="prose" editor={editor} />
 
       <section className="flex flex-col">
-        {allComments.map((comment, i) => {
+        {allUniqueComments.map((comment, i) => {
+          if (!comment.commentDialog.comments) return <></>;
+
           return (
             <article
               className={`comment external-comment my-2 overflow-hidden rounded-md bg-gray-100 shadow-lg transition-all ${
-                comment.jsonComments.uuid === activeCommentsInstance.uuid
+                comment.commentDialog.uuid === activeCommentsInstance.uuid
                   ? "ml-4"
                   : "ml-8"
               }`}
               key={i + "external_comment"}
             >
-              {comment.jsonComments.comments.map((jsonComment, j: number) => {
+              {comment.commentDialog.comments.map((jsonComment, j: number) => {
                 return (
                   <article
                     key={`${j}_${Math.random()}`}
@@ -507,7 +528,7 @@ const Tiptap = ({
                 );
               })}
 
-              {comment.jsonComments.uuid === activeCommentsInstance.uuid && (
+              {comment.commentDialog.uuid === activeCommentsInstance.uuid && (
                 <section className="flex w-full flex-col gap-1">
                   <textarea
                     value={commentText}

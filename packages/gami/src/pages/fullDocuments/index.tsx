@@ -22,7 +22,7 @@ function FullDocuments({
   const FullDocumentsList = dataParse.fullDocuments.items.map((fullDoc) => (
     <li key={fullDoc.id}>
       <Link href={`/fullDocuments/${encodeURIComponent(fullDoc.id)}`}>
-        {JSON.stringify(fullDoc.expand.documents_name)}
+        {JSON.stringify(fullDoc.expand.userDocument_name)}
       </Link>
     </li>
   )) ?? <p>{"Error when fetching full documents :<"}</p>;

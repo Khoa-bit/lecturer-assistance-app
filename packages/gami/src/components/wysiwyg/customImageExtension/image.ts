@@ -29,7 +29,6 @@ const CustomImage = Image.extend<CustomImageOptions>({
       src: {
         default: "404NotFound.png",
         renderHTML: (attributes) => {
-          console.log(">> addAttributes.renderHTML");
           const thisStorage = this.storage as CustomImageStorage;
           const src = attributes.src as string;
 

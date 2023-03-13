@@ -37,13 +37,13 @@ import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface EventDocumentData {
-  eventDocument: EventDocumentsResponse<DocumentExpand>;
+  eventDocument: EventDocumentsResponse<DocumentsExpand>;
   fullDocuments: ListResult<FullDocumentsCustomResponse>;
   attachments: AttachmentsResponse[];
   pbAuthCookie: string;
 }
 
-interface DocumentExpand {
+interface DocumentsExpand {
   document: DocumentsResponse;
 }
 
@@ -274,7 +274,7 @@ function EventDocument({
           </option>
           {fullDocuments.items.map((fullDoc) => (
             <option key={fullDoc.id} value={fullDoc.id}>
-              {fullDoc.expand?.documents_name}
+              {fullDoc.expand?.userDocument_name}
             </option>
           ))}
         </select>

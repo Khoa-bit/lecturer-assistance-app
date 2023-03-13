@@ -50,10 +50,19 @@ func GetRequestHandler(app *pocketbase.PocketBase, c echo.Context, queryStr stri
 	// count
 	totalCount := len(items)
 
+	// full list
+	isFullListQueryParam := c.QueryParam("fullList")
+	isFullList, err := strconv.ParseBool(isFullListQueryParam)
+	if err != nil {
+		isFullList = false
+	}
+
 	// normalize perPage
 	perPageQueryParam := c.QueryParam("perPage")
 	perPage, err := strconv.Atoi(perPageQueryParam)
-	if err != nil || perPage <= 0 {
+	if isFullList {
+		perPage = totalCount
+	} else if err != nil || perPage <= 0 {
 		perPage = DefaultPerPage
 	} else if perPage > MaxPerPage {
 		perPage = MaxPerPage

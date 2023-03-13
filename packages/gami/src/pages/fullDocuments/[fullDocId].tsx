@@ -34,14 +34,14 @@ import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface DocumentData {
-  fullDocument: FullDocumentsResponse<DocumentExpand>;
+  fullDocument: FullDocumentsResponse<DocumentsExpand>;
   attachments: AttachmentsResponse[];
-  upcomingEventDocuments: ListResult<EventDocumentsResponse<DocumentExpand>>;
-  pastEventDocuments: ListResult<EventDocumentsResponse<DocumentExpand>>;
+  upcomingEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
+  pastEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
   pbAuthCookie: string;
 }
 
-interface DocumentExpand {
+interface DocumentsExpand {
   document: DocumentsResponse;
 }
 
@@ -401,7 +401,7 @@ export const getServerSideProps = async ({
 
   const upcomingEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
-    .getList<EventDocumentsResponse<DocumentExpand>>(undefined, undefined, {
+    .getList<EventDocumentsResponse<DocumentsExpand>>(undefined, undefined, {
       filter: `fullDocument = "${fullDocId}" && (startTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
       expand: "document",
       sort: "startTime",
@@ -409,7 +409,7 @@ export const getServerSideProps = async ({
 
   const pastEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
-    .getList<EventDocumentsResponse<DocumentExpand>>(undefined, undefined, {
+    .getList<EventDocumentsResponse<DocumentsExpand>>(undefined, undefined, {
       filter: `fullDocument = "${fullDocId}" && (startTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
       expand: "document",
       sort: "-startTime",

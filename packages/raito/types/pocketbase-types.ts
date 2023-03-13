@@ -81,7 +81,6 @@ export type CoursesRecord = {
 
 export type DepartmentsRecord = {
 	name: string
-	major: RecordIdString
 }
 
 export enum DocumentsPriorityOptions {
@@ -146,6 +145,7 @@ export type LecturersRecord = {
 
 export type MajorsRecord = {
 	name: string
+	department: RecordIdString
 }
 
 export enum ParticipantsPermissionOptions {
@@ -169,14 +169,14 @@ export enum PeopleGenderOptions {
 }
 export type PeopleRecord = {
 	personId?: string
-	name: string
+	name?: string
 	avatar?: string
 	phone?: string
 	personalEmail?: string
-	title: string
+	title?: string
 	placeOfBirth?: string
 	gender?: PeopleGenderOptions
-	department?: RecordIdString
+	major?: RecordIdString
 	deleted?: IsoDateString
 }
 
@@ -200,12 +200,12 @@ export type AttachmentsResponse<Texpand = unknown> = AttachmentsRecord & BaseSys
 export type ClassesResponse<Texpand = unknown> = ClassesRecord & BaseSystemFields<Texpand>
 export type CourseTemplatesResponse = CourseTemplatesRecord & BaseSystemFields
 export type CoursesResponse<Texpand = unknown> = CoursesRecord & BaseSystemFields<Texpand>
-export type DepartmentsResponse<Texpand = unknown> = DepartmentsRecord & BaseSystemFields<Texpand>
+export type DepartmentsResponse = DepartmentsRecord & BaseSystemFields
 export type DocumentsResponse<TrichText = unknown, Texpand = unknown> = DocumentsRecord<TrichText> & BaseSystemFields<Texpand>
 export type EventDocumentsResponse<Texpand = unknown> = EventDocumentsRecord & BaseSystemFields<Texpand>
 export type FullDocumentsResponse<Texpand = unknown> = FullDocumentsRecord & BaseSystemFields<Texpand>
 export type LecturersResponse<Texpand = unknown> = LecturersRecord & BaseSystemFields<Texpand>
-export type MajorsResponse = MajorsRecord & BaseSystemFields
+export type MajorsResponse<Texpand = unknown> = MajorsRecord & BaseSystemFields<Texpand>
 export type ParticipantsResponse<Texpand = unknown> = ParticipantsRecord & BaseSystemFields<Texpand>
 export type PeopleResponse<Texpand = unknown> = PeopleRecord & BaseSystemFields<Texpand>
 export type RelationshipsResponse<Texpand = unknown> = RelationshipsRecord & BaseSystemFields<Texpand>

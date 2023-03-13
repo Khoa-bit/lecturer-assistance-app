@@ -3,19 +3,17 @@ import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
 import SuperJSON from "superjson";
 
-interface CommentInstance {
-  uuid?: string;
-  comments?: unknown[];
-}
-
-export interface AllCommentDialogs {
-  node: Element;
-  jsonComments: CommentDialog;
+export interface CommentDialogParent {
+  node: Node;
+  commentDialog: CommentDialog; // CommentDialog will be convert to JSON and store in comment Mark
+  fromPos: number;
+  toPos: number;
+  text: string;
 }
 
 export interface CommentDialog {
   uuid?: string;
-  comments: UserComment[];
+  comments?: UserComment[];
 }
 
 export interface UserComment {
@@ -37,11 +35,11 @@ interface useCommentReturns {
   setIsTextSelected: Dispatch<SetStateAction<boolean>>;
   showAddCommentSection: boolean;
   setShowAddCommentSection: Dispatch<SetStateAction<boolean>>;
-  activeCommentsInstance: CommentInstance;
-  setActiveCommentsInstance: Dispatch<SetStateAction<CommentInstance>>;
-  allComments: AllCommentDialogs[];
-  setAllComments: Dispatch<SetStateAction<AllCommentDialogs[]>>;
-  findCommentsAndStoreValues: () => void;
+  activeCommentsInstance: CommentDialog;
+  setActiveCommentsInstance: Dispatch<SetStateAction<CommentDialog>>;
+  allComments: CommentDialogParent[];
+  setAllComments: Dispatch<SetStateAction<CommentDialogParent[]>>;
+  findCommentsAndStoreValues: (editor: Editor) => void;
   setCurrentComment: (editor: Editor) => void;
   setComment: () => void;
   toggleCommentMode: () => void;
@@ -66,35 +64,35 @@ export function useComment(
   const [showAddCommentSection, setShowAddCommentSection] = useState(true);
 
   const [activeCommentsInstance, setActiveCommentsInstance] =
-    useState<CommentInstance>({});
+    useState<CommentDialog>({});
 
-  const [allComments, setAllComments] = useState<AllCommentDialogs[]>([]);
+  const [allComments, setAllComments] = useState<CommentDialogParent[]>([]);
 
-  const findCommentsAndStoreValues = () => {
-    const proseMirror = document.querySelector(".ProseMirror");
+  const findCommentsAndStoreValues = (editor: Editor) => {
+    const tempComments: CommentDialogParent[] = [];
 
-    const comments = proseMirror?.querySelectorAll("span[data-comment]");
+    editor.state.doc.descendants((node, pos) => {
+      const { marks } = node;
 
-    const tempComments: AllCommentDialogs[] = [];
+      marks.forEach((mark) => {
+        if (mark.type.name === "comment") {
+          const markComments = mark.attrs.comment;
 
-    if (!comments) {
-      setAllComments([]);
-      return;
-    }
+          const jsonComments = markComments
+            ? SuperJSON.parse<CommentDialog>(markComments)
+            : {};
 
-    comments.forEach((node) => {
-      const nodeComments = node.getAttribute("data-comment");
-
-      const jsonComments = nodeComments
-        ? SuperJSON.parse<CommentDialog>(nodeComments)
-        : null;
-
-      if (jsonComments !== null) {
-        tempComments.push({
-          node,
-          jsonComments,
-        });
-      }
+          if (jsonComments !== null) {
+            tempComments.push({
+              node: editor.view.domAtPos(pos).node,
+              commentDialog: jsonComments,
+              fromPos: pos,
+              toPos: pos + (node.text?.length || 0),
+              text: node.text ?? "",
+            });
+          }
+        }
+      });
     });
 
     setAllComments(tempComments);
@@ -104,6 +102,7 @@ export function useComment(
     const newVal = editor.isActive("comment");
 
     if (!newVal) {
+      setIsTextSelected(false);
       setActiveCommentsInstance({});
       return;
     }
@@ -121,22 +120,8 @@ export function useComment(
         ? SuperJSON.parse<UserComment[]>(parsedComment.comments)
         : parsedComment.comments;
 
-    setIsTextSelected(false);
-    const selection = editor.view.state.selection;
-    const selectionLength = selection.$head.pos - selection.$anchor.pos;
-    const commentedDom = editor.view.domAtPos(selection.$anchor.pos, 1);
-
-    if (
-      selectionLength == 0 ||
-      (commentedDom.offset == 0 &&
-        commentedDom.node.textContent?.length == selectionLength)
-    ) {
-      setIsTextSelected(true);
-      setActiveCommentsInstance(parsedComment);
-      return;
-    }
-
-    setActiveCommentsInstance({});
+    setIsTextSelected(true);
+    setActiveCommentsInstance(parsedComment);
   };
 
   const setComment = () => {
@@ -144,6 +129,7 @@ export function useComment(
 
     const commentsArray = activeCommentsInstance.comments;
 
+    let commentDialog: string;
     if (commentsArray) {
       commentsArray.push({
         userName: currentUserName,
@@ -151,14 +137,12 @@ export function useComment(
         content: commentText,
       });
 
-      const commentDialog = SuperJSON.stringify({
+      commentDialog = SuperJSON.stringify({
         uuid: activeCommentsInstance.uuid || Math.random().toString(),
         comments: commentsArray,
       } as CommentDialog);
-
-      editor?.chain().setCommentDialog(commentDialog).run();
     } else {
-      const commentDialog = SuperJSON.stringify({
+      commentDialog = SuperJSON.stringify({
         uuid: Math.random().toString(),
         comments: [
           {
@@ -168,11 +152,46 @@ export function useComment(
           },
         ],
       } as CommentDialog);
-
-      editor?.chain().setCommentDialog(commentDialog).run();
     }
 
-    setTimeout(() => setCommentText(""), 50);
+    editor?.chain().focus().setCommentDialog(commentDialog).run();
+
+    const sameUUIDComments = allComments.filter(
+      (commentParent) =>
+        commentParent.commentDialog.uuid == activeCommentsInstance.uuid
+    );
+
+    let minPos = sameUUIDComments.at(0)?.fromPos ?? 0;
+    let maxPos = sameUUIDComments.at(0)?.toPos ?? 0;
+    sameUUIDComments.forEach((commentParent) => {
+      const fromPos = commentParent.fromPos;
+      const toPos = commentParent.toPos;
+
+      editor
+        ?.chain()
+        .setTextSelection({
+          from: fromPos,
+          to: toPos,
+        })
+        .setCommentDialog(commentDialog)
+        .run();
+
+      minPos = Math.min(minPos, fromPos);
+      maxPos = Math.max(maxPos, toPos);
+    });
+
+    setTimeout(() => {
+      setCommentText("");
+
+      editor
+        ?.chain()
+        .setTextSelection({
+          from: minPos,
+          to: maxPos,
+        })
+        .focus()
+        .run();
+    }, 50);
   };
 
   const toggleCommentMode = () => {
@@ -200,8 +219,8 @@ export function useComment(
   };
 
   useEffect(() => {
-    setTimeout(findCommentsAndStoreValues, 100);
-  }, []);
+    if (editor) setTimeout(() => findCommentsAndStoreValues(editor), 100);
+  }, [editor]);
 
   return {
     isCommentModeOn,
