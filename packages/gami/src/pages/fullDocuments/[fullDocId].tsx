@@ -27,7 +27,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import MainLayout from "src/components/layouts/MainLayout";
-import TipTap from "src/components/wysiwyg/TipTap";
+import TipTap, { Permission } from "src/components/wysiwyg/TipTap";
 import { debounce } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
@@ -84,7 +84,6 @@ function Document({
 
   const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
 
-  const formRef = useRef<HTMLFormElement>(null);
   const onSubmit: SubmitHandler<FullDocumentInput> = useCallback(
     (inputData) => {
       const prevDiffHash = inputData.diffHash;
@@ -214,7 +213,7 @@ function Document({
           </li>
         ))}
       </ol>
-      <form ref={formRef} onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <input {...register("name", { required: true })} />
         <Controller
           name="thumbnail"
@@ -333,6 +332,7 @@ function Document({
               documentId={documentId}
               pbClient={pbClient}
               user={user}
+              permission={Permission.edit}
               setCurAttachments={setCurAttachments}
             ></TipTap>
           )}
