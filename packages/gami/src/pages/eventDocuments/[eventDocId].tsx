@@ -5,7 +5,6 @@ import type {
 } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import type { ListResult } from "pocketbase";
 import type {
   AttachmentsResponse,
@@ -21,14 +20,8 @@ import {
   DocumentsStatusOptions,
   EventDocumentsRecurringOptions,
 } from "raito";
-import { ChangeEvent, Dispatch, SetStateAction, useRef } from "react";
-import { useCallback, useEffect, useState } from "react";
-import type {
-  FieldValues,
-  SubmitHandler,
-  UseFormTrigger,
-  UseFormWatch,
-} from "react-hook-form";
+import { useCallback, useState } from "react";
+import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import Attachments from "src/components/documents/Attachments";
 import MainLayout from "src/components/layouts/MainLayout";
@@ -39,12 +32,9 @@ import { useSaveDoc } from "src/lib/documents/useSaveDoc";
 import {
   dateToISOLikeButLocalOrUndefined,
   dateToISOOrUndefined,
-  debounce,
 } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
-import { isFulfilled, isRejected } from "src/lib/promises/checkState";
-import { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
 
 interface EventDocumentData {
