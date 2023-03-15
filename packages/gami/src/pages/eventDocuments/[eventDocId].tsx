@@ -21,12 +21,21 @@ import {
   DocumentsStatusOptions,
   EventDocumentsRecurringOptions,
 } from "raito";
-import type { ChangeEvent } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { SubmitHandler } from "react-hook-form";
+import { ChangeEvent, Dispatch, SetStateAction, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type {
+  FieldValues,
+  SubmitHandler,
+  UseFormTrigger,
+  UseFormWatch,
+} from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
+import Attachments from "src/components/documents/Attachments";
 import MainLayout from "src/components/layouts/MainLayout";
 import TipTap, { Permission } from "src/components/wysiwyg/TipTap";
+import { createHandleAttachment } from "src/lib/documents/createHandleAttachment";
+import { createHandleThumbnail } from "src/lib/documents/createHandleThumbnail";
+import { useSaveDoc } from "src/lib/documents/useSaveDoc";
 import {
   dateToISOLikeButLocalOrUndefined,
   dateToISOOrUndefined,
@@ -34,6 +43,8 @@ import {
 } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
+import { isFulfilled, isRejected } from "src/lib/promises/checkState";
+import { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
 
 interface EventDocumentData {
@@ -62,11 +73,19 @@ function EventDocument({
   const eventDocumentId = eventDocument.id;
   const documentId = eventDocument.document;
 
+  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
+
+  const [thumbnail, setThumbnail] = useState<string | undefined>(
+    baseDocument?.thumbnail
+  );
+  const [attachments, setAttachments] = useState<AttachmentsResponse[]>(
+    dataParse.attachments
+  );
+
   const { register, control, handleSubmit, watch, setValue, trigger } =
     useForm<EventDocumentInput>({
       defaultValues: {
         name: baseDocument?.name,
-        thumbnail: undefined,
         priority: baseDocument?.priority,
         status: baseDocument?.status,
         richText: baseDocument?.richText as object,
@@ -80,16 +99,7 @@ function EventDocument({
         recurring: eventDocument.recurring,
       },
     });
-  const [thumbnail, setThumbnail] = useState<string | undefined>(
-    baseDocument?.thumbnail
-  );
-  const [curAttachments, setCurAttachments] = useState<AttachmentsResponse[]>(
-    dataParse.attachments
-  );
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
-
-  const [isSaved, setIsSaved] = useState(true);
   const onSubmit: SubmitHandler<EventDocumentInput> = useCallback(
     (inputData) => {
       const prevDiffHash = inputData.diffHash;
@@ -124,80 +134,27 @@ function EventDocument({
             diffHash: newDiffHash,
           } as DocumentsRecord);
       }
-      setIsSaved(true);
     },
     [documentId, eventDocumentId, pbClient, setValue]
   );
 
-  const router = useRouter();
-  useEffect(() => {
-    const warningText =
-      "Do you want to leave the site? Changes you made is being saved...";
-    const handleWindowClose = (e: Event) => {
-      if (isSaved) return;
-      e.preventDefault();
-      return warningText;
-    };
-    const handleBrowseAway = () => {
-      if (isSaved) return;
-      if (window.confirm(warningText)) return;
-      router.events.emit("routeChangeError");
-      throw "routeChange aborted.";
-    };
-    window.addEventListener("beforeunload", handleWindowClose);
-    router.events.on("routeChangeStart", handleBrowseAway);
-    return () => {
-      window.removeEventListener("beforeunload", handleWindowClose);
-      router.events.off("routeChangeStart", handleBrowseAway);
-    };
-  }, [isSaved, router.events]);
+  useSaveDoc({
+    trigger,
+    submit: handleSubmit(onSubmit),
+    watch,
+  });
 
-  const isRejected = (
-    input: PromiseSettledResult<unknown>
-  ): input is PromiseRejectedResult => input.status === "rejected";
-
-  const isFulfilled = <T,>(
-    input: PromiseSettledResult<T>
-  ): input is PromiseFulfilledResult<T> => input.status === "fulfilled";
-
-  const submitForm = useCallback(
-    () =>
-      // Validate the form before manual submitting
-      trigger(undefined, { shouldFocus: false }).then((isValid) => {
-        if (isValid) {
-          handleSubmit(onSubmit)();
-        }
-      }),
-    [handleSubmit, onSubmit, trigger]
+  const handleThumbnail = createHandleThumbnail(
+    pbClient,
+    documentId,
+    setThumbnail
   );
-  const debouncedSave = debounce(() => submitForm(), 1000);
 
-  useEffect(() => {
-    const keyDownEvent = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === "s") {
-        // Prevent the Save dialog to open
-        e.preventDefault();
-        // Place your code here
-        debouncedSave();
-      }
-    };
-    document.addEventListener("keydown", keyDownEvent);
-
-    return () => document.removeEventListener("keydown", keyDownEvent);
-  }, [debouncedSave]);
-
-  useEffect(() => {
-    let isFirst = true;
-    const subscription = watch(() => {
-      if (isFirst) {
-        isFirst = false;
-        return;
-      }
-      setIsSaved(false);
-      debouncedSave();
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, debouncedSave]);
+  const handleAttachment = createHandleAttachment(
+    pbClient,
+    documentId,
+    setAttachments
+  );
 
   return (
     <>
@@ -207,35 +164,12 @@ function EventDocument({
       <h1>Event Document</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
         <input {...register("name", { required: true })} />
-        <Controller
-          name="thumbnail"
-          control={control}
-          render={({ field: { name, onChange } }) => (
-            <>
-              <label htmlFor="file">Choose file to upload</label>
-              <input
-                id="file"
-                type="file"
-                name={name}
-                onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-                  const file = e.target.files?.item(0);
-                  if (!file) return;
-
-                  const formData = new FormData();
-                  formData.append("thumbnail", file);
-
-                  const thumbnailDoc = await pbClient
-                    .collection(Collections.Documents)
-                    .update<DocumentsResponse>(documentId, formData);
-                  setThumbnail(thumbnailDoc.thumbnail);
-
-                  onChange({
-                    target: { value: thumbnailDoc.thumbnail, name },
-                  });
-                }}
-              />
-            </>
-          )}
+        <label htmlFor="thumbnail">Choose file to upload</label>
+        <input
+          id="thumbnail"
+          type="file"
+          {...register("thumbnail")}
+          onChange={handleThumbnail}
         />
         <select {...register("priority", { required: true })}>
           {Object.entries(DocumentsPriorityOptions).map(([stringValue]) => (
@@ -277,101 +211,35 @@ function EventDocument({
             </option>
           ))}
         </select>
-        <Controller
-          name="attachments"
-          control={control}
-          render={({ field: { name, onChange } }) => (
-            <>
-              <label htmlFor="file">Choose attachments</label>
-              <input
-                id="file"
-                type="file"
-                name={name}
-                multiple={true}
-                onChange={async (e: ChangeEvent<HTMLInputElement>) => {
-                  const files = e.target.files;
-                  if (!files) return;
-
-                  const createPromises = Object.values(files).map(
-                    async (file) => {
-                      const formData = new FormData();
-                      formData.append("file", file);
-                      formData.append("document", documentId);
-                      return await pbClient
-                        .collection(Collections.Attachments)
-                        .create<AttachmentsResponse>(formData, {
-                          $autoCancel: false,
-                        });
-                    }
-                  );
-                  const results = await Promise.allSettled<AttachmentsResponse>(
-                    createPromises
-                  );
-
-                  const fulfilledValues = results
-                    .filter(isFulfilled)
-                    .map((p) => p.value);
-                  const rejectedReasons = results
-                    .filter(isRejected)
-                    .map((p) => p.reason);
-
-                  if (rejectedReasons.length) {
-                    console.error(rejectedReasons);
-                  }
-
-                  setCurAttachments((curAttachments) => [
-                    ...curAttachments,
-                    ...fulfilledValues,
-                  ]);
-
-                  onChange({
-                    target: { value: curAttachments, name },
-                  });
-                }}
-              />
-            </>
-          )}
+        <label htmlFor="attachments">Choose attachments</label>
+        <input
+          id="attachments"
+          type="file"
+          multiple={true}
+          onChange={handleAttachment}
         />
         <Controller
           name="richText"
           control={control}
-          render={({ field: { name, onChange, value } }) => (
+          render={({ field: { onChange, value } }) => (
             <TipTap
-              name={name}
               onChange={onChange}
               value={value as { json: object }}
               documentId={documentId}
               pbClient={pbClient}
               user={user}
               permission={Permission.edit}
-              setCurAttachments={setCurAttachments}
+              setCurAttachments={setAttachments}
             ></TipTap>
           )}
         />
         <input type="submit" />
       </form>
-      <ol>
-        {curAttachments.map((attachment) => (
-          <li key={attachment.id}>
-            {attachment.file}{" "}
-            <button
-              onClick={() => {
-                pbClient
-                  .collection(Collections.Attachments)
-                  .delete(attachment.id);
-
-                setCurAttachments((curAttachments) =>
-                  curAttachments.filter(
-                    (curAttachment) => curAttachment.id != attachment.id
-                  )
-                );
-              }}
-            >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ol>
+      <Attachments
+        attachments={attachments}
+        setAttachments={setAttachments}
+        pbClient={pbClient}
+      ></Attachments>
       {thumbnail && (
         <Image
           src={pbClient.buildUrl(

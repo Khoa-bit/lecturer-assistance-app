@@ -15,7 +15,7 @@ import {
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import type PocketBase from "pocketbase";
-import { Step } from "prosemirror-transform";
+import type { Step } from "prosemirror-transform";
 import type { AttachmentsResponse, UsersResponse } from "raito";
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo } from "react";
@@ -49,7 +49,6 @@ export enum Permission {
 }
 
 interface TipTapProps {
-  name: string;
   onChange: (...event: unknown[]) => void;
   value?: { json: object };
   documentId: string;
@@ -62,7 +61,6 @@ interface TipTapProps {
 const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
 
 const Tiptap = ({
-  name,
   onChange,
   value,
   documentId,
@@ -180,7 +178,7 @@ const Tiptap = ({
 
   const allUniqueComments = useMemo(() => {
     const foundUUIDSet = new Set<string>();
-    return allComments.filter((commentParent, index, array) => {
+    return allComments.filter((commentParent) => {
       const curUUID = commentParent.commentDialog.uuid;
       if (!curUUID || foundUUIDSet.has(curUUID)) return false;
 
