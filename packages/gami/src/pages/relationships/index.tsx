@@ -16,7 +16,7 @@ import MainLayout from "src/components/layouts/MainLayout";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
-import NewContact from "./NewContact";
+import NewContact from "../../components/contracts/NewContact";
 
 interface RelationshipsData {
   relationships: ListResult<mergeRelationship>;

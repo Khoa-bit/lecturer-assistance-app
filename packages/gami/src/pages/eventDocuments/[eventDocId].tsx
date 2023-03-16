@@ -25,10 +25,11 @@ import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import Attachments from "src/components/documents/Attachments";
 import MainLayout from "src/components/layouts/MainLayout";
+import { createHandleAttachment } from "src/components/wysiwyg/documents/createHandleAttachment";
+import { createHandleThumbnail } from "src/components/wysiwyg/documents/createHandleThumbnail";
+import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
 import TipTap, { Permission } from "src/components/wysiwyg/TipTap";
-import { createHandleAttachment } from "src/lib/documents/createHandleAttachment";
-import { createHandleThumbnail } from "src/lib/documents/createHandleThumbnail";
-import { useSaveDoc } from "src/lib/documents/useSaveDoc";
+
 import {
   dateToISOLikeButLocalOrUndefined,
   dateToISOOrUndefined,

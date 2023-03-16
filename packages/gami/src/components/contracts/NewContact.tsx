@@ -1,18 +1,18 @@
 import { MD5 } from "crypto-js";
-import type PocketBase from "pocketbase";
 import type { RelationshipsRecord } from "raito";
 import { Collections } from "raito";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
+import type { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
-import type { mergeRelationship } from ".";
+import type { mergeRelationship } from "../../pages/relationships";
 
 interface NewContactProps {
   newRelationshipsOptions: mergeRelationship[];
   fromPerson: string;
-  pbClient: PocketBase;
+  pbClient: PBCustom;
   setNewRelationshipsOptions: Dispatch<SetStateAction<mergeRelationship[]>>;
   setRelationships: Dispatch<SetStateAction<mergeRelationship[]>>;
 }

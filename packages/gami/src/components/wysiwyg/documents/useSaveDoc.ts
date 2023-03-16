@@ -5,7 +5,7 @@ import type {
   UseFormTrigger,
   UseFormWatch,
 } from "react-hook-form";
-import { debounce } from "../input_handling";
+import { debounce } from "src/lib/input_handling";
 
 interface useDocHelperParams<T extends FieldValues> {
   trigger: UseFormTrigger<T>;

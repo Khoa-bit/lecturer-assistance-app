@@ -1,8 +1,8 @@
 import type { AttachmentsResponse } from "raito";
 import { Collections } from "raito";
 import type { Dispatch, SetStateAction, ChangeEvent } from "react";
+import { isFulfilled, isRejected } from "src/lib/promises/checkState";
 import type { PBCustom } from "src/types/pb-custom";
-import { isFulfilled, isRejected } from "../promises/checkState";
 
 export function createHandleAttachment(
   pbClient: PBCustom,
