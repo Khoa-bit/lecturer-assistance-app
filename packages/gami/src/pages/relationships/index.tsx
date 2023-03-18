@@ -121,8 +121,6 @@ export const getServerSideProps = async ({
       "/api/user/newRelationshipsOptions?fullList=true"
     );
 
-  console.log(JSON.stringify(newRelationshipsOptions, null, 2));
-
   return {
     props: {
       data: SuperJSON.stringify({

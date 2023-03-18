@@ -4,7 +4,7 @@ import { Collections, ParticipantsPermissionOptions } from "raito";
 type getOwnerRoleType = (
   documentId: string,
   personId: string
-) => ParticipantsResponse<unknown>;
+) => ParticipantsResponse<object>;
 
 export const getOwnerRole: getOwnerRoleType = (documentId, personId) => {
   return {

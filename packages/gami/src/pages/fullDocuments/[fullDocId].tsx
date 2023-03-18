@@ -15,6 +15,7 @@ import type {
   FullDocumentsRecord,
   FullDocumentsResponse,
   ParticipantsResponse,
+  PeopleResponse,
 } from "raito";
 import {
   Collections,
@@ -43,13 +44,17 @@ interface DocumentData {
   attachments: AttachmentsResponse[];
   upcomingEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
   pastEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
-  participants: ParticipantsResponse<unknown>[];
-  userRole: ParticipantsResponse<unknown>;
+  participants: ParticipantsResponse<PeopleExpand>[];
+  userRole: ParticipantsResponse<PeopleExpand | object>;
   pbAuthCookie: string;
 }
 
 interface DocumentsExpand {
   document: DocumentsResponse<RichText>;
+}
+
+interface PeopleExpand {
+  person: PeopleResponse;
 }
 
 interface FullDocumentInput
@@ -152,12 +157,21 @@ function Document({
     setAttachments
   );
 
+  const participantsList = participants.map((participant) => (
+    <li key={participant.id}>
+      {participant.expand?.person.name} - {participant.permission} -{" "}
+      {participant.role} - {participant.note}
+    </li>
+  )) ?? <p>{"Error when fetching participantsList :<"}</p>;
+
   return (
     <>
       <Head>
         <title>Full Document</title>
       </Head>
       <h1>Full Document</h1>
+      <h2>Participants</h2>
+      <ol>{participantsList}</ol>
       <p key="newEvent">
         <Link href={`/eventDocuments/new?fullDocId=${fullDocumentId}`}>
           New event
@@ -300,13 +314,14 @@ export const getServerSideProps = async ({
 
   const participants = await pbServer
     .collection(Collections.Participants)
-    .getFullList<ParticipantsResponse>({
+    .getFullList<ParticipantsResponse<PeopleExpand>>({
       filter: `document = "${fullDocument.document}"`,
+      expand: "person",
     });
 
   let userRole = participants.find(
     (participant) => participant.person == user.person
-  );
+  ) as ParticipantsResponse<PeopleExpand | object>;
 
   if (!userRole && fullDocument.expand?.document.owner != user.person) {
     return {

@@ -74,8 +74,6 @@ export const getServerSideProps = async ({
       "/api/user/participatedEventDocuments?fullList=true"
     );
 
-  console.log(participatedEvents);
-
   return {
     props: {
       data: SuperJSON.stringify({ events, participatedEvents } as EventsData),

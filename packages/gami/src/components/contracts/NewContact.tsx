@@ -44,8 +44,6 @@ const NewContact = ({
   const onSubmit: SubmitHandler<RelationshipInput> = useCallback(
     (inputData) => {
       setTimeout(async () => {
-        console.log(`"" ${!!""}`);
-
         const relationship = await pbClient
           .collection(Collections.Relationships)
           .create<mergeRelationship>(

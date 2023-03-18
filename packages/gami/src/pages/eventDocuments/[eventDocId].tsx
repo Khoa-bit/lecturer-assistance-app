@@ -14,6 +14,7 @@ import type {
   EventDocumentsResponse,
   FullDocumentsCustomResponse,
   ParticipantsResponse,
+  PeopleResponse,
 } from "raito";
 import {
   Collections,
@@ -45,13 +46,17 @@ interface EventDocumentData {
   eventDocument: EventDocumentsResponse<DocumentsExpand>;
   fullDocuments: ListResult<FullDocumentsCustomResponse>;
   attachments: AttachmentsResponse[];
-  participants: ParticipantsResponse<unknown>[];
-  userRole: ParticipantsResponse<unknown>;
+  participants: ParticipantsResponse<PeopleExpand>[];
+  userRole: ParticipantsResponse<PeopleExpand | unknown>;
   pbAuthCookie: string;
 }
 
 interface DocumentsExpand {
   document: DocumentsResponse<RichText>;
+}
+
+interface PeopleExpand {
+  person: PeopleResponse;
 }
 
 interface EventDocumentInput
@@ -160,12 +165,21 @@ function EventDocument({
     setAttachments
   );
 
+  const participantsList = participants.map((participant) => (
+    <li key={participant.id}>
+      {participant.expand?.person.name} - {participant.permission} -{" "}
+      {participant.role} - {participant.note}
+    </li>
+  )) ?? <p>{"Error when fetching participantsList :<"}</p>;
+
   return (
     <>
       <Head>
         <title>Event Document</title>
       </Head>
       <h1>Event Document</h1>
+      <h2>Participants</h2>
+      <ol>{participantsList}</ol>
       <form onSubmit={handleSubmit(onSubmit)}>
         <input {...register("name", { required: true, disabled: !isWrite })} />
         <label htmlFor="thumbnail">Choose file to upload</label>
@@ -295,13 +309,14 @@ export const getServerSideProps = async ({
 
   const participants = await pbServer
     .collection(Collections.Participants)
-    .getFullList<ParticipantsResponse>({
+    .getFullList<ParticipantsResponse<PeopleExpand>>({
       filter: `document = "${eventDocument.document}"`,
+      expand: "person",
     });
 
   let userRole = participants.find(
     (participant) => participant.person == user.person
-  );
+  ) as ParticipantsResponse<PeopleExpand | unknown>;
 
   if (!userRole && eventDocument.expand?.document.owner != user.person) {
     return {
