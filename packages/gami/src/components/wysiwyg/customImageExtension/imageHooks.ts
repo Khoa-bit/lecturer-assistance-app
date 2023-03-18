@@ -4,6 +4,7 @@ import type { EditorView } from "prosemirror-view";
 import type { AttachmentsResponse } from "raito";
 import { Collections } from "raito";
 import type { Dispatch, SetStateAction } from "react";
+import type { PBCustom } from "src/types/pb-custom";
 
 export type ImageProxyType = (imageBlob: Blob) => Promise<{
   imageURL: string;
@@ -18,7 +19,7 @@ export type ImageHandleDropType = (
 export type AddImageType = (editor: Editor) => Promise<void>;
 
 export type useImageType = (
-  pbClient: PocketBase,
+  pbClient: PBCustom,
   documentId: string,
   setCurAttachments: Dispatch<SetStateAction<AttachmentsResponse<unknown>[]>>
 ) => {

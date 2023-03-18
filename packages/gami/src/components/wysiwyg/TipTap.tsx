@@ -14,12 +14,12 @@ import {
   useEditor,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import type PocketBase from "pocketbase";
-import type { Step } from "prosemirror-transform";
 import type { AttachmentsResponse, UsersResponse } from "raito";
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo } from "react";
 import { formatDate } from "src/lib/input_handling";
+import type { RichText } from "src/types/documents";
+import type { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
 import CustomImage from "./customImageExtension/image";
 import useImage from "./customImageExtension/imageHooks";
@@ -27,46 +27,23 @@ import suggestion from "./suggestion";
 import { Comment } from "./tiptapCommentExtension/comment";
 import { useComment } from "./tiptapCommentExtension/commentHooks";
 
-// Per extension modification inspect the `editor.schema.marks` to get all active Marks
-type MarkType =
-  | "bold"
-  | "code"
-  | "comment"
-  | "highlight"
-  | "italic"
-  | "link"
-  | "strike"
-  | "textStyle";
-
-interface AddMarkStep extends Step {
-  mark?: { type: { name: MarkType } };
-}
-
-export enum Permission {
-  "edit",
-  "comment",
-  "view",
-}
-
 interface TipTapProps {
   onChange: (...event: unknown[]) => void;
-  value?: { json: object };
+  richText: RichText;
   documentId: string;
-  pbClient: PocketBase;
-  user: UsersResponse | undefined;
-  permission: Permission;
+  pbClient: PBCustom;
+  user: UsersResponse;
   setCurAttachments: Dispatch<SetStateAction<AttachmentsResponse<unknown>[]>>;
 }
 
 const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
 
-const Tiptap = ({
+const TipTap = ({
   onChange,
-  value,
+  richText,
   documentId,
   pbClient,
   user,
-  permission,
   setCurAttachments,
 }: TipTapProps) => {
   const { imageProxy, imageHandleDrop, addImage } = useImage(
@@ -76,33 +53,19 @@ const Tiptap = ({
   );
 
   const editor = useEditor({
-    editable: permission != Permission.view,
-
     onCreate: ({ editor }) => {
       onChange({
-        target: { value: SuperJSON.stringify(editor.getJSON()), name },
+        target: { value: SuperJSON.stringify(editor.getJSON()) },
       });
     },
 
-    onUpdate: ({ editor, transaction }) => {
-      // Accept only Undo and Comment Mark
-      if (
-        permission == Permission.comment &&
-        transaction.getMeta("history$")?.redo != false &&
-        transaction.steps.some(
-          (step) => (step as AddMarkStep).mark?.type?.name != "comment"
-        )
-      ) {
-        editor.commands.undo();
-        window.prompt("You can only comment");
-      }
-
+    onUpdate: ({ editor }) => {
       findCommentsAndStoreValues(editor);
 
       setCurrentComment(editor);
 
       onChange({
-        target: { value: SuperJSON.stringify(editor.getJSON()), name },
+        target: { value: SuperJSON.stringify(editor.getJSON()) },
       });
     },
 
@@ -148,7 +111,7 @@ const Tiptap = ({
       }),
       Comment,
     ],
-    content: value?.json,
+    content: richText?.json,
   });
 
   const {
@@ -223,28 +186,24 @@ const Tiptap = ({
           editor={editor}
         >
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().toggleBold().run()}
             className={editor.isActive("bold") ? "is-active" : ""}
           >
             Bold
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().toggleItalic().run()}
             className={editor.isActive("italic") ? "is-active" : ""}
           >
             Italic
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().toggleStrike().run()}
             className={editor.isActive("strike") ? "is-active" : ""}
           >
             Strike
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() =>
               editor.chain().focus().toggleHeading({ level: 1 }).run()
             }
@@ -255,7 +214,6 @@ const Tiptap = ({
             h1
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() =>
               editor.chain().focus().toggleHeading({ level: 2 }).run()
             }
@@ -266,7 +224,6 @@ const Tiptap = ({
             h2
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() =>
               editor.chain().focus().toggleHeading({ level: 3 }).run()
             }
@@ -277,42 +234,36 @@ const Tiptap = ({
             h3
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setParagraph().run()}
             className={editor.isActive("paragraph") ? "is-active" : ""}
           >
             paragraph
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().toggleBold().run()}
             className={editor.isActive("bold") ? "is-active" : ""}
           >
             bold
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().toggleItalic().run()}
             className={editor.isActive("italic") ? "is-active" : ""}
           >
             italic
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().toggleStrike().run()}
             className={editor.isActive("strike") ? "is-active" : ""}
           >
             strike
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().toggleHighlight().run()}
             className={editor.isActive("highlight") ? "is-active" : ""}
           >
             highlight
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setTextAlign("left").run()}
             className={
               editor.isActive({ textAlign: "left" }) ? "is-active" : ""
@@ -321,7 +272,6 @@ const Tiptap = ({
             left
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setTextAlign("center").run()}
             className={
               editor.isActive({ textAlign: "center" }) ? "is-active" : ""
@@ -330,7 +280,6 @@ const Tiptap = ({
             center
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setTextAlign("right").run()}
             className={
               editor.isActive({ textAlign: "right" }) ? "is-active" : ""
@@ -339,7 +288,6 @@ const Tiptap = ({
             right
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setTextAlign("justify").run()}
             className={
               editor.isActive({ textAlign: "justify" }) ? "is-active" : ""
@@ -347,24 +295,16 @@ const Tiptap = ({
           >
             justify
           </button>
+          <button onClick={() => addImage(editor)}>add image from URL</button>
+          <button onClick={() => addImage(editor)}>add image from URL</button>
           <button
-            disabled={permission != Permission.edit}
-            onClick={() => addImage(editor)}
-          >
-            add image from URL
-          </button>
-          <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().toggleTaskList().run()}
             className={editor.isActive("taskList") ? "is-active" : ""}
           >
             toggleTaskList
           </button>
           <button
-            disabled={
-              permission != Permission.edit &&
-              !editor.can().splitListItem("taskItem")
-            }
+            disabled={!editor.can().splitListItem("taskItem")}
             onClick={() =>
               editor.chain().focus().splitListItem("taskItem").run()
             }
@@ -372,10 +312,7 @@ const Tiptap = ({
             splitListItem
           </button>
           <button
-            disabled={
-              permission != Permission.edit &&
-              !editor.can().sinkListItem("taskItem")
-            }
+            disabled={!editor.can().sinkListItem("taskItem")}
             onClick={() =>
               editor.chain().focus().sinkListItem("taskItem").run()
             }
@@ -383,10 +320,7 @@ const Tiptap = ({
             sinkListItem
           </button>
           <button
-            disabled={
-              permission != Permission.edit &&
-              !editor.can().liftListItem("taskItem")
-            }
+            disabled={!editor.can().liftListItem("taskItem")}
             onClick={() =>
               editor.chain().focus().liftListItem("taskItem").run()
             }
@@ -394,20 +328,18 @@ const Tiptap = ({
             liftListItem
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={setLink}
             className={editor.isActive("link") ? "is-active" : ""}
           >
             setLink
           </button>
           <button
-            disabled={permission != Permission.edit && !editor.isActive("link")}
+            disabled={!editor.isActive("link")}
             onClick={() => editor.chain().focus().unsetLink().run()}
           >
             unsetLink
           </button>
           <input
-            disabled={permission != Permission.edit}
             type="color"
             onInput={(event) =>
               editor.chain().focus().setColor(event.currentTarget.value).run()
@@ -415,7 +347,6 @@ const Tiptap = ({
             value={editor.getAttributes("textStyle").color}
           />
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setColor("#958DF1").run()}
             className={
               editor.isActive("textStyle", { color: "#958DF1" })
@@ -426,7 +357,6 @@ const Tiptap = ({
             purple
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setColor("#F98181").run()}
             className={
               editor.isActive("textStyle", { color: "#F98181" })
@@ -437,7 +367,6 @@ const Tiptap = ({
             red
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setColor("#FBBC88").run()}
             className={
               editor.isActive("textStyle", { color: "#FBBC88" })
@@ -448,7 +377,6 @@ const Tiptap = ({
             orange
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setColor("#FAF594").run()}
             className={
               editor.isActive("textStyle", { color: "#FAF594" })
@@ -459,7 +387,6 @@ const Tiptap = ({
             yellow
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setColor("#70CFF8").run()}
             className={
               editor.isActive("textStyle", { color: "#70CFF8" })
@@ -470,7 +397,6 @@ const Tiptap = ({
             blue
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setColor("#94FADB").run()}
             className={
               editor.isActive("textStyle", { color: "#94FADB" })
@@ -481,7 +407,6 @@ const Tiptap = ({
             teal
           </button>
           <button
-            disabled={permission != Permission.edit}
             onClick={() => editor.chain().focus().setColor("#B9F18D").run()}
             className={
               editor.isActive("textStyle", { color: "#B9F18D" })
@@ -491,10 +416,7 @@ const Tiptap = ({
           >
             green
           </button>
-          <button
-            disabled={permission != Permission.edit}
-            onClick={() => editor.chain().focus().unsetColor().run()}
-          >
+          <button onClick={() => editor.chain().focus().unsetColor().run()}>
             unsetColor
           </button>
           <section className="comment-adder-section bg-white shadow-lg">
@@ -540,7 +462,7 @@ const Tiptap = ({
         </BubbleMenu>
       )}
 
-      {permission == Permission.edit && editor && (
+      {editor && (
         <FloatingMenu tippyOptions={{ duration: 100 }} editor={editor}>
           <button
             onClick={() =>
@@ -656,4 +578,4 @@ const Tiptap = ({
   );
 };
 
-export default Tiptap;
+export default TipTap;

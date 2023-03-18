@@ -1,0 +1,161 @@
+import { Color } from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import Link from "@tiptap/extension-link";
+import Mention from "@tiptap/extension-mention";
+import TaskItem from "@tiptap/extension-task-item";
+import TaskList from "@tiptap/extension-task-list";
+import TextAlign from "@tiptap/extension-text-align";
+import TextStyle from "@tiptap/extension-text-style";
+import Typography from "@tiptap/extension-typography";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import type { UsersResponse } from "raito";
+import { useMemo } from "react";
+import { formatDate } from "src/lib/input_handling";
+import type { RichText } from "src/types/documents";
+import CustomImage from "./customImageExtension/image";
+import suggestion from "./suggestion";
+import { Comment } from "./tiptapCommentExtension/comment";
+import { useComment } from "./tiptapCommentExtension/commentHooks";
+
+interface TipTapProps {
+  richText: RichText;
+  user: UsersResponse;
+}
+
+const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
+
+const TipTapView = ({ richText, user }: TipTapProps) => {
+  const editor = useEditor({
+    editable: false,
+
+    onSelectionUpdate({ editor }) {
+      setCurrentComment(editor);
+
+      setIsTextSelected(!!editor.state.selection.content().size);
+    },
+
+    editorProps: {
+      attributes: {
+        class: "prose",
+      },
+    },
+
+    extensions: [
+      StarterKit,
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+      }),
+      Highlight,
+      Link,
+      TextStyle,
+      Color,
+      Typography,
+      CustomImage,
+      TaskList.configure({
+        HTMLAttributes: {
+          class: "pl-0",
+        },
+      }),
+      TaskItem.configure({
+        nested: true,
+      }),
+      Mention.configure({
+        HTMLAttributes: {
+          class: "mention",
+        },
+        suggestion,
+      }),
+      Comment,
+    ],
+    content: richText?.json,
+  });
+
+  const {
+    // isCommentModeOn,
+    // setIsCommentModeOn,
+    // currentUserName,
+    // setCurrentUserName,
+    // commentText,
+    // setCommentText,
+    // showCommentMenu,
+    // setShowCommentMenu,
+    // isTextSelected,
+    setIsTextSelected,
+    // showAddCommentSection,
+    // setShowAddCommentSection,
+    activeCommentsInstance,
+    // setActiveCommentsInstance,
+    allComments,
+    // setAllComments,
+    // findCommentsAndStoreValues,
+    setCurrentComment,
+    // setComment,
+    // toggleCommentMode,
+    // toggleComment,
+    // unsetComment,
+  } = useComment(editor, user?.username ?? "Anonymous");
+
+  const allUniqueComments = useMemo(() => {
+    const foundUUIDSet = new Set<string>();
+    return allComments.filter((commentParent) => {
+      const curUUID = commentParent.commentDialog.uuid;
+      if (!curUUID || foundUUIDSet.has(curUUID)) return false;
+
+      foundUUIDSet.add(commentParent.commentDialog.uuid ?? "unknown");
+      return true;
+    });
+  }, [allComments]);
+
+  if (!editor) {
+    return <></>;
+  }
+
+  const focusContent = ({ from, to }: { from: number; to: number }) => {
+    editor.chain().setTextSelection({ from, to }).run();
+  };
+
+  return (
+    <div>
+      <EditorContent className="prose" editor={editor} />
+
+      <section className="flex flex-col">
+        {allUniqueComments.map((comment, i) => {
+          if (!comment.commentDialog.comments) return <></>;
+
+          return (
+            <article
+              className={`comment external-comment my-2 overflow-hidden rounded-md bg-gray-100 shadow-lg transition-all ${
+                comment.commentDialog.uuid === activeCommentsInstance.uuid
+                  ? "ml-4"
+                  : "ml-8"
+              }`}
+              key={i + "external_comment"}
+            >
+              {comment.commentDialog.comments.map((jsonComment, j: number) => {
+                return (
+                  <article
+                    key={`${j}_${Math.random()}`}
+                    className="external-comment border-b-2 border-gray-200 p-3"
+                  >
+                    <div className="comment-details">
+                      <strong>{jsonComment.userName}</strong>
+
+                      <span className="date-time ml-1 text-xs">
+                        {formatDate(jsonComment.time, dateTimeFormat)}
+                      </span>
+                    </div>
+
+                    <span className="content">{jsonComment.content}</span>
+                  </article>
+                );
+              })}
+            </article>
+          );
+        })}
+      </section>
+    </div>
+  );
+};
+
+export default TipTapView;
