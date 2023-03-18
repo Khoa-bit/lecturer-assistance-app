@@ -50,8 +50,16 @@ func main() {
 			return handlers.GetEventDocuments(app, c)
 		})
 
+		subGroup.GET("/participatedEventDocuments", func(c echo.Context) error {
+			return handlers.GetParticipatedEventDocuments(app, c)
+		})
+
 		subGroup.GET("/fullDocuments", func(c echo.Context) error {
 			return handlers.GetFullDocuments(app, c)
+		})
+
+		subGroup.GET("/participatedFullDocuments", func(c echo.Context) error {
+			return handlers.GetParticipatedFullEventDocuments(app, c)
 		})
 
 		subGroup.GET("/classes", func(c echo.Context) error {

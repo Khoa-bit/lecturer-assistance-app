@@ -5,13 +5,18 @@ import type {
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { EventDocumentsCustomResponse } from "raito";
+import {
+  Collections,
+  EventDocumentsCustomResponse,
+  ParticipantsResponse,
+} from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface EventsData {
   events: ListResult<EventDocumentsCustomResponse>;
+  participatedEvents: ListResult<EventDocumentsCustomResponse>;
 }
 
 function EventDocuments({
@@ -27,6 +32,16 @@ function EventDocuments({
     </li>
   )) ?? <p>{"Error when fetching event documents :<"}</p>;
 
+  const participatedEventsList = dataParse.participatedEvents.items.map(
+    (eventDoc) => (
+      <li key={eventDoc.id}>
+        <Link href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}>
+          {JSON.stringify(eventDoc.expand.userDocument_name)}
+        </Link>
+      </li>
+    )
+  ) ?? <p>{"Error when fetching event documents :<"}</p>;
+
   return (
     <>
       <Head>
@@ -36,7 +51,10 @@ function EventDocuments({
       <Link className="text-blue-700 underline" href="/eventDocuments/new">
         New event document
       </Link>
+      <h1>My Events</h1>
       <ol>{eventsList}</ol>
+      <h1>Participated events</h1>
+      <ol>{participatedEventsList}</ol>
     </>
   );
 }
@@ -51,9 +69,16 @@ export const getServerSideProps = async ({
     "/api/user/eventDocuments"
   );
 
+  const participatedEvents =
+    await pbServer.apiGetList<EventDocumentsCustomResponse>(
+      "/api/user/participatedEventDocuments?fullList=true"
+    );
+
+  console.log(participatedEvents);
+
   return {
     props: {
-      data: SuperJSON.stringify({ events }),
+      data: SuperJSON.stringify({ events, participatedEvents } as EventsData),
     },
   };
 };
