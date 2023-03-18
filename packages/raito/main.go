@@ -349,6 +349,14 @@ func main() {
 			return handlers.GetRelationships(app, c)
 		})
 
+		subGroup.GET("/allAcrossParticipants", func(c echo.Context) error {
+			return handlers.GetAllAcrossParticipants(app, c)
+		})
+
+		subGroup.GET("/getStarredParticipants", func(c echo.Context) error {
+			return handlers.GetStarredParticipants(app, c)
+		})
+
 		subGroup.GET("/newRelationshipsOptions", func(c echo.Context) error {
 			return handlers.GetNewRelationshipsOptions(app, c)
 		})

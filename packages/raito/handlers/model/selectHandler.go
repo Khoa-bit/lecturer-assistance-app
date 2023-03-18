@@ -10,7 +10,7 @@ func BuildSelectArgs(fieldMetadataList FieldMetaDataList, hasGroupBy bool) strin
 	selectBuilder := strings.Builder{}
 	for _, metadata := range fieldMetadataList {
 		if hasGroupBy {
-			selectBuilder.WriteString(fmt.Sprintf(", GROUP_CONCAT(%s, ', ') AS %s", metadata.Column, metadata.Alias))
+			selectBuilder.WriteString(fmt.Sprintf(", GROUP_CONCAT(COALESCE(%s, ''), ', ') AS %s", metadata.Column, metadata.Alias))
 		} else {
 			selectBuilder.WriteString(fmt.Sprintf(", %s AS %s", metadata.Column, metadata.Alias))
 		}
