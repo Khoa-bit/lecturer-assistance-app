@@ -18,7 +18,11 @@ import SuperJSON from "superjson";
 import CustomImage from "./customImageExtension/image";
 import suggestion from "./suggestion";
 import { Comment } from "./tiptapCommentExtension/comment";
-import { useComment } from "./tiptapCommentExtension/commentHooks";
+import {
+  getCommentFunctions,
+  useCommentState,
+  useInitComments,
+} from "./tiptapCommentExtension/commentHooks";
 
 // Per extension modification inspect the `editor.schema.marks` to get all active Marks
 type MarkType =
@@ -44,6 +48,27 @@ interface TipTapProps {
 const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
 
 const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
+  const username = user?.username ?? "Anonymous";
+
+  const {
+    commentText,
+    setCommentText,
+    isTextSelected,
+    setIsTextSelected,
+    activeCommentDialog,
+    setActiveCommentDialog,
+    allCommentSpans,
+    setAllCommentSpans,
+  } = useCommentState();
+
+  const {
+    findAllCommentSpans,
+    getActiveCommentDialog,
+    setComment,
+    toggleComment,
+    unsetComment,
+  } = getCommentFunctions();
+
   const editor = useEditor({
     onCreate: ({ editor }) => {
       onChange({
@@ -63,9 +88,13 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
         window.prompt("You can only comment");
       }
 
-      findCommentsAndStoreValues(editor);
+      setAllCommentSpans(findAllCommentSpans(editor));
 
-      setCurrentComment(editor);
+      const { isTextSelected, activeCommentDialog } =
+        getActiveCommentDialog(editor);
+
+      setActiveCommentDialog(activeCommentDialog);
+      setIsTextSelected(isTextSelected);
 
       onChange({
         target: { value: SuperJSON.stringify(editor.getJSON()) },
@@ -73,8 +102,10 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
     },
 
     onSelectionUpdate({ editor }) {
-      setCurrentComment(editor);
+      const { isTextSelected, activeCommentDialog } =
+        getActiveCommentDialog(editor);
 
+      setActiveCommentDialog(activeCommentDialog);
       setIsTextSelected(!!editor.state.selection.content().size);
     },
 
@@ -114,41 +145,18 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
     content: richText?.json,
   });
 
-  const {
-    // isCommentModeOn,
-    // setIsCommentModeOn,
-    // currentUserName,
-    // setCurrentUserName,
-    commentText,
-    setCommentText,
-    // showCommentMenu,
-    // setShowCommentMenu,
-    // isTextSelected,
-    setIsTextSelected,
-    // showAddCommentSection,
-    // setShowAddCommentSection,
-    activeCommentsInstance,
-    // setActiveCommentsInstance,
-    allComments,
-    // setAllComments,
-    findCommentsAndStoreValues,
-    setCurrentComment,
-    setComment,
-    // toggleCommentMode,
-    toggleComment,
-    unsetComment,
-  } = useComment(editor, user?.username ?? "Anonymous");
+  useInitComments(editor, setAllCommentSpans);
 
   const allUniqueComments = useMemo(() => {
     const foundUUIDSet = new Set<string>();
-    return allComments.filter((commentParent) => {
+    return allCommentSpans.filter((commentParent) => {
       const curUUID = commentParent.commentDialog.uuid;
       if (!curUUID || foundUUIDSet.has(curUUID)) return false;
 
       foundUUIDSet.add(commentParent.commentDialog.uuid ?? "unknown");
       return true;
     });
-  }, [allComments]);
+  }, [allCommentSpans]);
 
   if (!editor) {
     return <></>;
@@ -173,7 +181,14 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
                   e.stopPropagation();
-                  setComment();
+                  setComment(
+                    editor,
+                    commentText,
+                    allCommentSpans,
+                    activeCommentDialog,
+                    username
+                  );
+                  setCommentText("");
                 }
               }}
               cols={30}
@@ -192,14 +207,23 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
 
               <button
                 className="w-1/4 rounded border border-yellow-500 bg-transparent py-2 px-4 font-semibold text-yellow-700 shadow-lg hover:border-transparent hover:bg-yellow-500 hover:text-white"
-                onClick={() => toggleComment()}
+                onClick={() => toggleComment(editor)}
               >
                 Toggle
               </button>
 
               <button
                 className="w-2/4 rounded border border-blue-500 bg-transparent py-2 px-4 font-semibold text-blue-700 shadow-lg hover:border-transparent hover:bg-blue-500 hover:text-white"
-                onClick={() => setComment()}
+                onClick={() => {
+                  setComment(
+                    editor,
+                    commentText,
+                    allCommentSpans,
+                    activeCommentDialog,
+                    username
+                  );
+                  setCommentText("");
+                }}
               >
                 Add
               </button>
@@ -208,7 +232,7 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
         </BubbleMenu>
       )}
 
-      <EditorContent className="prose" editor={editor} />
+      <EditorContent key="editor" className="prose" editor={editor} />
 
       <section className="flex flex-col">
         {allUniqueComments.map((comment, i) => {
@@ -217,7 +241,7 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
           return (
             <article
               className={`comment external-comment my-2 overflow-hidden rounded-md bg-gray-100 shadow-lg transition-all ${
-                comment.commentDialog.uuid === activeCommentsInstance.uuid
+                comment.commentDialog.uuid === activeCommentDialog.uuid
                   ? "ml-4"
                   : "ml-8"
               }`}
@@ -230,7 +254,7 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
                     className="external-comment border-b-2 border-gray-200 p-3"
                   >
                     <div className="comment-details">
-                      <strong>{jsonComment.userName}</strong>
+                      <strong>{jsonComment.username}</strong>
 
                       <span className="date-time ml-1 text-xs">
                         {formatDate(jsonComment.time, dateTimeFormat)}
@@ -242,7 +266,7 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
                 );
               })}
 
-              {comment.commentDialog.uuid === activeCommentsInstance.uuid && (
+              {comment.commentDialog.uuid === activeCommentDialog.uuid && (
                 <section className="flex w-full flex-col gap-1">
                   <textarea
                     value={commentText}
@@ -251,7 +275,14 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
                         e.stopPropagation();
-                        setComment();
+                        setComment(
+                          editor,
+                          commentText,
+                          allCommentSpans,
+                          activeCommentDialog,
+                          username
+                        );
+                        setCommentText("");
                       }
                     }}
                     cols={30}
@@ -270,14 +301,23 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
 
                     <button
                       className="w-1/4 rounded-lg border border-rose-500 bg-transparent py-2 px-4 font-semibold text-rose-700 shadow-lg hover:border-transparent hover:bg-rose-500 hover:text-white"
-                      onClick={() => unsetComment()}
+                      onClick={() => unsetComment(editor)}
                     >
                       Resolved
                     </button>
 
                     <button
                       className="w-2/4 rounded-lg border border-blue-500 bg-transparent py-2 px-4 font-semibold text-blue-700 shadow-lg hover:border-transparent hover:bg-blue-500 hover:text-white"
-                      onClick={() => setComment()}
+                      onClick={() => {
+                        setComment(
+                          editor,
+                          commentText,
+                          allCommentSpans,
+                          activeCommentDialog,
+                          username
+                        );
+                        setCommentText("");
+                      }}
                     >
                       Add (<kbd className="">Enter</kbd>)
                     </button>

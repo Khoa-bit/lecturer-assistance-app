@@ -38,7 +38,6 @@ const TipTapByPermission = ({
     onChange &&
     setAttachments
   ) {
-    console.log("TipTap");
     tipTapEditor = (
       <TipTap
         key="TipTapComponent"
@@ -51,7 +50,6 @@ const TipTapByPermission = ({
       ></TipTap>
     );
   } else if (permission == ParticipantsPermissionOptions.comment && onChange) {
-    console.log("TipTapComment");
     tipTapEditor = (
       <TipTapComment
         key="TipTapComponent"
@@ -61,13 +59,8 @@ const TipTapByPermission = ({
       ></TipTapComment>
     );
   } else {
-    console.log("TipTapView");
     tipTapEditor = (
-      <TipTapView
-        key="TipTapComponent"
-        richText={richText}
-        user={user}
-      ></TipTapView>
+      <TipTapView key="TipTapComponent" richText={richText}></TipTapView>
     );
   }
 

@@ -25,7 +25,11 @@ import CustomImage from "./customImageExtension/image";
 import useImage from "./customImageExtension/imageHooks";
 import suggestion from "./suggestion";
 import { Comment } from "./tiptapCommentExtension/comment";
-import { useComment } from "./tiptapCommentExtension/commentHooks";
+import {
+  getCommentFunctions,
+  useCommentState,
+  useInitComments,
+} from "./tiptapCommentExtension/commentHooks";
 
 interface TipTapProps {
   onChange: (...event: unknown[]) => void;
@@ -46,11 +50,32 @@ const TipTap = ({
   user,
   setCurAttachments,
 }: TipTapProps) => {
+  const username = user?.username ?? "Anonymous";
+
   const { imageProxy, imageHandleDrop, addImage } = useImage(
     pbClient,
     documentId,
     setCurAttachments
   );
+
+  const {
+    commentText,
+    setCommentText,
+    isTextSelected,
+    setIsTextSelected,
+    activeCommentDialog,
+    setActiveCommentDialog,
+    allCommentSpans,
+    setAllCommentSpans,
+  } = useCommentState();
+
+  const {
+    findAllCommentSpans,
+    getActiveCommentDialog,
+    setComment,
+    toggleComment,
+    unsetComment,
+  } = getCommentFunctions();
 
   const editor = useEditor({
     onCreate: ({ editor }) => {
@@ -60,9 +85,13 @@ const TipTap = ({
     },
 
     onUpdate: ({ editor }) => {
-      findCommentsAndStoreValues(editor);
+      setAllCommentSpans(findAllCommentSpans(editor));
 
-      setCurrentComment(editor);
+      const { isTextSelected, activeCommentDialog } =
+        getActiveCommentDialog(editor);
+
+      setActiveCommentDialog(activeCommentDialog);
+      setIsTextSelected(isTextSelected);
 
       onChange({
         target: { value: SuperJSON.stringify(editor.getJSON()) },
@@ -70,8 +99,10 @@ const TipTap = ({
     },
 
     onSelectionUpdate({ editor }) {
-      setCurrentComment(editor);
+      const { isTextSelected, activeCommentDialog } =
+        getActiveCommentDialog(editor);
 
+      setActiveCommentDialog(activeCommentDialog);
       setIsTextSelected(!!editor.state.selection.content().size);
     },
 
@@ -114,41 +145,18 @@ const TipTap = ({
     content: richText?.json,
   });
 
-  const {
-    // isCommentModeOn,
-    // setIsCommentModeOn,
-    // currentUserName,
-    // setCurrentUserName,
-    commentText,
-    setCommentText,
-    // showCommentMenu,
-    // setShowCommentMenu,
-    // isTextSelected,
-    setIsTextSelected,
-    // showAddCommentSection,
-    // setShowAddCommentSection,
-    activeCommentsInstance,
-    // setActiveCommentsInstance,
-    allComments,
-    // setAllComments,
-    findCommentsAndStoreValues,
-    setCurrentComment,
-    setComment,
-    // toggleCommentMode,
-    toggleComment,
-    unsetComment,
-  } = useComment(editor, user?.username ?? "Anonymous");
+  useInitComments(editor, setAllCommentSpans);
 
   const allUniqueComments = useMemo(() => {
     const foundUUIDSet = new Set<string>();
-    return allComments.filter((commentParent) => {
+    return allCommentSpans.filter((commentParent) => {
       const curUUID = commentParent.commentDialog.uuid;
       if (!curUUID || foundUUIDSet.has(curUUID)) return false;
 
       foundUUIDSet.add(commentParent.commentDialog.uuid ?? "unknown");
       return true;
     });
-  }, [allComments]);
+  }, [allCommentSpans]);
 
   if (!editor) {
     return <></>;
@@ -427,7 +435,14 @@ const TipTap = ({
                 if (e.key === "Enter") {
                   e.preventDefault();
                   e.stopPropagation();
-                  setComment();
+                  setComment(
+                    editor,
+                    commentText,
+                    allCommentSpans,
+                    activeCommentDialog,
+                    username
+                  );
+                  setCommentText("");
                 }
               }}
               cols={30}
@@ -446,14 +461,23 @@ const TipTap = ({
 
               <button
                 className="w-1/4 rounded border border-yellow-500 bg-transparent py-2 px-4 font-semibold text-yellow-700 shadow-lg hover:border-transparent hover:bg-yellow-500 hover:text-white"
-                onClick={() => toggleComment()}
+                onClick={() => toggleComment(editor)}
               >
                 Toggle
               </button>
 
               <button
                 className="w-2/4 rounded border border-blue-500 bg-transparent py-2 px-4 font-semibold text-blue-700 shadow-lg hover:border-transparent hover:bg-blue-500 hover:text-white"
-                onClick={() => setComment()}
+                onClick={() => {
+                  setComment(
+                    editor,
+                    commentText,
+                    allCommentSpans,
+                    activeCommentDialog,
+                    username
+                  );
+                  setCommentText("");
+                }}
               >
                 Add
               </button>
@@ -494,7 +518,7 @@ const TipTap = ({
         </FloatingMenu>
       )}
 
-      <EditorContent className="prose" editor={editor} />
+      <EditorContent key="editor" className="prose" editor={editor} />
 
       <section className="flex flex-col">
         {allUniqueComments.map((comment, i) => {
@@ -503,7 +527,7 @@ const TipTap = ({
           return (
             <article
               className={`comment external-comment my-2 overflow-hidden rounded-md bg-gray-100 shadow-lg transition-all ${
-                comment.commentDialog.uuid === activeCommentsInstance.uuid
+                comment.commentDialog.uuid === activeCommentDialog.uuid
                   ? "ml-4"
                   : "ml-8"
               }`}
@@ -516,7 +540,7 @@ const TipTap = ({
                     className="external-comment border-b-2 border-gray-200 p-3"
                   >
                     <div className="comment-details">
-                      <strong>{jsonComment.userName}</strong>
+                      <strong>{jsonComment.username}</strong>
 
                       <span className="date-time ml-1 text-xs">
                         {formatDate(jsonComment.time, dateTimeFormat)}
@@ -528,7 +552,7 @@ const TipTap = ({
                 );
               })}
 
-              {comment.commentDialog.uuid === activeCommentsInstance.uuid && (
+              {comment.commentDialog.uuid === activeCommentDialog.uuid && (
                 <section className="flex w-full flex-col gap-1">
                   <textarea
                     value={commentText}
@@ -537,7 +561,14 @@ const TipTap = ({
                       if (e.key === "Enter") {
                         e.preventDefault();
                         e.stopPropagation();
-                        setComment();
+                        setComment(
+                          editor,
+                          commentText,
+                          allCommentSpans,
+                          activeCommentDialog,
+                          username
+                        );
+                        setCommentText("");
                       }
                     }}
                     cols={30}
@@ -556,14 +587,23 @@ const TipTap = ({
 
                     <button
                       className="w-1/4 rounded-lg border border-rose-500 bg-transparent py-2 px-4 font-semibold text-rose-700 shadow-lg hover:border-transparent hover:bg-rose-500 hover:text-white"
-                      onClick={() => unsetComment()}
+                      onClick={() => unsetComment(editor)}
                     >
                       Resolved
                     </button>
 
                     <button
                       className="w-2/4 rounded-lg border border-blue-500 bg-transparent py-2 px-4 font-semibold text-blue-700 shadow-lg hover:border-transparent hover:bg-blue-500 hover:text-white"
-                      onClick={() => setComment()}
+                      onClick={() => {
+                        setComment(
+                          editor,
+                          commentText,
+                          allCommentSpans,
+                          activeCommentDialog,
+                          username
+                        );
+                        setCommentText("");
+                      }}
                     >
                       Add (<kbd className="">Enter</kbd>)
                     </button>

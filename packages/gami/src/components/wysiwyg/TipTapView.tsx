@@ -9,29 +9,52 @@ import TextStyle from "@tiptap/extension-text-style";
 import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import type { UsersResponse } from "raito";
 import { useMemo } from "react";
 import { formatDate } from "src/lib/input_handling";
 import type { RichText } from "src/types/documents";
 import CustomImage from "./customImageExtension/image";
 import suggestion from "./suggestion";
 import { Comment } from "./tiptapCommentExtension/comment";
-import { useComment } from "./tiptapCommentExtension/commentHooks";
+import {
+  getCommentFunctions,
+  useCommentState,
+  useInitComments,
+} from "./tiptapCommentExtension/commentHooks";
 
 interface TipTapProps {
   richText: RichText;
-  user: UsersResponse;
 }
 
 const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
 
-const TipTapView = ({ richText, user }: TipTapProps) => {
+const TipTapView = ({ richText }: TipTapProps) => {
+  const {
+    commentText,
+    setCommentText,
+    isTextSelected,
+    setIsTextSelected,
+    activeCommentDialog,
+    setActiveCommentDialog,
+    allCommentSpans,
+    setAllCommentSpans,
+  } = useCommentState();
+
+  const {
+    findAllCommentSpans,
+    getActiveCommentDialog,
+    setComment,
+    toggleComment,
+    unsetComment,
+  } = getCommentFunctions();
+
   const editor = useEditor({
     editable: false,
 
     onSelectionUpdate({ editor }) {
-      setCurrentComment(editor);
+      const { isTextSelected, activeCommentDialog } =
+        getActiveCommentDialog(editor);
 
+      setActiveCommentDialog(activeCommentDialog);
       setIsTextSelected(!!editor.state.selection.content().size);
     },
 
@@ -71,41 +94,18 @@ const TipTapView = ({ richText, user }: TipTapProps) => {
     content: richText?.json,
   });
 
-  const {
-    // isCommentModeOn,
-    // setIsCommentModeOn,
-    // currentUserName,
-    // setCurrentUserName,
-    // commentText,
-    // setCommentText,
-    // showCommentMenu,
-    // setShowCommentMenu,
-    // isTextSelected,
-    setIsTextSelected,
-    // showAddCommentSection,
-    // setShowAddCommentSection,
-    activeCommentsInstance,
-    // setActiveCommentsInstance,
-    allComments,
-    // setAllComments,
-    // findCommentsAndStoreValues,
-    setCurrentComment,
-    // setComment,
-    // toggleCommentMode,
-    // toggleComment,
-    // unsetComment,
-  } = useComment(editor, user?.username ?? "Anonymous");
+  useInitComments(editor, setAllCommentSpans);
 
   const allUniqueComments = useMemo(() => {
     const foundUUIDSet = new Set<string>();
-    return allComments.filter((commentParent) => {
+    return allCommentSpans.filter((commentParent) => {
       const curUUID = commentParent.commentDialog.uuid;
       if (!curUUID || foundUUIDSet.has(curUUID)) return false;
 
       foundUUIDSet.add(commentParent.commentDialog.uuid ?? "unknown");
       return true;
     });
-  }, [allComments]);
+  }, [allCommentSpans]);
 
   if (!editor) {
     return <></>;
@@ -117,7 +117,7 @@ const TipTapView = ({ richText, user }: TipTapProps) => {
 
   return (
     <div>
-      <EditorContent className="prose" editor={editor} />
+      <EditorContent key="editor" className="prose" editor={editor} />
 
       <section className="flex flex-col">
         {allUniqueComments.map((comment, i) => {
@@ -126,7 +126,7 @@ const TipTapView = ({ richText, user }: TipTapProps) => {
           return (
             <article
               className={`comment external-comment my-2 overflow-hidden rounded-md bg-gray-100 shadow-lg transition-all ${
-                comment.commentDialog.uuid === activeCommentsInstance.uuid
+                comment.commentDialog.uuid === activeCommentDialog.uuid
                   ? "ml-4"
                   : "ml-8"
               }`}
@@ -139,7 +139,7 @@ const TipTapView = ({ richText, user }: TipTapProps) => {
                     className="external-comment border-b-2 border-gray-200 p-3"
                   >
                     <div className="comment-details">
-                      <strong>{jsonComment.userName}</strong>
+                      <strong>{jsonComment.username}</strong>
 
                       <span className="date-time ml-1 text-xs">
                         {formatDate(jsonComment.time, dateTimeFormat)}
