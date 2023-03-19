@@ -14,6 +14,7 @@ import type {
   EventDocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
+  ParticipantsCustomResponse,
   ParticipantsResponse,
   PeopleResponse,
 } from "raito";
@@ -44,17 +45,13 @@ interface DocumentData {
   attachments: AttachmentsResponse[];
   upcomingEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
   pastEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
-  participants: ParticipantsResponse<PeopleExpand>[];
-  userRole: ParticipantsResponse<PeopleExpand | object>;
+  allDocParticipants: ListResult<ParticipantsCustomResponse>;
+  permission: ParticipantsPermissionOptions;
   pbAuthCookie: string;
 }
 
 interface DocumentsExpand {
   document: DocumentsResponse<RichText>;
-}
-
-interface PeopleExpand {
-  person: PeopleResponse;
 }
 
 interface FullDocumentInput
@@ -76,12 +73,8 @@ function Document({
   const documentId = fullDocument.document;
   const upcomingEventDocuments = dataParse.upcomingEventDocuments;
   const pastEventDocuments = dataParse.pastEventDocuments;
-  const participants = dataParse.participants;
-  const userRole = dataParse.userRole;
-  const permission =
-    user.person == baseDocument?.owner
-      ? ParticipantsPermissionOptions.write
-      : userRole.permission;
+  const allDocParticipants = dataParse.allDocParticipants;
+  const permission = dataParse.permission;
   const isWrite = permission == ParticipantsPermissionOptions.write;
 
   const { register, control, handleSubmit, watch, setValue, trigger } =
@@ -157,13 +150,16 @@ function Document({
     setAttachments
   );
 
-  const participantsList = participants.map((participant) => (
-    <li key={participant.id}>
-      {participant.expand?.person.name} - {participant.permission} -{" "}
-      {participant.role} - {participant.note}
-    </li>
-  )) ?? <p>{"Error when fetching participantsList :<"}</p>;
-
+  const participantsList = allDocParticipants.items.map(
+    (allDocParticipant, index) => (
+      <li key={allDocParticipant.id}>
+        <Link href={`/people/${encodeURIComponent(allDocParticipant.id)}`}>
+          {allDocParticipant.name}
+        </Link>
+        {` - ${allDocParticipant.expand.participant_permission_list.at(index)}`}
+      </li>
+    )
+  ) ?? <p>{"Error when fetching participantsList :<"}</p>;
   return (
     <>
       <Head>
@@ -288,6 +284,8 @@ export const getServerSideProps = async ({
       expand: "document",
     });
 
+  const document = fullDocument.expand?.document;
+
   const attachments = await pbServer
     .collection(Collections.Attachments)
     .getFullList<AttachmentsResponse>(200, {
@@ -312,28 +310,34 @@ export const getServerSideProps = async ({
       sort: "-startTime",
     });
 
-  const participants = await pbServer
-    .collection(Collections.Participants)
-    .getFullList<ParticipantsResponse<PeopleExpand>>({
-      filter: `document = "${fullDocument.document}"`,
-      expand: "person",
-    });
+  const allDocParticipants =
+    await pbServer.apiGetList<ParticipantsCustomResponse>(
+      `/api/user/getAllDocParticipants/${document?.id}?fullList=true`
+    );
 
-  let userRole = participants.find(
-    (participant) => participant.person == user.person
-  ) as ParticipantsResponse<PeopleExpand | object>;
+  let permission: ParticipantsPermissionOptions | undefined;
+  if (document?.owner == user.person) {
+    permission = ParticipantsPermissionOptions.write;
+  } else {
+    const participant = allDocParticipants.items.find(
+      (allDocParticipant) => allDocParticipant.id == user.person
+    );
 
-  if (!userRole && fullDocument.expand?.document.owner != user.person) {
-    return {
-      redirect: {
-        destination: "/fullDocuments",
-        permanent: false,
-      },
-    };
+    const documentsWithPermission =
+      participant?.expand.userDocument_id_list.map((documentId, index) => {
+        return {
+          documentId,
+          permission: participant?.expand.participant_permission_list.at(
+            index
+          ) as ParticipantsPermissionOptions | undefined,
+        };
+      });
+
+    permission = documentsWithPermission?.find(
+      (documentWithPermission) =>
+        documentWithPermission.documentId == document?.id
+    )?.permission;
   }
-
-  // Default permission for owner
-  userRole ??= getOwnerRole(fullDocument.document, user.person);
 
   return {
     props: {
@@ -342,8 +346,8 @@ export const getServerSideProps = async ({
         attachments,
         upcomingEventDocuments,
         pastEventDocuments,
-        participants,
-        userRole,
+        allDocParticipants,
+        permission,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as DocumentData),
     },

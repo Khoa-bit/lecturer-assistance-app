@@ -5,6 +5,7 @@ import type {
 } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
   AttachmentsResponse,
@@ -13,7 +14,7 @@ import type {
   EventDocumentsRecord,
   EventDocumentsResponse,
   FullDocumentsCustomResponse,
-  ParticipantsResponse,
+  ParticipantsCustomResponse,
   PeopleResponse,
 } from "raito";
 import {
@@ -32,7 +33,6 @@ import { createHandleAttachment } from "src/components/wysiwyg/documents/createH
 import { createHandleThumbnail } from "src/components/wysiwyg/documents/createHandleThumbnail";
 import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
 import TipTapByPermission from "src/components/wysiwyg/TipTapByPermission";
-import { getOwnerRole } from "src/lib/documents";
 import {
   dateToISOLikeButLocalOrUndefined,
   dateToISOOrUndefined,
@@ -46,8 +46,8 @@ interface EventDocumentData {
   eventDocument: EventDocumentsResponse<DocumentsExpand>;
   fullDocuments: ListResult<FullDocumentsCustomResponse>;
   attachments: AttachmentsResponse[];
-  participants: ParticipantsResponse<PeopleExpand>[];
-  userRole: ParticipantsResponse<PeopleExpand | unknown>;
+  allDocParticipants: ListResult<ParticipantsCustomResponse>;
+  permission: ParticipantsPermissionOptions;
   pbAuthCookie: string;
 }
 
@@ -76,12 +76,8 @@ function EventDocument({
   const baseDocument = dataParse.eventDocument.expand?.document;
   const eventDocumentId = eventDocument.id;
   const documentId = eventDocument.document;
-  const participants = dataParse.participants;
-  const userRole = dataParse.userRole;
-  const permission =
-    user.person == baseDocument?.owner
-      ? ParticipantsPermissionOptions.write
-      : userRole.permission;
+  const allDocParticipants = dataParse.allDocParticipants;
+  const permission = dataParse.permission;
   const isWrite = permission == ParticipantsPermissionOptions.write;
 
   const [thumbnail, setThumbnail] = useState<string | undefined>(
@@ -165,12 +161,16 @@ function EventDocument({
     setAttachments
   );
 
-  const participantsList = participants.map((participant) => (
-    <li key={participant.id}>
-      {participant.expand?.person.name} - {participant.permission} -{" "}
-      {participant.role} - {participant.note}
-    </li>
-  )) ?? <p>{"Error when fetching participantsList :<"}</p>;
+  const participantsList = allDocParticipants.items.map(
+    (allDocParticipant, index) => (
+      <li key={allDocParticipant.id}>
+        <Link href={`/people/${encodeURIComponent(allDocParticipant.id)}`}>
+          {allDocParticipant.name}
+        </Link>
+        {` - ${allDocParticipant.expand.participant_permission_list.at(index)}`}
+      </li>
+    )
+  ) ?? <p>{"Error when fetching participantsList :<"}</p>;
 
   return (
     <>
@@ -297,6 +297,8 @@ export const getServerSideProps = async ({
       expand: "document",
     });
 
+  const document = eventDocument.expand?.document;
+
   const fullDocuments = await pbServer.apiGetList<FullDocumentsCustomResponse>(
     "/api/user/fullDocuments"
   );
@@ -307,28 +309,34 @@ export const getServerSideProps = async ({
       filter: `document = "${eventDocument.document}"`,
     });
 
-  const participants = await pbServer
-    .collection(Collections.Participants)
-    .getFullList<ParticipantsResponse<PeopleExpand>>({
-      filter: `document = "${eventDocument.document}"`,
-      expand: "person",
-    });
+  const allDocParticipants =
+    await pbServer.apiGetList<ParticipantsCustomResponse>(
+      `/api/user/getAllDocParticipants/${document?.id}?fullList=true`
+    );
 
-  let userRole = participants.find(
-    (participant) => participant.person == user.person
-  ) as ParticipantsResponse<PeopleExpand | unknown>;
+  let permission: ParticipantsPermissionOptions | undefined;
+  if (document?.owner == user.person) {
+    permission = ParticipantsPermissionOptions.write;
+  } else {
+    const participant = allDocParticipants.items.find(
+      (allDocParticipant) => allDocParticipant.id == user.person
+    );
 
-  if (!userRole && eventDocument.expand?.document.owner != user.person) {
-    return {
-      redirect: {
-        destination: "/eventDocuments",
-        permanent: false,
-      },
-    };
+    const documentsWithPermission =
+      participant?.expand.userDocument_id_list.map((documentId, index) => {
+        return {
+          documentId,
+          permission: participant?.expand.participant_permission_list.at(
+            index
+          ) as ParticipantsPermissionOptions | undefined,
+        };
+      });
+
+    permission = documentsWithPermission?.find(
+      (documentWithPermission) =>
+        documentWithPermission.documentId == document?.id
+    )?.permission;
   }
-
-  // Default permission for owner
-  userRole ??= getOwnerRole(eventDocument.document, user.person);
 
   return {
     props: {
@@ -336,8 +344,8 @@ export const getServerSideProps = async ({
         eventDocument,
         attachments,
         fullDocuments,
-        participants,
-        userRole,
+        allDocParticipants,
+        permission,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as EventDocumentData),
     },

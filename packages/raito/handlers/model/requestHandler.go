@@ -35,11 +35,10 @@ type Result struct {
 // When `hasGroupBy` is true, the `expands` field of each result contains fields lists specified by `GROUP BY` SQL Statement and `fieldMetadataList`.
 //
 // Else, the `expands` field of each result contains fields specified by the `fieldMetadataList`.
-func GetRequestHandler(app *pocketbase.PocketBase, c echo.Context, queryStr string, mainCollectionName string, hasGroupBy bool, fieldMetadataList FieldMetaDataList) error {
+func GetRequestHandler(app *pocketbase.PocketBase, c echo.Context, query *dbx.Query, mainCollectionName string, hasGroupBy bool, fieldMetadataList FieldMetaDataList) error {
 	var err error
 
 	// TODO: Implement API Rules
-	query := app.Dao().DB().NewQuery(queryStr)
 
 	// fetch models
 	items := []dbx.NullStringMap{}

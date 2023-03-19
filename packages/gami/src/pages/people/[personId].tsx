@@ -8,6 +8,7 @@ import Image from "next/image";
 import type {
   DepartmentsResponse,
   MajorsResponse,
+  ParticipantsCustomResponse,
   PeopleRecord,
   PeopleResponse,
   UsersResponse,
@@ -17,6 +18,7 @@ import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
+import ParticipateDetailList from "src/components/documents/ParticipateDetailList";
 import MainLayout from "src/components/layouts/MainLayout";
 import { debounce } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
@@ -27,6 +29,7 @@ interface DocumentData {
   person: PeopleResponse<UsersExpand>;
   departments: DepartmentsResponse[];
   majorOptions: MajorsResponse<unknown>[];
+  allDocParticipation: ParticipantsCustomResponse | undefined;
   pbAuthCookie: string;
 }
 
@@ -54,6 +57,7 @@ function Person({
   const [majorOptions, setMajorOptions] = useState<MajorsResponse[]>(
     dataParse.majorOptions
   );
+  const allDocParticipation = dataParse.allDocParticipation;
 
   const { register, handleSubmit, setValue, control } = useForm<PersonInput>({
     defaultValues: {
@@ -229,6 +233,12 @@ function Person({
         <input type="submit" />
       </form>
 
+      {allDocParticipation && (
+        <ParticipateDetailList
+          participant={allDocParticipation}
+        ></ParticipateDetailList>
+      )}
+
       {avatar && (
         <Image
           src={pbClient.buildUrl(`api/files/people/${personId}/${avatar}`)}
@@ -265,12 +275,21 @@ export const getServerSideProps = async ({
       filter: `department="${person.expand?.major?.department}"`,
     });
 
+  const allDocParticipation = (
+    await pbServer.apiGetList<ParticipantsCustomResponse>(
+      `/api/user/getAllDocParticipation/${personId}?fullList=true`
+    )
+  ).items.at(0);
+
+  console.log(allDocParticipation);
+
   return {
     props: {
       data: SuperJSON.stringify({
         person,
         departments,
         majorOptions,
+        allDocParticipation,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as DocumentData),
     },

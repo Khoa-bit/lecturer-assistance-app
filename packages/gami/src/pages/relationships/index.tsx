@@ -6,15 +6,15 @@ import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
-  AllAcrossParticipantsCustomResponse,
+  ParticipantsCustomResponse,
   PeopleResponse,
   RelationshipsCustomResponse,
   RelationshipsRecord,
   RelationshipsResponse,
-  StarredParticipants,
 } from "raito";
 import { Collections } from "raito";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import ParticipateDetailList from "src/components/documents/ParticipateDetailList";
 import MainLayout from "src/components/layouts/MainLayout";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
@@ -22,9 +22,8 @@ import SuperJSON from "superjson";
 
 interface RelationshipsData {
   relationships: ListResult<mergeRelationship>;
-  newRelationshipsOptions: ListResult<mergeRelationship>;
-  starredParticipants: ListResult<StarredParticipants>;
-  allAcrossParticipants: ListResult<AllAcrossParticipantsCustomResponse>;
+  starredParticipants: ListResult<ParticipantsCustomResponse>;
+  allAcrossParticipants: ListResult<ParticipantsCustomResponse>;
   pbAuthCookie: string;
 }
 
@@ -37,41 +36,9 @@ function Relationships({
   const dataParse = SuperJSON.parse<RelationshipsData>(data);
 
   const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
-  const [relationships, setRelationships] = useState(
-    dataParse.relationships.items
-  );
-  const [newRelationshipsOptions, setNewRelationshipsOptions] = useState(
-    dataParse.newRelationshipsOptions.items
-  );
-  const [allAcrossParticipants, setAllAcrossParticipants] = useState(
-    dataParse.allAcrossParticipants
-  );
+  const allAcrossParticipants = dataParse.allAcrossParticipants;
   const [starredParticipants, setStarredParticipants] = useState(
     dataParse.starredParticipants
-  );
-
-  const deleteRelationship = useCallback(
-    async (relationship: mergeRelationship) => {
-      const relationshipId = relationship.id;
-      const hasDeleted = await pbClient
-        .collection(Collections.Relationships)
-        .delete(relationshipId);
-
-      if (!hasDeleted) return;
-
-      setRelationships((relationships) =>
-        relationships.filter(
-          (relationship) => relationship.id != relationshipId
-        )
-      );
-
-      // Push the deleted relationship back to newRelationshipsOptions list
-      setNewRelationshipsOptions((relationships) => [
-        ...relationships,
-        relationship,
-      ]);
-    },
-    [pbClient]
   );
 
   const starredParticipantsList = useMemo(
@@ -79,7 +46,7 @@ function Relationships({
       starredParticipants.items.map((starredParticipant) => (
         <li key={starredParticipant.id}>
           <Link href={`/people/${encodeURIComponent(starredParticipant.id)}`}>
-            {`${starredParticipant.name} - ${starredParticipant.expand.fullDocument_id_list} - ${starredParticipant.expand.eventDocument_id_list}`}
+            {`${starredParticipant.name}`}
           </Link>
           <span> - </span>
           <button
@@ -98,7 +65,7 @@ function Relationships({
                 .delete(relationshipId)
                 .then(async () => {
                   const newStarredParticipants =
-                    await pbClient.apiGetList<StarredParticipants>(
+                    await pbClient.apiGetList<ParticipantsCustomResponse>(
                       "/api/user/getStarredParticipants?fullList=true"
                     );
 
@@ -108,6 +75,9 @@ function Relationships({
           >
             Remove Star
           </button>
+          <ParticipateDetailList
+            participant={starredParticipant}
+          ></ParticipateDetailList>
         </li>
       )) ?? <p>{"Error when fetching full documents :<"}</p>,
     [pbClient, starredParticipants.items]
@@ -118,7 +88,7 @@ function Relationships({
       allAcrossParticipants.items.map((allAcrossParticipant) => (
         <li key={allAcrossParticipant.id}>
           <Link href={`/people/${encodeURIComponent(allAcrossParticipant.id)}`}>
-            {`${allAcrossParticipant.name} - ${allAcrossParticipant.expand.fullDocument_id_list} - ${allAcrossParticipant.expand.eventDocument_id_list}`}
+            {`${allAcrossParticipant.name}`}
           </Link>
           {/* Only show star button when it has not been starred yet */}
           {!starredParticipants.items.some(
@@ -141,7 +111,7 @@ function Relationships({
                     } as RelationshipsRecord)
                     .then(async () => {
                       const newStarredParticipants =
-                        await pbClient.apiGetList<StarredParticipants>(
+                        await pbClient.apiGetList<ParticipantsCustomResponse>(
                           "/api/user/getStarredParticipants?fullList=true"
                         );
 
@@ -153,6 +123,9 @@ function Relationships({
               </button>
             </>
           )}
+          <ParticipateDetailList
+            participant={allAcrossParticipant}
+          ></ParticipateDetailList>
         </li>
       )) ?? <p>{"Error when fetching full documents :<"}</p>,
     [
@@ -187,17 +160,13 @@ export const getServerSideProps = async ({
     "/api/user/relationships"
   );
 
-  const newRelationshipsOptions =
-    await pbServer.apiGetList<RelationshipsCustomResponse>(
-      "/api/user/newRelationshipsOptions?fullList=true"
+  const starredParticipants =
+    await pbServer.apiGetList<ParticipantsCustomResponse>(
+      "/api/user/getStarredParticipants?fullList=true"
     );
 
-  const starredParticipants = await pbServer.apiGetList<StarredParticipants>(
-    "/api/user/getStarredParticipants?fullList=true"
-  );
-
   const allAcrossParticipants =
-    await pbServer.apiGetList<AllAcrossParticipantsCustomResponse>(
+    await pbServer.apiGetList<ParticipantsCustomResponse>(
       "/api/user/allAcrossParticipants?fullList=true"
     );
 
@@ -205,7 +174,6 @@ export const getServerSideProps = async ({
     props: {
       data: SuperJSON.stringify({
         relationships,
-        newRelationshipsOptions,
         starredParticipants,
         allAcrossParticipants,
         pbAuthCookie: pbServer.authStore.exportToCookie(),

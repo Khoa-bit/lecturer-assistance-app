@@ -89,6 +89,7 @@ export const Comment = Mark.create<CommentOptions>({
       new Plugin({
         props: {
           handleClick(view, pos) {
+            // When clicked on comment mark - select all comment
             if (!extensionThis.options.isCommentModeOn()) return false;
 
             const { schema, doc, tr } = view.state;
