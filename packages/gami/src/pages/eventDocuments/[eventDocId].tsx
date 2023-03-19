@@ -13,42 +13,55 @@ import type {
   EventDocumentsRecord,
   EventDocumentsResponse,
   FullDocumentsCustomResponse,
+  ParticipantsResponse,
+  PeopleResponse,
 } from "raito";
 import {
   Collections,
   DocumentsPriorityOptions,
   DocumentsStatusOptions,
   EventDocumentsRecurringOptions,
+  ParticipantsPermissionOptions,
 } from "raito";
 import { useCallback, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import Attachments from "src/components/documents/Attachments";
 import MainLayout from "src/components/layouts/MainLayout";
-import TipTap, { Permission } from "src/components/wysiwyg/TipTap";
-import { createHandleAttachment } from "src/lib/documents/createHandleAttachment";
-import { createHandleThumbnail } from "src/lib/documents/createHandleThumbnail";
-import { useSaveDoc } from "src/lib/documents/useSaveDoc";
+import { createHandleAttachment } from "src/components/wysiwyg/documents/createHandleAttachment";
+import { createHandleThumbnail } from "src/components/wysiwyg/documents/createHandleThumbnail";
+import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
+import TipTapByPermission from "src/components/wysiwyg/TipTapByPermission";
+import { getOwnerRole } from "src/lib/documents";
 import {
   dateToISOLikeButLocalOrUndefined,
   dateToISOOrUndefined,
 } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
+import type { RichText } from "src/types/documents";
 import SuperJSON from "superjson";
 
 interface EventDocumentData {
   eventDocument: EventDocumentsResponse<DocumentsExpand>;
   fullDocuments: ListResult<FullDocumentsCustomResponse>;
   attachments: AttachmentsResponse[];
+  participants: ParticipantsResponse<PeopleExpand>[];
+  userRole: ParticipantsResponse<PeopleExpand | unknown>;
   pbAuthCookie: string;
 }
 
 interface DocumentsExpand {
-  document: DocumentsResponse;
+  document: DocumentsResponse<RichText>;
 }
 
-interface EventDocumentInput extends DocumentsRecord, EventDocumentsRecord {
+interface PeopleExpand {
+  person: PeopleResponse;
+}
+
+interface EventDocumentInput
+  extends DocumentsRecord<RichText>,
+    EventDocumentsRecord {
   attachments: AttachmentsResponse[];
 }
 
@@ -57,13 +70,19 @@ function EventDocument({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<EventDocumentData>(data);
 
+  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
   const eventDocument = dataParse.eventDocument;
   const fullDocuments = dataParse.fullDocuments;
   const baseDocument = dataParse.eventDocument.expand?.document;
   const eventDocumentId = eventDocument.id;
   const documentId = eventDocument.document;
-
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
+  const participants = dataParse.participants;
+  const userRole = dataParse.userRole;
+  const permission =
+    user.person == baseDocument?.owner
+      ? ParticipantsPermissionOptions.write
+      : userRole.permission;
+  const isWrite = permission == ParticipantsPermissionOptions.write;
 
   const [thumbnail, setThumbnail] = useState<string | undefined>(
     baseDocument?.thumbnail
@@ -78,7 +97,7 @@ function EventDocument({
         name: baseDocument?.name,
         priority: baseDocument?.priority,
         status: baseDocument?.status,
-        richText: baseDocument?.richText as object,
+        richText: baseDocument?.richText,
         document: eventDocument.document,
         diffHash: baseDocument?.diffHash,
         fullDocument: eventDocument.fullDocument,
@@ -146,29 +165,40 @@ function EventDocument({
     setAttachments
   );
 
+  const participantsList = participants.map((participant) => (
+    <li key={participant.id}>
+      {participant.expand?.person.name} - {participant.permission} -{" "}
+      {participant.role} - {participant.note}
+    </li>
+  )) ?? <p>{"Error when fetching participantsList :<"}</p>;
+
   return (
     <>
       <Head>
         <title>Event Document</title>
       </Head>
       <h1>Event Document</h1>
+      <h2>Participants</h2>
+      <ol>{participantsList}</ol>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <input {...register("name", { required: true })} />
+        <input {...register("name", { required: true, disabled: !isWrite })} />
         <label htmlFor="thumbnail">Choose file to upload</label>
         <input
           id="thumbnail"
           type="file"
-          {...register("thumbnail")}
+          {...register("thumbnail", { disabled: !isWrite })}
           onChange={handleThumbnail}
         />
-        <select {...register("priority", { required: true })}>
+        <select
+          {...register("priority", { required: true, disabled: !isWrite })}
+        >
           {Object.entries(DocumentsPriorityOptions).map(([stringValue]) => (
             <option key={stringValue} value={stringValue}>
               {stringValue}
             </option>
           ))}
         </select>
-        <select {...register("status", { required: true })}>
+        <select {...register("status", { required: true, disabled: !isWrite })}>
           {Object.entries(DocumentsStatusOptions).map(([stringValue]) => (
             <option key={stringValue} value={stringValue}>
               {stringValue}
@@ -179,10 +209,14 @@ function EventDocument({
           type="datetime-local"
           {...register("startTime", {
             required: true,
+            disabled: !isWrite,
           })}
         />
-        <input type="datetime-local" {...register("endTime")} />
-        <select {...register("recurring")}>
+        <input
+          type="datetime-local"
+          {...register("endTime", { disabled: !isWrite })}
+        />
+        <select {...register("recurring", { disabled: !isWrite })}>
           {Object.entries(EventDocumentsRecurringOptions).map(
             ([stringValue]) => (
               <option key={stringValue} value={stringValue}>
@@ -191,7 +225,7 @@ function EventDocument({
             )
           )}
         </select>
-        <select {...register("fullDocument")}>
+        <select {...register("fullDocument", { disabled: !isWrite })}>
           <option key="None" value="">
             None
           </option>
@@ -207,23 +241,27 @@ function EventDocument({
           type="file"
           multiple={true}
           onChange={handleAttachment}
+          disabled={!isWrite}
         />
         <Controller
           name="richText"
           control={control}
           render={({ field: { onChange, value } }) => (
-            <TipTap
-              onChange={onChange}
-              value={value as { json: object }}
+            <TipTapByPermission
+              richText={value as RichText}
+              user={user}
+              permission={permission}
               documentId={documentId}
               pbClient={pbClient}
-              user={user}
-              permission={Permission.edit}
-              setCurAttachments={setAttachments}
-            ></TipTap>
+              onChange={onChange}
+              setAttachments={setAttachments}
+            ></TipTapByPermission>
           )}
         />
-        <input type="submit" />
+        <input
+          type="submit"
+          disabled={permission == ParticipantsPermissionOptions.read}
+        />
       </form>
       <Attachments
         attachments={attachments}
@@ -232,6 +270,7 @@ function EventDocument({
       ></Attachments>
       {thumbnail && (
         <Image
+          id={thumbnail}
           src={pbClient.buildUrl(
             `api/files/documents/${documentId}/${thumbnail}`
           )}
@@ -249,12 +288,12 @@ export const getServerSideProps = async ({
   query,
   resolvedUrl,
 }: GetServerSidePropsContext) => {
-  const { pbServer } = await getPBServer(req, resolvedUrl);
+  const { pbServer, user } = await getPBServer(req, resolvedUrl);
   const eventDocId = query.eventDocId as string;
 
   const eventDocument = await pbServer
     .collection(Collections.EventDocuments)
-    .getOne<EventDocumentsResponse>(eventDocId, {
+    .getOne<EventDocumentsResponse<DocumentsExpand>>(eventDocId, {
       expand: "document",
     });
 
@@ -268,12 +307,37 @@ export const getServerSideProps = async ({
       filter: `document = "${eventDocument.document}"`,
     });
 
+  const participants = await pbServer
+    .collection(Collections.Participants)
+    .getFullList<ParticipantsResponse<PeopleExpand>>({
+      filter: `document = "${eventDocument.document}"`,
+      expand: "person",
+    });
+
+  let userRole = participants.find(
+    (participant) => participant.person == user.person
+  ) as ParticipantsResponse<PeopleExpand | unknown>;
+
+  if (!userRole && eventDocument.expand?.document.owner != user.person) {
+    return {
+      redirect: {
+        destination: "/eventDocuments",
+        permanent: false,
+      },
+    };
+  }
+
+  // Default permission for owner
+  userRole ??= getOwnerRole(eventDocument.document, user.person);
+
   return {
     props: {
       data: SuperJSON.stringify({
         eventDocument,
         attachments,
         fullDocuments,
+        participants,
+        userRole,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as EventDocumentData),
     },

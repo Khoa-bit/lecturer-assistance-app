@@ -12,6 +12,7 @@ import SuperJSON from "superjson";
 
 interface FullDocumentsData {
   fullDocuments: ListResult<FullDocumentsCustomResponse>;
+  participatedFullDocuments: ListResult<FullDocumentsCustomResponse>;
 }
 
 function FullDocuments({
@@ -19,13 +20,22 @@ function FullDocuments({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<FullDocumentsData>(data);
 
-  const FullDocumentsList = dataParse.fullDocuments.items.map((fullDoc) => (
+  const fullDocumentsList = dataParse.fullDocuments.items.map((fullDoc) => (
     <li key={fullDoc.id}>
       <Link href={`/fullDocuments/${encodeURIComponent(fullDoc.id)}`}>
         {JSON.stringify(fullDoc.expand.userDocument_name)}
       </Link>
     </li>
   )) ?? <p>{"Error when fetching full documents :<"}</p>;
+
+  const participatedFullDocumentsList =
+    dataParse.participatedFullDocuments.items.map((fullDoc) => (
+      <li key={fullDoc.id}>
+        <Link href={`/fullDocuments/${encodeURIComponent(fullDoc.id)}`}>
+          {JSON.stringify(fullDoc.expand.userDocument_name)}
+        </Link>
+      </li>
+    )) ?? <p>{"Error when fetching full documents :<"}</p>;
 
   return (
     <>
@@ -36,7 +46,9 @@ function FullDocuments({
       <Link className="text-blue-700 underline" href="/fullDocuments/new">
         New Full document
       </Link>
-      <ol>{FullDocumentsList}</ol>
+      <ol>{fullDocumentsList}</ol>
+      <h1>Participated FullDocuments</h1>
+      <ol>{participatedFullDocumentsList}</ol>
     </>
   );
 }
@@ -51,9 +63,17 @@ export const getServerSideProps = async ({
     "/api/user/fullDocuments"
   );
 
+  const participatedFullDocuments =
+    await pbServer.apiGetList<FullDocumentsCustomResponse>(
+      "/api/user/participatedFullDocuments?fullList=true"
+    );
+
   return {
     props: {
-      data: SuperJSON.stringify({ fullDocuments }),
+      data: SuperJSON.stringify({
+        fullDocuments,
+        participatedFullDocuments,
+      } as FullDocumentsData),
     },
   };
 };

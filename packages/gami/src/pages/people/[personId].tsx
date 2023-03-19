@@ -210,8 +210,6 @@ function Person({
         <select
           {...register("department", { required: true })}
           onChange={(event) => {
-            console.log(event.currentTarget.value);
-
             setDepartmentId(event.currentTarget.value);
           }}
         >

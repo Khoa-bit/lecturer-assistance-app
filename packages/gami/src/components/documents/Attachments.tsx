@@ -9,30 +9,33 @@ function Attachments({
   pbClient,
 }: {
   attachments: AttachmentsResponse<unknown>[];
-  setAttachments: Dispatch<SetStateAction<AttachmentsResponse<unknown>[]>>;
-  pbClient: PBCustom;
+  setAttachments?: Dispatch<SetStateAction<AttachmentsResponse<unknown>[]>>;
+  pbClient?: PBCustom;
 }) {
+  const showDelete = pbClient && setAttachments;
+
   return (
     <ol>
       {attachments.map((attachment) => (
         <li key={attachment.id}>
           {attachment.file}
-          {" - "}
-          <button
-            onClick={() => {
-              pbClient
-                .collection(Collections.Attachments)
-                .delete(attachment.id);
+          {showDelete && (
+            <button
+              onClick={() => {
+                pbClient
+                  .collection(Collections.Attachments)
+                  .delete(attachment.id);
 
-              setAttachments((attachments) =>
-                attachments.filter(
-                  (thisAttachment) => thisAttachment.id != attachment.id
-                )
-              );
-            }}
-          >
-            Delete
-          </button>
+                setAttachments((attachments) =>
+                  attachments.filter(
+                    (thisAttachment) => thisAttachment.id != attachment.id
+                  )
+                );
+              }}
+            >
+              {" - Delete"}
+            </button>
+          )}
         </li>
       ))}
     </ol>

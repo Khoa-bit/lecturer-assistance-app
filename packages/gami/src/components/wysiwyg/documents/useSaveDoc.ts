@@ -5,7 +5,7 @@ import type {
   UseFormTrigger,
   UseFormWatch,
 } from "react-hook-form";
-import { debounce } from "../input_handling";
+import { debounce } from "src/lib/input_handling";
 
 interface useDocHelperParams<T extends FieldValues> {
   trigger: UseFormTrigger<T>;
@@ -24,6 +24,7 @@ export function useSaveDoc<T extends FieldValues>({
 }: useDocHelperParams<T>): useDocHelperReturns {
   const router = useRouter();
   // const [hasSaved, setHasSaved] = useState(true);
+  const initial = useRef(true);
   const hasSaved = useRef(true);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export function useSaveDoc<T extends FieldValues>({
       // Validate the form before manual submitting
       trigger(undefined, { shouldFocus: false }).then((isValid) => {
         if (!isValid) return;
+        hasSaved.current = false;
 
         console.log("Saving");
 
@@ -62,7 +64,7 @@ export function useSaveDoc<T extends FieldValues>({
       }),
     [submit, trigger]
   );
-  const debouncedSave = debounce(() => submitForm(), 1000);
+  const debouncedSave = debounce(() => submitForm(), 500);
 
   useEffect(() => {
     const keyDownEvent = (e: KeyboardEvent) => {
@@ -80,6 +82,11 @@ export function useSaveDoc<T extends FieldValues>({
   useEffect(() => {
     const subscription = watch((data, { name }) => {
       if (name == "diffHash") return;
+      if (initial.current) {
+        initial.current = false;
+        return;
+      }
+
       hasSaved.current = false;
       debouncedSave();
     });

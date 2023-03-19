@@ -1,6 +1,7 @@
 import {
   EventDocumentsResponse,
   FullDocumentsResponse,
+  PeopleResponse,
   RelationshipsResponse,
 } from './pocketbase-types';
 
@@ -55,3 +56,28 @@ export interface FullDocumentsCustomResponse extends FullDocumentsResponse {
     userDocument_owner: string;
   };
 }
+
+export interface AllAcrossParticipantsCustomResponse extends PeopleResponse {
+  expand: {
+    eventDocument_created_list: string;
+    eventDocument_document_list: string;
+    eventDocument_endTime_list: string;
+    eventDocument_fullDocument_list: string;
+    eventDocument_id_list: string;
+    eventDocument_recurring_list: string;
+    eventDocument_startTime_list: string;
+    eventDocument_updated_list: string;
+    fullDocument_category_list: string;
+    fullDocument_created_list: string;
+    fullDocument_document_list: string;
+    fullDocument_id_list: string;
+    fullDocument_updated_list: string;
+    relationship_created_list: string;
+    relationship_fromPerson_list: string;
+    relationship_id_list: string;
+    relationship_toPerson_list: string;
+    relationship_updated_list: string;
+  };
+}
+
+export type StarredParticipants = AllAcrossParticipantsCustomResponse;
