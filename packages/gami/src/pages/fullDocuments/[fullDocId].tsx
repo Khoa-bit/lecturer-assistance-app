@@ -15,7 +15,6 @@ import type {
   FullDocumentsRecord,
   FullDocumentsResponse,
   ParticipantsCustomResponse,
-  ParticipantsResponse,
   PeopleResponse,
 } from "raito";
 import {
@@ -34,11 +33,11 @@ import { createHandleAttachment } from "src/components/wysiwyg/documents/createH
 import { createHandleThumbnail } from "src/components/wysiwyg/documents/createHandleThumbnail";
 import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
 import TipTapByPermission from "src/components/wysiwyg/TipTapByPermission";
-import { getOwnerRole } from "src/lib/documents";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import type { RichText } from "src/types/documents";
 import SuperJSON from "superjson";
+import NewParticipantForm from "../../components/documents/NewParticipant";
 
 interface DocumentData {
   fullDocument: FullDocumentsResponse<DocumentsExpand>;
@@ -47,6 +46,7 @@ interface DocumentData {
   pastEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
   allDocParticipants: ListResult<ParticipantsCustomResponse>;
   permission: ParticipantsPermissionOptions;
+  people: PeopleResponse<unknown>[];
   pbAuthCookie: string;
 }
 
@@ -75,6 +75,7 @@ function Document({
   const pastEventDocuments = dataParse.pastEventDocuments;
   const allDocParticipants = dataParse.allDocParticipants;
   const permission = dataParse.permission;
+  const people = dataParse.people;
   const isWrite = permission == ParticipantsPermissionOptions.write;
 
   const { register, control, handleSubmit, watch, setValue, trigger } =
@@ -167,7 +168,14 @@ function Document({
       </Head>
       <h1>Full Document</h1>
       <h2>Participants</h2>
-      <ol>{participantsList}</ol>
+      <NewParticipantForm
+        defaultValue={allDocParticipants}
+        docId={documentId}
+        people={people}
+        user={user}
+        pbClient={pbClient}
+        disabled={!isWrite}
+      ></NewParticipantForm>
       <p key="newEvent">
         <Link href={`/eventDocuments/new?fullDocId=${fullDocumentId}`}>
           New event
@@ -339,6 +347,10 @@ export const getServerSideProps = async ({
     )?.permission;
   }
 
+  const people = await pbServer
+    .collection(Collections.People)
+    .getFullList<PeopleResponse>();
+
   return {
     props: {
       data: SuperJSON.stringify({
@@ -348,6 +360,7 @@ export const getServerSideProps = async ({
         pastEventDocuments,
         allDocParticipants,
         permission,
+        people,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as DocumentData),
     },

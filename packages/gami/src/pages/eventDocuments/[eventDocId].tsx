@@ -5,7 +5,6 @@ import type {
 } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
   AttachmentsResponse,
@@ -41,6 +40,7 @@ import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import type { RichText } from "src/types/documents";
 import SuperJSON from "superjson";
+import NewParticipantForm from "../../components/documents/NewParticipant";
 
 interface EventDocumentData {
   eventDocument: EventDocumentsResponse<DocumentsExpand>;
@@ -48,15 +48,12 @@ interface EventDocumentData {
   attachments: AttachmentsResponse[];
   allDocParticipants: ListResult<ParticipantsCustomResponse>;
   permission: ParticipantsPermissionOptions;
+  people: PeopleResponse<unknown>[];
   pbAuthCookie: string;
 }
 
 interface DocumentsExpand {
   document: DocumentsResponse<RichText>;
-}
-
-interface PeopleExpand {
-  person: PeopleResponse;
 }
 
 interface EventDocumentInput
@@ -78,6 +75,7 @@ function EventDocument({
   const documentId = eventDocument.document;
   const allDocParticipants = dataParse.allDocParticipants;
   const permission = dataParse.permission;
+  const people = dataParse.people;
   const isWrite = permission == ParticipantsPermissionOptions.write;
 
   const [thumbnail, setThumbnail] = useState<string | undefined>(
@@ -161,17 +159,6 @@ function EventDocument({
     setAttachments
   );
 
-  const participantsList = allDocParticipants.items.map(
-    (allDocParticipant, index) => (
-      <li key={allDocParticipant.id}>
-        <Link href={`/people/${encodeURIComponent(allDocParticipant.id)}`}>
-          {allDocParticipant.name}
-        </Link>
-        {` - ${allDocParticipant.expand.participant_permission_list.at(index)}`}
-      </li>
-    )
-  ) ?? <p>{"Error when fetching participantsList :<"}</p>;
-
   return (
     <>
       <Head>
@@ -179,7 +166,14 @@ function EventDocument({
       </Head>
       <h1>Event Document</h1>
       <h2>Participants</h2>
-      <ol>{participantsList}</ol>
+      <NewParticipantForm
+        defaultValue={allDocParticipants}
+        docId={documentId}
+        people={people}
+        user={user}
+        pbClient={pbClient}
+        disabled={!isWrite}
+      ></NewParticipantForm>
       <form onSubmit={handleSubmit(onSubmit)}>
         <input {...register("name", { required: true, disabled: !isWrite })} />
         <label htmlFor="thumbnail">Choose file to upload</label>
@@ -338,6 +332,10 @@ export const getServerSideProps = async ({
     )?.permission;
   }
 
+  const people = await pbServer
+    .collection(Collections.People)
+    .getFullList<PeopleResponse>();
+
   return {
     props: {
       data: SuperJSON.stringify({
@@ -346,6 +344,7 @@ export const getServerSideProps = async ({
         fullDocuments,
         allDocParticipants,
         permission,
+        people,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as EventDocumentData),
     },
