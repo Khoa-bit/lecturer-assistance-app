@@ -46,18 +46,22 @@ func main() {
 			apis.ActivityLogger(app),
 		)
 
+		// Get all event documents
 		subGroup.GET("/eventDocuments", func(c echo.Context) error {
 			return handlers.GetEventDocuments(app, c)
 		})
 
+		// Get all event documents that the current user participate in
 		subGroup.GET("/participatedEventDocuments", func(c echo.Context) error {
 			return handlers.GetParticipatedEventDocuments(app, c)
 		})
 
+		// Get all full documents
 		subGroup.GET("/fullDocuments", func(c echo.Context) error {
 			return handlers.GetFullDocuments(app, c)
 		})
 
+		// Get all full documents that the current user participate in
 		subGroup.GET("/participatedFullDocuments", func(c echo.Context) error {
 			return handlers.GetParticipatedFullEventDocuments(app, c)
 		})
@@ -345,18 +349,33 @@ func main() {
 			return c.JSON(http.StatusOK, result)
 		})
 
+		// Get all starred relationships with the current user
 		subGroup.GET("/relationships", func(c echo.Context) error {
 			return handlers.GetRelationships(app, c)
 		})
 
+		// Get all participants from the current user's documents
 		subGroup.GET("/allAcrossParticipants", func(c echo.Context) error {
 			return handlers.GetAllAcrossParticipants(app, c)
 		})
 
+		// Get all starred participants from the current user's documents
 		subGroup.GET("/getStarredParticipants", func(c echo.Context) error {
 			return handlers.GetStarredParticipants(app, c)
 		})
 
+		// Get all documents that the query person participate in the current user's document
+		subGroup.GET("/getAllDocParticipation/:toPerson", func(c echo.Context) error {
+			return handlers.GetAllDocParticipation(app, c)
+		})
+
+		// Get all participants for the current user's particular doc
+		subGroup.GET("/getAllDocParticipants/:docId", func(c echo.Context) error {
+			return handlers.GetAllDocParticipants(app, c)
+		})
+
+		// Get all possible new relationships options for the current user.
+		// Deprecated since We don't need to add contact manually anymore - add star will automatically add new relationships
 		subGroup.GET("/newRelationshipsOptions", func(c echo.Context) error {
 			return handlers.GetNewRelationshipsOptions(app, c)
 		})

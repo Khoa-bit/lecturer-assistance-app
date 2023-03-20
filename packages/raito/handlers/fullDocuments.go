@@ -26,7 +26,7 @@ func GetFullDocuments(app *pocketbase.PocketBase, c echo.Context) error {
 
 	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
 
-	queryStr := fmt.Sprintf(
+	query := app.Dao().DB().NewQuery(fmt.Sprintf(
 		`SELECT fd.* %s
     FROM (
       SELECT d.*
@@ -35,7 +35,7 @@ func GetFullDocuments(app *pocketbase.PocketBase, c echo.Context) error {
       WHERE u.id='%s'
       ) as userDocument
       INNER JOIN fullDocuments AS fd ON fd.document = userDocument.id`,
-		selectArgs, authRecord.Id)
+		selectArgs, authRecord.Id))
 
-	return model.GetRequestHandler(app, c, queryStr, mainCollectionName, hasGroupBy, fieldMetadataList)
+	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
 }

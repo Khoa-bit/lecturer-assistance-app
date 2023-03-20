@@ -57,27 +57,43 @@ export interface FullDocumentsCustomResponse extends FullDocumentsResponse {
   };
 }
 
-export interface AllAcrossParticipantsCustomResponse extends PeopleResponse {
+export interface ParticipantsCustomResponse extends PeopleResponse {
   expand: {
-    eventDocument_created_list: string;
-    eventDocument_document_list: string;
-    eventDocument_endTime_list: string;
-    eventDocument_fullDocument_list: string;
-    eventDocument_id_list: string;
-    eventDocument_recurring_list: string;
-    eventDocument_startTime_list: string;
-    eventDocument_updated_list: string;
-    fullDocument_category_list: string;
-    fullDocument_created_list: string;
-    fullDocument_document_list: string;
-    fullDocument_id_list: string;
-    fullDocument_updated_list: string;
-    relationship_created_list: string;
-    relationship_fromPerson_list: string;
-    relationship_id_list: string;
-    relationship_toPerson_list: string;
-    relationship_updated_list: string;
+    eventDocument_created_list: string[];
+    eventDocument_document_list: string[];
+    eventDocument_endTime_list: string[];
+    eventDocument_fullDocument_list: string[];
+    eventDocument_id_list: string[];
+    eventDocument_recurring_list: string[];
+    eventDocument_startTime_list: string[];
+    eventDocument_updated_list: string[];
+    fullDocument_category_list: string[];
+    fullDocument_created_list: string[];
+    fullDocument_document_list: string[];
+    fullDocument_id_list: string[];
+    fullDocument_updated_list: string[];
+    participant_created_list: string[];
+    participant_document_list: string[];
+    participant_id_list: string[];
+    participant_note_list: string[];
+    participant_permission_list: string[];
+    participant_person_list: string[];
+    participant_role_list: string[];
+    participant_updated_list: string[];
+    relationship_created_list: string[];
+    relationship_fromPerson_list: string[];
+    relationship_id_list: string[];
+    relationship_toPerson_list: string[];
+    relationship_updated_list: string[];
+    userDocument_created_list: string[];
+    userDocument_diffHash_list: string[];
+    userDocument_id_list: string[];
+    userDocument_name_list: string[];
+    userDocument_owner_list: string[];
+    userDocument_priority_list: string[];
+    userDocument_richText_list: string[];
+    userDocument_status_list: string[];
+    userDocument_thumbnail_list: string[];
+    userDocument_updated_list: string[];
   };
 }
-
-export type StarredParticipants = AllAcrossParticipantsCustomResponse;

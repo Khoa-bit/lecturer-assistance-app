@@ -14,7 +14,7 @@ import type {
   EventDocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
-  ParticipantsResponse,
+  ParticipantsCustomResponse,
   PeopleResponse,
 } from "raito";
 import {
@@ -33,28 +33,25 @@ import { createHandleAttachment } from "src/components/wysiwyg/documents/createH
 import { createHandleThumbnail } from "src/components/wysiwyg/documents/createHandleThumbnail";
 import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
 import TipTapByPermission from "src/components/wysiwyg/TipTapByPermission";
-import { getOwnerRole } from "src/lib/documents";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import type { RichText } from "src/types/documents";
 import SuperJSON from "superjson";
+import NewParticipantForm from "../../components/documents/NewParticipant";
 
 interface DocumentData {
   fullDocument: FullDocumentsResponse<DocumentsExpand>;
   attachments: AttachmentsResponse[];
   upcomingEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
   pastEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
-  participants: ParticipantsResponse<PeopleExpand>[];
-  userRole: ParticipantsResponse<PeopleExpand | object>;
+  allDocParticipants: ListResult<ParticipantsCustomResponse>;
+  permission: ParticipantsPermissionOptions;
+  people: PeopleResponse<unknown>[];
   pbAuthCookie: string;
 }
 
 interface DocumentsExpand {
   document: DocumentsResponse<RichText>;
-}
-
-interface PeopleExpand {
-  person: PeopleResponse;
 }
 
 interface FullDocumentInput
@@ -76,12 +73,9 @@ function Document({
   const documentId = fullDocument.document;
   const upcomingEventDocuments = dataParse.upcomingEventDocuments;
   const pastEventDocuments = dataParse.pastEventDocuments;
-  const participants = dataParse.participants;
-  const userRole = dataParse.userRole;
-  const permission =
-    user.person == baseDocument?.owner
-      ? ParticipantsPermissionOptions.write
-      : userRole.permission;
+  const allDocParticipants = dataParse.allDocParticipants;
+  const permission = dataParse.permission;
+  const people = dataParse.people;
   const isWrite = permission == ParticipantsPermissionOptions.write;
 
   const { register, control, handleSubmit, watch, setValue, trigger } =
@@ -157,13 +151,16 @@ function Document({
     setAttachments
   );
 
-  const participantsList = participants.map((participant) => (
-    <li key={participant.id}>
-      {participant.expand?.person.name} - {participant.permission} -{" "}
-      {participant.role} - {participant.note}
-    </li>
-  )) ?? <p>{"Error when fetching participantsList :<"}</p>;
-
+  const participantsList = allDocParticipants.items.map(
+    (allDocParticipant, index) => (
+      <li key={allDocParticipant.id}>
+        <Link href={`/people/${encodeURIComponent(allDocParticipant.id)}`}>
+          {allDocParticipant.name}
+        </Link>
+        {` - ${allDocParticipant.expand.participant_permission_list.at(index)}`}
+      </li>
+    )
+  ) ?? <p>{"Error when fetching participantsList :<"}</p>;
   return (
     <>
       <Head>
@@ -171,7 +168,14 @@ function Document({
       </Head>
       <h1>Full Document</h1>
       <h2>Participants</h2>
-      <ol>{participantsList}</ol>
+      <NewParticipantForm
+        defaultValue={allDocParticipants}
+        docId={documentId}
+        people={people}
+        user={user}
+        pbClient={pbClient}
+        disabled={!isWrite}
+      ></NewParticipantForm>
       <p key="newEvent">
         <Link href={`/eventDocuments/new?fullDocId=${fullDocumentId}`}>
           New event
@@ -288,6 +292,8 @@ export const getServerSideProps = async ({
       expand: "document",
     });
 
+  const document = fullDocument.expand?.document;
+
   const attachments = await pbServer
     .collection(Collections.Attachments)
     .getFullList<AttachmentsResponse>(200, {
@@ -312,28 +318,38 @@ export const getServerSideProps = async ({
       sort: "-startTime",
     });
 
-  const participants = await pbServer
-    .collection(Collections.Participants)
-    .getFullList<ParticipantsResponse<PeopleExpand>>({
-      filter: `document = "${fullDocument.document}"`,
-      expand: "person",
-    });
+  const allDocParticipants =
+    await pbServer.apiGetList<ParticipantsCustomResponse>(
+      `/api/user/getAllDocParticipants/${document?.id}?fullList=true`
+    );
 
-  let userRole = participants.find(
-    (participant) => participant.person == user.person
-  ) as ParticipantsResponse<PeopleExpand | object>;
+  let permission: ParticipantsPermissionOptions | undefined;
+  if (document?.owner == user.person) {
+    permission = ParticipantsPermissionOptions.write;
+  } else {
+    const participant = allDocParticipants.items.find(
+      (allDocParticipant) => allDocParticipant.id == user.person
+    );
 
-  if (!userRole && fullDocument.expand?.document.owner != user.person) {
-    return {
-      redirect: {
-        destination: "/fullDocuments",
-        permanent: false,
-      },
-    };
+    const documentsWithPermission =
+      participant?.expand.userDocument_id_list.map((documentId, index) => {
+        return {
+          documentId,
+          permission: participant?.expand.participant_permission_list.at(
+            index
+          ) as ParticipantsPermissionOptions | undefined,
+        };
+      });
+
+    permission = documentsWithPermission?.find(
+      (documentWithPermission) =>
+        documentWithPermission.documentId == document?.id
+    )?.permission;
   }
 
-  // Default permission for owner
-  userRole ??= getOwnerRole(fullDocument.document, user.person);
+  const people = await pbServer
+    .collection(Collections.People)
+    .getFullList<PeopleResponse>();
 
   return {
     props: {
@@ -342,8 +358,9 @@ export const getServerSideProps = async ({
         attachments,
         upcomingEventDocuments,
         pastEventDocuments,
-        participants,
-        userRole,
+        allDocParticipants,
+        permission,
+        people,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as DocumentData),
     },

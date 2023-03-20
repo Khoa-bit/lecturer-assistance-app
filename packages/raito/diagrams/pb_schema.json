@@ -20,10 +20,10 @@
       }
     ],
     "listRule": "id = @request.auth.id",
-    "viewRule": "id = @request.auth.id",
-    "createRule": "",
-    "updateRule": "id = @request.auth.id",
-    "deleteRule": "id = @request.auth.id",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
     "options": {
       "allowEmailAuth": true,
       "allowOAuth2Auth": true,
@@ -96,11 +96,11 @@
         }
       }
     ],
-    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
-    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
+    "listRule": "@request.auth.person.id = document.owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\"))",
+    "viewRule": "@request.auth.person.id = document.owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\"))",
+    "createRule": "@request.auth.person.id = @request.data.document.owner",
+    "updateRule": "@request.auth.person.id = document.owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && @collection.participants.permission = \"write\")",
+    "deleteRule": "@request.auth.person.id = document.owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && @collection.participants.permission = \"write\")",
     "options": {}
   },
   {
@@ -332,23 +332,10 @@
           "max": null,
           "pattern": ""
         }
-      },
-      {
-        "id": "qwqmdr6a",
-        "name": "major",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "unique": false,
-        "options": {
-          "maxSelect": 1,
-          "collectionId": "8qzwbi8qig96dy3",
-          "cascadeDelete": false
-        }
       }
     ],
-    "listRule": null,
-    "viewRule": null,
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,
@@ -459,10 +446,10 @@
         }
       }
     ],
-    "listRule": "@request.auth.person.id = owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\"))",
-    "viewRule": "@request.auth.person.id = owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\"))",
+    "listRule": "@request.auth.person.id = owner.id || (\n  @collection.participants.document.id ?= id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
+    "viewRule": "@request.auth.person.id = owner.id || (\n  @collection.participants.document.id ?= id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
     "createRule": "@request.auth.person.id = @request.data.owner",
-    "updateRule": "@request.auth.person.id = owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && @collection.participants.permission = \"write\")",
+    "updateRule": "@request.auth.person.id = owner.id || (\n  @collection.participants.document.id ?= id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
     "deleteRule": null,
     "options": {}
   },
@@ -503,7 +490,7 @@
         "name": "startTime",
         "type": "date",
         "system": false,
-        "required": true,
+        "required": false,
         "unique": false,
         "options": {
           "min": "",
@@ -523,19 +510,28 @@
         }
       },
       {
-        "id": "bece22zk",
+        "id": "3zekeiww",
         "name": "recurring",
-        "type": "bool",
+        "type": "select",
         "system": false,
-        "required": false,
+        "required": true,
         "unique": false,
-        "options": {}
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "Once",
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "Annually"
+          ]
+        }
       }
     ],
-    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
-    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
-    "createRule": null,
-    "updateRule": null,
+    "listRule": "@request.auth.person.id = document.owner.id || (\n  @collection.participants.document.id ?= document.id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
+    "viewRule": "@request.auth.person.id = document.owner.id || (\n  @collection.participants.document.id ?= document.id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
+    "createRule": "@request.auth.person.id = document.owner.id",
+    "updateRule": "@request.auth.person.id = document.owner.id || (\n  @collection.participants.document.id ?= document.id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
     "deleteRule": null,
     "options": {}
   },
@@ -581,10 +577,10 @@
         }
       }
     ],
-    "listRule": "@request.auth.person.id = document.owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\"))",
-    "viewRule": "@request.auth.person.id = document.owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\"))",
-    "createRule": "@request.auth.person.id = document.owner.id",
-    "updateRule": "@request.auth.person.id = document.owner.id || (\n  @request.auth.person.id = @collection.participants.person.id && (\n  @collection.participants.permission = \"write\"))",
+    "listRule": "@request.auth.person.id = document.owner.id || (\n  @collection.participants.document.id ?= document.id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
+    "viewRule": "@request.auth.person.id = document.owner.id || @request.auth.id != \"\"",
+    "createRule": "@request.auth.person.id = document.owner.id || (\n  @collection.participants.document.id ?= document.id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
+    "updateRule": "@request.auth.person.id = document.owner.id || (\n  @collection.participants.document.id ?= document.id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
     "deleteRule": null,
     "options": {}
   },
@@ -633,10 +629,23 @@
           "max": null,
           "pattern": ""
         }
+      },
+      {
+        "id": "mesx0ym5",
+        "name": "department",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "collectionId": "rncqe4klgabuo3x",
+          "cascadeDelete": true
+        }
       }
     ],
-    "listRule": null,
-    "viewRule": null,
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,
@@ -717,11 +726,11 @@
         }
       }
     ],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": "@request.auth.person.id = @request.data.document.owner",
+    "updateRule": "@request.auth.person.id = @request.data.document.owner",
+    "deleteRule": "@request.auth.person.id = @request.data.document.owner",
     "options": {}
   },
   {
@@ -748,7 +757,7 @@
         "name": "name",
         "type": "text",
         "system": false,
-        "required": true,
+        "required": false,
         "unique": false,
         "options": {
           "min": null,
@@ -807,7 +816,7 @@
         "name": "title",
         "type": "text",
         "system": false,
-        "required": true,
+        "required": false,
         "unique": false,
         "options": {
           "min": null,
@@ -847,14 +856,14 @@
       },
       {
         "id": "y6l0vv3j",
-        "name": "department",
+        "name": "major",
         "type": "relation",
         "system": false,
         "required": false,
         "unique": false,
         "options": {
           "maxSelect": 1,
-          "collectionId": "rncqe4klgabuo3x",
+          "collectionId": "8qzwbi8qig96dy3",
           "cascadeDelete": false
         }
       },
@@ -871,10 +880,10 @@
         }
       }
     ],
-    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
-    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
-    "createRule": null,
-    "updateRule": null,
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": "@request.auth.id != \"\"",
+    "updateRule": "@request.auth.id != \"\"",
     "deleteRule": null,
     "options": {}
   },
@@ -911,11 +920,11 @@
         }
       }
     ],
-    "listRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
-    "viewRule": "@request.auth.person.id = @collection.participants.person.id && (@collection.participants.permission = \"read\" || @collection.participants.permission = \"comment\" || @collection.participants.permission = \"write\")",
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": "@request.auth.id != \"\"",
+    "updateRule": "@request.auth.id != \"\"",
+    "deleteRule": "@request.auth.id != \"\"",
     "options": {}
   },
   {
