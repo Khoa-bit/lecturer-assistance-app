@@ -3,67 +3,109 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import Head from "next/head";
-import type { ClassesRecord, DocumentsRecord } from "raito";
-import {
-  ClassesTrainingSystemOptions,
-  DocumentsPriorityOptions,
-  DocumentsStatusOptions,
+import { useRouter } from "next/router";
+import type {
+  ClassesRecord,
+  ClassesResponse,
+  DepartmentsResponse,
+  DocumentsRecord,
+  DocumentsResponse,
+  FullDocumentsRecord,
+  FullDocumentsResponse,
+  MajorsResponse,
+  PeopleRecord,
+  PeopleResponse,
 } from "raito";
-import type { SubmitHandler } from "react-hook-form";
-import { useForm } from "react-hook-form";
+import { ClassesTrainingSystemOptions, Collections } from "raito";
+import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
+import { getCurrentCohort } from "src/lib/input_handling";
+import { getPBServer } from "src/lib/pb_server";
+import SuperJSON from "superjson";
 
-type FullDocumentInput = DocumentsRecord & ClassesRecord;
+interface NewAdviseClassData {
+  newFullDocUrl: string;
+}
 
-function NewAdviseClass({}: InferGetServerSidePropsType<
-  typeof getServerSideProps
->) {
-  const { register, handleSubmit } = useForm<FullDocumentInput>();
+interface ExpandMajorDepartment {
+  major: MajorsResponse<ExpandDepartment>;
+}
 
-  const onSubmit: SubmitHandler<FullDocumentInput> = (data) =>
-    console.log(data);
+interface ExpandDepartment {
+  department: DepartmentsResponse;
+}
+
+function NewAdviseClass({
+  data,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const dataParse = SuperJSON.parse<NewAdviseClassData>(data);
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace(dataParse.newFullDocUrl);
+  }, [dataParse.newFullDocUrl, router]);
 
   return (
     <>
       <Head>
-        <title>Events</title>
+        <title>New advise class</title>
       </Head>
-      <h1>Events</h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <input {...register("name", { required: true })} />
-        <input {...register("thumbnail", {})} />
-        <select {...register("priority", { required: true })}>
-          {Object.entries(DocumentsPriorityOptions).map(([stringValue]) => (
-            <option key={stringValue} value={stringValue}>
-              {stringValue}
-            </option>
-          ))}
-        </select>
-        <select {...register("status", { required: true })}>
-          {Object.entries(DocumentsStatusOptions).map(([stringValue]) => (
-            <option key={stringValue} value={stringValue}>
-              {stringValue}
-            </option>
-          ))}
-        </select>
-        <input {...register("cohort", { required: true })} />
-        <select {...register("trainingSystem", { required: true })}>
-          {Object.entries(ClassesTrainingSystemOptions).map(([stringValue]) => (
-            <option key={stringValue} value={stringValue}>
-              {stringValue}
-            </option>
-          ))}
-        </select>
-
-        <input type="submit" />
-      </form>
+      <h1>Creating your new advise class...</h1>
     </>
   );
 }
 
-export const getServerSideProps = async ({}: GetServerSidePropsContext) => {
+export const getServerSideProps = async ({
+  req,
+  resolvedUrl,
+}: GetServerSidePropsContext) => {
+  const { pbServer, user } = await getPBServer(req, resolvedUrl);
+
+  const baseDocument = await pbServer
+    .collection(Collections.Documents)
+    .create<DocumentsResponse>({
+      name: "Untitled",
+      priority: "Medium",
+      status: "Todo",
+      owner: user.person,
+    } as DocumentsRecord);
+
+  const baseFullDocument = await pbServer
+    .collection(Collections.FullDocuments)
+    .create<FullDocumentsResponse>({
+      document: baseDocument.id,
+      category: "Draft",
+    } as FullDocumentsRecord);
+
+  const person = await pbServer
+    .collection(Collections.People)
+    .getOne<PeopleResponse<ExpandMajorDepartment>>(user.person);
+
+  const adviseClass = await pbServer
+    .collection(Collections.Classes)
+    .create<ClassesResponse>({
+      fullDocument: baseFullDocument.id,
+      cohort: getCurrentCohort(),
+      major: person.major,
+      trainingSystem: ClassesTrainingSystemOptions.Undergraduate,
+    } as ClassesRecord);
+
+  if (!person.isLecturer) {
+    await pbServer
+      .collection(Collections.People)
+      .update<PeopleResponse>(person.id, {
+        isLecturer: true,
+      } as PeopleRecord);
+  }
+
+  const newFullDocUrl = `/adviseClasses/${adviseClass.id}`;
+
   return {
-    props: {},
+    props: {
+      data: SuperJSON.stringify({
+        newFullDocUrl,
+      } as NewAdviseClassData),
+    },
   };
 };
 

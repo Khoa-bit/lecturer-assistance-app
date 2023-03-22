@@ -3,72 +3,117 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import Head from "next/head";
-import type { DocumentsRecord } from "raito";
-import {
-  DocumentsPriorityOptions,
-  DocumentsStatusOptions,
-  FullDocumentsCategoryOptions,
+import { useRouter } from "next/router";
+import type {
+  CoursesRecord,
+  CoursesResponse,
+  DocumentsRecord,
+  DocumentsResponse,
+  FullDocumentsRecord,
+  FullDocumentsResponse,
+  PeopleRecord,
+  PeopleResponse,
 } from "raito";
-import type { SubmitHandler } from "react-hook-form";
-import { useForm } from "react-hook-form";
+import { Collections } from "raito";
+import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
+import { getCurrentSemester } from "src/lib/input_handling";
+import { getPBServer } from "src/lib/pb_server";
+import SuperJSON from "superjson";
 
-interface FullDocumentInput extends DocumentsRecord {
-  category: FullDocumentsCategoryOptions;
+interface NewLectureCourseData {
+  newEventDocUrl: string;
 }
 
-function NewFullDocument({}: InferGetServerSidePropsType<
-  typeof getServerSideProps
->) {
-  const { register, handleSubmit } = useForm<FullDocumentInput>();
+function NewLectureCourse({
+  data,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const dataParse = SuperJSON.parse<NewLectureCourseData>(data);
+  const router = useRouter();
 
-  const onSubmit: SubmitHandler<FullDocumentInput> = (data) =>
-    console.log(data);
+  useEffect(() => {
+    router.replace(dataParse.newEventDocUrl);
+  }, [dataParse.newEventDocUrl, router]);
 
   return (
     <>
       <Head>
-        <title>Events</title>
+        <title>New lecture course</title>
       </Head>
-      <h1>Events</h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <input {...register("name", { required: true })} />
-        <input {...register("thumbnail", {})} />
-        <select {...register("category")}>
-          {Object.entries(FullDocumentsCategoryOptions).map(([stringValue]) => (
-            <option key={stringValue} value={stringValue}>
-              {stringValue}
-            </option>
-          ))}
-        </select>
-        <select {...register("priority", { required: true })}>
-          {Object.entries(DocumentsPriorityOptions).map(([stringValue]) => (
-            <option key={stringValue} value={stringValue}>
-              {stringValue}
-            </option>
-          ))}
-        </select>
-        <select {...register("status", { required: true })}>
-          {Object.entries(DocumentsStatusOptions).map(([stringValue]) => (
-            <option key={stringValue} value={stringValue}>
-              {stringValue}
-            </option>
-          ))}
-        </select>
-        <input type="submit" />
-      </form>
+      <h1>Creating your new lecture course...</h1>
     </>
   );
 }
 
-export const getServerSideProps = async ({}: GetServerSidePropsContext) => {
+export const getServerSideProps = async ({
+  req,
+  query,
+  resolvedUrl,
+}: GetServerSidePropsContext) => {
+  const { pbServer, user } = await getPBServer(req, resolvedUrl);
+
+  let fullDocId = query.fullDocId as string | undefined;
+
+  // Check if the fullDocId is valid
+  if (fullDocId) {
+    try {
+      await pbServer
+        .collection(Collections.FullDocuments)
+        .getOne<FullDocumentsResponse>(fullDocId);
+    } catch (error) {
+      fullDocId = undefined;
+    }
+  }
+
+  const baseDocument = await pbServer
+    .collection(Collections.Documents)
+    .create<DocumentsResponse>({
+      name: "Untitled",
+      priority: "Medium",
+      status: "Todo",
+      owner: user.person,
+    } as DocumentsRecord);
+
+  const baseFullDocument = await pbServer
+    .collection(Collections.FullDocuments)
+    .create<FullDocumentsResponse>({
+      document: baseDocument.id,
+      category: "Draft",
+    } as FullDocumentsRecord);
+
+  const person = await pbServer
+    .collection(Collections.People)
+    .getOne<PeopleResponse>(user.person);
+
+  const lectureCourse = await pbServer
+    .collection(Collections.Courses)
+    .create<CoursesResponse>({
+      fullDocument: baseFullDocument.id,
+      courseTemplate: undefined,
+      semester: getCurrentSemester(),
+    } as CoursesRecord);
+
+  if (!person.isAdvisor) {
+    await pbServer
+      .collection(Collections.People)
+      .update<PeopleResponse>(person.id, {
+        isAdvisor: true,
+      } as PeopleRecord);
+  }
+
+  const newEventDocUrl = `/lectureCourses/${lectureCourse.id}`;
+
   return {
-    props: {},
+    props: {
+      data: SuperJSON.stringify({
+        newEventDocUrl,
+      } as NewLectureCourseData),
+    },
   };
 };
 
-NewFullDocument.getLayout = function getLayout(page: React.ReactElement) {
+NewLectureCourse.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;
 };
 
-export default NewFullDocument;
+export default NewLectureCourse;

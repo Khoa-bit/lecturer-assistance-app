@@ -2,32 +2,40 @@ import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import ErrorPage from "next/error";
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { AdvisorsResponse, ClassesResponse } from "raito";
+import type { ClassesCustomResponse } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface AdviseClassesData {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  adviseClasses: ListResult<ClassesResponse<any>>;
+  adviseClasses: ListResult<ClassesCustomResponse>;
+  participatedAdviseClasses: ListResult<ClassesCustomResponse>;
 }
 
 function AdviseClasses({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  if (!data) {
-    return <ErrorPage statusCode={404} />;
-  }
-
   const dataParse = SuperJSON.parse<AdviseClassesData>(data);
 
-  const AdviseClassesList = dataParse.adviseClasses.items.map((classDoc) => (
-    <li key={classDoc.id}>{JSON.stringify(classDoc.expand?.document.name)}</li>
-  )) ?? <p>{"Error when fetching class documents :<"}</p>;
+  const adviseClassesList = dataParse.adviseClasses.items.map((adviseClass) => (
+    <li key={adviseClass.id}>
+      <Link href={`/adviseClasses/${encodeURIComponent(adviseClass.id)}`}>
+        {JSON.stringify(adviseClass.expand.userDocument_name)}
+      </Link>
+    </li>
+  )) ?? <p>{"Error when fetching adviseClassesList :<"}</p>;
+
+  const participatedAdviseClassesList =
+    dataParse.participatedAdviseClasses.items.map((adviseClass) => (
+      <li key={adviseClass.id}>
+        <Link href={`/adviseClasses/${encodeURIComponent(adviseClass.id)}`}>
+          {JSON.stringify(adviseClass.expand.userDocument_name)}
+        </Link>
+      </li>
+    )) ?? <p>{"Error when fetching participatedAdviseClassesList :<"}</p>;
 
   return (
     <>
@@ -36,9 +44,11 @@ function AdviseClasses({
       </Head>
       <h1>AdviseClasses</h1>
       <Link className="text-blue-700 underline" href="/adviseClasses/new">
-        New class
+        New Advise Class
       </Link>
-      <ol>{AdviseClassesList}</ol>
+      <ol>{adviseClassesList}</ol>
+      <h1>Participated AdviseClasses</h1>
+      <ol>{participatedAdviseClassesList}</ol>
     </>
   );
 }
@@ -48,13 +58,22 @@ export const getServerSideProps = async ({
   resolvedUrl,
 }: GetServerSidePropsContext) => {
   const { pbServer } = await getPBServer(req, resolvedUrl);
-  const adviseClasses = await pbServer.apiGetList<AdvisorsResponse>(
+
+  const adviseClasses = await pbServer.apiGetList<ClassesCustomResponse>(
     "/api/user/classes"
   );
 
+  const participatedAdviseClasses =
+    await pbServer.apiGetList<ClassesCustomResponse>(
+      "/api/user/participatedClasses?fullList=true"
+    );
+
   return {
     props: {
-      data: SuperJSON.stringify({ adviseClasses }),
+      data: SuperJSON.stringify({
+        adviseClasses,
+        participatedAdviseClasses,
+      } as AdviseClassesData),
     },
   };
 };

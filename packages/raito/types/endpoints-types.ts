@@ -1,4 +1,6 @@
 import {
+  ClassesResponse,
+  CoursesResponse,
   EventDocumentsResponse,
   FullDocumentsResponse,
   PeopleResponse,
@@ -45,6 +47,32 @@ export interface EventDocumentsCustomResponse extends EventDocumentsResponse {
 }
 
 export interface FullDocumentsCustomResponse extends FullDocumentsResponse {
+  expand: {
+    userDocument_id: string;
+    userDocument_name: string;
+    userDocument_thumbnail: string;
+    userDocument_priority: string;
+    userDocument_status: string;
+    userDocument_richText: string;
+    userDocument_diffHash: string;
+    userDocument_owner: string;
+  };
+}
+
+export interface ClassesCustomResponse extends ClassesResponse {
+  expand: {
+    userDocument_id: string;
+    userDocument_name: string;
+    userDocument_thumbnail: string;
+    userDocument_priority: string;
+    userDocument_status: string;
+    userDocument_richText: string;
+    userDocument_diffHash: string;
+    userDocument_owner: string;
+  };
+}
+
+export interface CoursesCustomResponse extends CoursesResponse {
   expand: {
     userDocument_id: string;
     userDocument_name: string;

@@ -18,6 +18,9 @@ import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
+import MajorDepartment, {
+  fetchMajorDepartment,
+} from "src/components/documents/MajorDepartment";
 import ParticipateDetailList from "src/components/documents/ParticipateDetailList";
 import MainLayout from "src/components/layouts/MainLayout";
 import { debounce } from "src/lib/input_handling";
@@ -39,7 +42,7 @@ interface UsersExpand {
 }
 
 interface PersonInput extends PeopleRecord {
-  department?: string;
+  department?: never; // only to hook into error handling of Reach-Hook-Form
   diffHash?: string;
 }
 
@@ -51,12 +54,6 @@ function Person({
   const person = dataParse.person;
   const personId = person.id;
   const departments = dataParse.departments;
-  const [departmentId, setDepartmentId] = useState<string>(
-    person.expand?.major?.department ?? ""
-  );
-  const [majorOptions, setMajorOptions] = useState<MajorsResponse[]>(
-    dataParse.majorOptions
-  );
   const allDocParticipation = dataParse.allDocParticipation;
 
   const { register, handleSubmit, setValue, control } = useForm<PersonInput>({
@@ -69,7 +66,6 @@ function Person({
       title: person.title,
       placeOfBirth: person.placeOfBirth,
       gender: person.gender,
-      department: departmentId, // person.expand?.major?.department,
       major: person.major,
       deleted: person.deleted,
       diffHash: MD5(
@@ -82,7 +78,6 @@ function Person({
           title: person.title,
           placeOfBirth: person.placeOfBirth,
           gender: person.gender,
-          department: departmentId, // person.expand?.major?.department,
           major: person.major,
           deleted: person.deleted,
           diffHash: undefined,
@@ -94,19 +89,6 @@ function Person({
   const [avatar, setAvatar] = useState<string | undefined>(person.avatar);
 
   const { pbClient } = usePBClient(dataParse.pbAuthCookie);
-
-  useEffect(() => {
-    setTimeout(async () => {
-      const majorOptions = await pbClient
-        .collection(Collections.Majors)
-        .getFullList<MajorsResponse>({
-          filter: `department="${departmentId}"`,
-        })
-        .catch(() => undefined);
-
-      if (majorOptions) setMajorOptions(majorOptions);
-    }, 0);
-  }, [departmentId, pbClient]);
 
   const formRef = useRef<HTMLFormElement>(null);
   const onSubmit: SubmitHandler<PersonInput> = useCallback(
@@ -211,25 +193,13 @@ function Person({
             </option>
           ))}
         </select>
-        <select
-          {...register("department", { required: true })}
-          onChange={(event) => {
-            setDepartmentId(event.currentTarget.value);
-          }}
-        >
-          {departments.map((department) => (
-            <option key={department.id} value={department.id}>
-              {department.name}
-            </option>
-          ))}
-        </select>
-        <select {...register("major", { required: true })}>
-          {majorOptions?.map((major) => (
-            <option key={major.id} value={major.id}>
-              {major.name}
-            </option>
-          ))}
-        </select>
+        <MajorDepartment
+          name="major"
+          initDepartmentId={person.expand?.major?.department ?? ""}
+          initMajorOptions={dataParse.majorOptions}
+          departments={departments}
+          pbClient={pbClient}
+        ></MajorDepartment>
         <input type="submit" />
       </form>
 
@@ -265,23 +235,16 @@ export const getServerSideProps = async ({
       expand: "users(person),major",
     });
 
-  const departments = await pbServer
-    .collection(Collections.Departments)
-    .getFullList<DepartmentsResponse>({});
-
-  const majorOptions = await pbServer
-    .collection(Collections.Majors)
-    .getFullList<MajorsResponse>({
-      filter: `department="${person.expand?.major?.department}"`,
-    });
+  const { departments, majorOptions } = await fetchMajorDepartment(
+    person.expand?.major?.department ?? "",
+    pbServer
+  );
 
   const allDocParticipation = (
     await pbServer.apiGetList<ParticipantsCustomResponse>(
       `/api/user/getAllDocParticipation/${personId}?fullList=true`
     )
   ).items.at(0);
-
-  console.log(allDocParticipation);
 
   return {
     props: {

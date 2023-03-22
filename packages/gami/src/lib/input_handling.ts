@@ -71,3 +71,27 @@ export function formatDate(
 ) {
   return d ? format(new Date(d), dateTimeFormat) : null;
 }
+
+export const getCurrentSemester = (): string => {
+  const now = new Date(Date.now());
+  const fullYear = now.getFullYear();
+  const month = now.getMonth();
+
+  if (month <= 7) {
+    return `Semester _ ${fullYear - 1} - ${fullYear}`;
+  } else {
+    return `Semester _ ${fullYear} - ${fullYear + 1}`;
+  }
+};
+
+export const getCurrentCohort = (): string => {
+  const now = new Date(Date.now());
+  const fullYear = now.getFullYear();
+  const month = now.getMonth();
+
+  if (month <= 7) {
+    return `${fullYear - 1} - ${fullYear}`;
+  } else {
+    return `${fullYear} - ${fullYear + 1}`;
+  }
+};

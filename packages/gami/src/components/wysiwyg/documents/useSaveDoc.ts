@@ -1,15 +1,12 @@
 import { useRouter } from "next/router";
-import { useRef, useEffect, useCallback } from "react";
-import type {
-  FieldValues,
-  UseFormTrigger,
-  UseFormWatch,
-} from "react-hook-form";
+import type { RefObject } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import type { FieldValues, UseFormWatch } from "react-hook-form";
 import { debounce } from "src/lib/input_handling";
 
 interface useDocHelperParams<T extends FieldValues> {
-  trigger: UseFormTrigger<T>;
-  submit: () => Promise<void>;
+  formRef: RefObject<HTMLFormElement>;
+  submitRef: RefObject<HTMLInputElement>;
   watch: UseFormWatch<T>;
 }
 
@@ -18,8 +15,8 @@ interface useDocHelperReturns {
 }
 
 export function useSaveDoc<T extends FieldValues>({
-  trigger,
-  submit,
+  formRef,
+  submitRef,
   watch,
 }: useDocHelperParams<T>): useDocHelperReturns {
   const router = useRouter();
@@ -49,21 +46,15 @@ export function useSaveDoc<T extends FieldValues>({
     };
   }, [hasSaved, router.events]);
 
-  const submitForm = useCallback(
-    () =>
-      // Validate the form before manual submitting
-      trigger(undefined, { shouldFocus: false }).then((isValid) => {
-        if (!isValid) return;
-        hasSaved.current = false;
+  const submitForm = useCallback(() => {
+    hasSaved.current = false;
 
-        console.log("Saving");
+    console.log("Saving");
 
-        submit().then(() => {
-          hasSaved.current = true;
-        });
-      }),
-    [submit, trigger]
-  );
+    formRef.current?.requestSubmit(submitRef.current);
+
+    hasSaved.current = true;
+  }, [formRef, submitRef]);
   const debouncedSave = debounce(() => submitForm(), 500);
 
   useEffect(() => {

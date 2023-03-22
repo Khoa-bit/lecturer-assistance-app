@@ -2,19 +2,14 @@ package main
 
 import (
 	"log"
-	"math"
-	"net/http"
-	"strconv"
 
 	"raito-pocketbase/handlers"
 	_ "raito-pocketbase/migrations"
 
 	"github.com/labstack/echo/v5"
-	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 )
 
@@ -63,290 +58,27 @@ func main() {
 
 		// Get all full documents that the current user participate in
 		subGroup.GET("/participatedFullDocuments", func(c echo.Context) error {
-			return handlers.GetParticipatedFullEventDocuments(app, c)
+			return handlers.GetParticipatedFullDocuments(app, c)
 		})
 
+		// Get all classes of the current user
 		subGroup.GET("/classes", func(c echo.Context) error {
-			// Only auth records can access this endpoint
-			authRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
-			if authRecord == nil {
-				return apis.NewForbiddenError("Only auth records can access this endpoint", nil)
-			}
-
-			var err error
-
-			// TODO: Implement API Rules
-			query := *app.Dao().ParamQuery().
-				Select("*").
-				From("users u").
-				InnerJoin("participants p", dbx.NewExp("p.person = u.person")).
-				InnerJoin("classes c", dbx.NewExp("c.document = p.document")).
-				InnerJoin("documents d", dbx.NewExp("d.id = c.document")).Where(dbx.HashExp{"u.id": authRecord.Id})
-			if err != nil {
-				return err
-			}
-
-			// count
-			var totalCount int64
-			countQuery := query
-			countQuery.Distinct(false).Select("COUNT(*)").OrderBy() // unset ORDER BY statements
-			if err := countQuery.Row(&totalCount); err != nil {
-				return err
-			}
-
-			// normalize perPage
-			perPageQueryParam := c.QueryParam("perPage")
-			perPage, err := strconv.Atoi(perPageQueryParam)
-			if err != nil || perPage <= 0 {
-				perPage = DefaultPerPage
-			} else if perPage > MaxPerPage {
-				perPage = MaxPerPage
-			}
-
-			totalPages := int(math.Ceil(float64(totalCount) / float64(perPage)))
-
-			// normalize page according to the total count
-			pageQueryParam := c.QueryParam("page")
-			page, err := strconv.Atoi(pageQueryParam)
-			if err != nil || page <= 0 || totalCount == 0 {
-				page = 1
-			} else if page > totalPages {
-				page = totalPages
-			}
-
-			// apply pagination
-			query.Limit(int64(perPage))
-			query.Offset(int64(perPage * (page - 1)))
-
-			// fetch models
-			items := []dbx.NullStringMap{}
-			if err := query.All(&items); err != nil {
-				return err
-			}
-
-			// parse rawItems into formatted results by collection schemas
-			classesCollection, err := app.Dao().FindCollectionByNameOrId("classes")
-			if err != nil {
-				return err
-			}
-			documentsCollection, err := app.Dao().FindCollectionByNameOrId("documents")
-			if err != nil {
-				return err
-			}
-
-			classesResults := models.NewRecordsFromNullStringMaps(classesCollection, items)
-			documentsResults := models.NewRecordsFromNullStringMaps(documentsCollection, items)
-
-			// set expands
-			for index, eventDoc := range classesResults {
-				eventDoc.SetExpand(map[string]any{
-					"document": documentsResults[index].ColumnValueMap(),
-				})
-			}
-
-			// Enrich results with expands relations and api rules + visibility
-			apis.EnrichRecords(c, app.Dao(), classesResults)
-			apis.EnrichRecords(c, app.Dao(), documentsResults)
-
-			result := &Result{
-				Page:       page,
-				PerPage:    perPage,
-				TotalItems: int(totalCount),
-				TotalPages: totalPages,
-				Items:      classesResults,
-			}
-
-			return c.JSON(http.StatusOK, result)
+			return handlers.GetClasses(app, c)
 		})
 
+		// Get all event documents that the current user participate in
+		subGroup.GET("/participatedClasses", func(c echo.Context) error {
+			return handlers.GetParticipatedClasses(app, c)
+		})
+
+		// Get all courses of the current user
 		subGroup.GET("/courses", func(c echo.Context) error {
-			// Only auth records can access this endpoint
-			authRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
-			if authRecord == nil {
-				return apis.NewForbiddenError("Only auth records can access this endpoint", nil)
-			}
-
-			var err error
-
-			// TODO: Implement API Rules
-			query := *app.Dao().ParamQuery().
-				Select("*").
-				From("users u").
-				InnerJoin("participants p", dbx.NewExp("p.person = u.person")).
-				InnerJoin("courses c", dbx.NewExp("c.document = p.document")).
-				InnerJoin("documents d", dbx.NewExp("d.id = c.document")).Where(dbx.HashExp{"u.id": authRecord.Id})
-			if err != nil {
-				return err
-			}
-
-			// count
-			var totalCount int64
-			countQuery := query
-			countQuery.Distinct(false).Select("COUNT(*)").OrderBy() // unset ORDER BY statements
-			if err := countQuery.Row(&totalCount); err != nil {
-				return err
-			}
-
-			// normalize perPage
-			perPageQueryParam := c.QueryParam("perPage")
-			perPage, err := strconv.Atoi(perPageQueryParam)
-			if err != nil || perPage <= 0 {
-				perPage = DefaultPerPage
-			} else if perPage > MaxPerPage {
-				perPage = MaxPerPage
-			}
-
-			totalPages := int(math.Ceil(float64(totalCount) / float64(perPage)))
-
-			// normalize page according to the total count
-			pageQueryParam := c.QueryParam("page")
-			page, err := strconv.Atoi(pageQueryParam)
-			if err != nil || page <= 0 || totalCount == 0 {
-				page = 1
-			} else if page > totalPages {
-				page = totalPages
-			}
-
-			// apply pagination
-			query.Limit(int64(perPage))
-			query.Offset(int64(perPage * (page - 1)))
-
-			// fetch models
-			items := []dbx.NullStringMap{}
-			if err := query.All(&items); err != nil {
-				return err
-			}
-
-			// parse rawItems into formatted results by collection schemas
-			coursesCollection, err := app.Dao().FindCollectionByNameOrId("courses")
-			if err != nil {
-				return err
-			}
-			documentsCollection, err := app.Dao().FindCollectionByNameOrId("documents")
-			if err != nil {
-				return err
-			}
-
-			coursesResults := models.NewRecordsFromNullStringMaps(coursesCollection, items)
-			documentsResults := models.NewRecordsFromNullStringMaps(documentsCollection, items)
-
-			// set expands
-			for index, eventDoc := range coursesResults {
-				eventDoc.SetExpand(map[string]any{
-					"document": documentsResults[index].ColumnValueMap(),
-				})
-			}
-
-			// Enrich results with expands relations and api rules + visibility
-			apis.EnrichRecords(c, app.Dao(), coursesResults)
-			apis.EnrichRecords(c, app.Dao(), documentsResults)
-
-			result := &Result{
-				Page:       page,
-				PerPage:    perPage,
-				TotalItems: int(totalCount),
-				TotalPages: totalPages,
-				Items:      coursesResults,
-			}
-
-			return c.JSON(http.StatusOK, result)
+			return handlers.GetCourses(app, c)
 		})
 
-		subGroup.GET("/courses2", func(c echo.Context) error {
-			// Only auth records can access this endpoint
-			authRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
-			if authRecord == nil {
-				return apis.NewForbiddenError("Only auth records can access this endpoint", nil)
-			}
-
-			var err error
-
-			// TODO: Implement API Rules
-			query := *app.Dao().ParamQuery().
-				Select("*").
-				From(`(
-          SELECT *
-          FROM users AS u
-          INNER JOIN participants AS p ON p.person = u.person
-          INNER JOIN courses AS c ON c.document = p.document
-          INNER JOIN documents AS d ON d.id = c.document
-          WHERE u.id='` + authRecord.Id + `'
-        )`)
-			if err != nil {
-				return err
-			}
-
-			// count
-			var totalCount int64
-			countQuery := query
-			countQuery.Distinct(false).Select("COUNT(*)").OrderBy() // unset ORDER BY statements
-			if err := countQuery.Row(&totalCount); err != nil {
-				return err
-			}
-
-			// normalize perPage
-			perPageQueryParam := c.QueryParam("perPage")
-			perPage, err := strconv.Atoi(perPageQueryParam)
-			if err != nil || perPage <= 0 {
-				perPage = DefaultPerPage
-			} else if perPage > MaxPerPage {
-				perPage = MaxPerPage
-			}
-
-			totalPages := int(math.Ceil(float64(totalCount) / float64(perPage)))
-
-			// normalize page according to the total count
-			pageQueryParam := c.QueryParam("page")
-			page, err := strconv.Atoi(pageQueryParam)
-			if err != nil || page <= 0 || totalCount == 0 {
-				page = 1
-			} else if page > totalPages {
-				page = totalPages
-			}
-
-			// apply pagination
-			query.Limit(int64(perPage))
-			query.Offset(int64(perPage * (page - 1)))
-
-			// fetch models
-			items := []dbx.NullStringMap{}
-			if err := query.All(&items); err != nil {
-				return err
-			}
-
-			// parse rawItems into formatted results by collection schemas
-			coursesCollection, err := app.Dao().FindCollectionByNameOrId("courses")
-			if err != nil {
-				return err
-			}
-			documentsCollection, err := app.Dao().FindCollectionByNameOrId("documents")
-			if err != nil {
-				return err
-			}
-
-			coursesResults := models.NewRecordsFromNullStringMaps(coursesCollection, items)
-			documentsResults := models.NewRecordsFromNullStringMaps(documentsCollection, items)
-
-			// set expands
-			for index, eventDoc := range coursesResults {
-				eventDoc.SetExpand(map[string]any{
-					"document": documentsResults[index].ColumnValueMap(),
-				})
-			}
-
-			// Enrich results with expands relations and api rules + visibility
-			apis.EnrichRecords(c, app.Dao(), coursesResults)
-			apis.EnrichRecords(c, app.Dao(), documentsResults)
-
-			result := &Result{
-				Page:       page,
-				PerPage:    perPage,
-				TotalItems: int(totalCount),
-				TotalPages: totalPages,
-				Items:      coursesResults,
-			}
-
-			return c.JSON(http.StatusOK, result)
+		// Get all event documents that the current user participate in
+		subGroup.GET("/participatedCourses", func(c echo.Context) error {
+			return handlers.GetParticipatedCourses(app, c)
 		})
 
 		// Get all starred relationships with the current user

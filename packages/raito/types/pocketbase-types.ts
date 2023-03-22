@@ -3,7 +3,6 @@
 */
 
 export enum Collections {
-	Advisors = "advisors",
 	Attachments = "attachments",
 	Classes = "classes",
 	CourseTemplates = "courseTemplates",
@@ -12,7 +11,6 @@ export enum Collections {
 	Documents = "documents",
 	EventDocuments = "eventDocuments",
 	FullDocuments = "fullDocuments",
-	Lecturers = "lecturers",
 	Majors = "majors",
 	Participants = "participants",
 	People = "people",
@@ -45,10 +43,6 @@ export type AuthSystemFields<T = never> = {
 
 // Record types for each collection
 
-export type AdvisorsRecord = {
-	person: RecordIdString
-}
-
 export type AttachmentsRecord = {
 	file: string
 	document: RecordIdString
@@ -59,11 +53,10 @@ export enum ClassesTrainingSystemOptions {
 }
 export type ClassesRecord = {
 	classId?: string
-	advisor: RecordIdString
 	cohort: string
-	department: RecordIdString
+	major: RecordIdString
 	trainingSystem: ClassesTrainingSystemOptions
-	document: RecordIdString
+	fullDocument: RecordIdString
 }
 
 export type CourseTemplatesRecord = {
@@ -73,10 +66,9 @@ export type CourseTemplatesRecord = {
 }
 
 export type CoursesRecord = {
-	courseTemplate: RecordIdString
-	lecturer: RecordIdString
+	courseTemplate?: RecordIdString
 	semester: string
-	document: RecordIdString
+	fullDocument: RecordIdString
 }
 
 export type DepartmentsRecord = {
@@ -134,13 +126,15 @@ export enum FullDocumentsCategoryOptions {
 	"Manual books" = "Manual books",
 	"Draft" = "Draft",
 }
+
+export enum FullDocumentsInternalOptions {
+	"Course" = "Course",
+	"Class" = "Class",
+}
 export type FullDocumentsRecord = {
 	document: RecordIdString
 	category: FullDocumentsCategoryOptions
-}
-
-export type LecturersRecord = {
-	person: RecordIdString
+	internal?: FullDocumentsInternalOptions
 }
 
 export type MajorsRecord = {
@@ -178,6 +172,8 @@ export type PeopleRecord = {
 	gender?: PeopleGenderOptions
 	major?: RecordIdString
 	deleted?: IsoDateString
+	isAdvisor?: boolean
+	isLecturer?: boolean
 }
 
 export type RelationshipsRecord = {
@@ -195,7 +191,6 @@ export type UsersRecord = {
 }
 
 // Response types include system fields and match responses from the PocketBase API
-export type AdvisorsResponse<Texpand = unknown> = AdvisorsRecord & BaseSystemFields<Texpand>
 export type AttachmentsResponse<Texpand = unknown> = AttachmentsRecord & BaseSystemFields<Texpand>
 export type ClassesResponse<Texpand = unknown> = ClassesRecord & BaseSystemFields<Texpand>
 export type CourseTemplatesResponse = CourseTemplatesRecord & BaseSystemFields
@@ -204,7 +199,6 @@ export type DepartmentsResponse = DepartmentsRecord & BaseSystemFields
 export type DocumentsResponse<TrichText = unknown, Texpand = unknown> = DocumentsRecord<TrichText> & BaseSystemFields<Texpand>
 export type EventDocumentsResponse<Texpand = unknown> = EventDocumentsRecord & BaseSystemFields<Texpand>
 export type FullDocumentsResponse<Texpand = unknown> = FullDocumentsRecord & BaseSystemFields<Texpand>
-export type LecturersResponse<Texpand = unknown> = LecturersRecord & BaseSystemFields<Texpand>
 export type MajorsResponse<Texpand = unknown> = MajorsRecord & BaseSystemFields<Texpand>
 export type ParticipantsResponse<Texpand = unknown> = ParticipantsRecord & BaseSystemFields<Texpand>
 export type PeopleResponse<Texpand = unknown> = PeopleRecord & BaseSystemFields<Texpand>
@@ -213,7 +207,6 @@ export type TempResponse<Texpand = unknown> = TempRecord & BaseSystemFields<Texp
 export type UsersResponse<Texpand = unknown> = UsersRecord & AuthSystemFields<Texpand>
 
 export type CollectionRecords = {
-	advisors: AdvisorsRecord
 	attachments: AttachmentsRecord
 	classes: ClassesRecord
 	courseTemplates: CourseTemplatesRecord
@@ -222,7 +215,6 @@ export type CollectionRecords = {
 	documents: DocumentsRecord
 	eventDocuments: EventDocumentsRecord
 	fullDocuments: FullDocumentsRecord
-	lecturers: LecturersRecord
 	majors: MajorsRecord
 	participants: ParticipantsRecord
 	people: PeopleRecord
