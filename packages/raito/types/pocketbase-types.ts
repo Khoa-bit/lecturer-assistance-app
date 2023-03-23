@@ -14,6 +14,7 @@ export enum Collections {
 	Majors = "majors",
 	Participants = "participants",
 	People = "people",
+	PersonalNotes = "personalNotes",
 	Relationships = "relationships",
 	Temp = "temp",
 	Users = "users",
@@ -176,6 +177,10 @@ export type PeopleRecord = {
 	isLecturer?: boolean
 }
 
+export type PersonalNotesRecord = {
+	fullDocument: RecordIdString
+}
+
 export type RelationshipsRecord = {
 	fromPerson: RecordIdString
 	toPerson: RecordIdString
@@ -202,6 +207,7 @@ export type FullDocumentsResponse<Texpand = unknown> = FullDocumentsRecord & Bas
 export type MajorsResponse<Texpand = unknown> = MajorsRecord & BaseSystemFields<Texpand>
 export type ParticipantsResponse<Texpand = unknown> = ParticipantsRecord & BaseSystemFields<Texpand>
 export type PeopleResponse<Texpand = unknown> = PeopleRecord & BaseSystemFields<Texpand>
+export type PersonalNotesResponse<Texpand = unknown> = PersonalNotesRecord & BaseSystemFields<Texpand>
 export type RelationshipsResponse<Texpand = unknown> = RelationshipsRecord & BaseSystemFields<Texpand>
 export type TempResponse<Texpand = unknown> = TempRecord & BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = UsersRecord & AuthSystemFields<Texpand>
@@ -218,6 +224,7 @@ export type CollectionRecords = {
 	majors: MajorsRecord
 	participants: ParticipantsRecord
 	people: PeopleRecord
+	personalNotes: PersonalNotesRecord
 	relationships: RelationshipsRecord
 	temp: TempRecord
 	users: UsersRecord

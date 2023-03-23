@@ -23,7 +23,7 @@ import {
   EventDocumentsRecurringOptions,
   ParticipantsPermissionOptions,
 } from "raito";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import Attachments from "src/components/documents/Attachments";
@@ -141,9 +141,11 @@ function EventDocument({
     [documentId, eventDocumentId, pbClient, setValue]
   );
 
+  const formRef = useRef<HTMLFormElement>(null);
+  const submitRef = useRef<HTMLInputElement>(null);
   useSaveDoc({
-    trigger,
-    submit: handleSubmit(onSubmit),
+    formRef,
+    submitRef,
     watch,
   });
 
@@ -174,7 +176,7 @@ function EventDocument({
         pbClient={pbClient}
         disabled={!isWrite}
       ></NewParticipantForm>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form ref={formRef} onSubmit={handleSubmit(onSubmit)}>
         <input {...register("name", { required: true, disabled: !isWrite })} />
         <label htmlFor="thumbnail">Choose file to upload</label>
         <input
@@ -253,6 +255,7 @@ function EventDocument({
           )}
         />
         <input
+          ref={submitRef}
           type="submit"
           disabled={permission == ParticipantsPermissionOptions.read}
         />

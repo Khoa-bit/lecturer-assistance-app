@@ -6,10 +6,15 @@ import Head from "next/head";
 import type {
   CoursesRecord,
   CoursesResponse,
+  CourseTemplatesRecord,
+  CourseTemplatesResponse,
   DocumentsResponse,
   FullDocumentsResponse,
 } from "raito";
 import { Collections } from "raito";
+import { useCallback } from "react";
+import type { SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import type {
   FullDocumentData,
   FullDocumentProps,
@@ -36,6 +41,10 @@ interface FullDocumentsExpand {
 
 interface DocumentsExpand {
   document: DocumentsResponse<RichText>;
+}
+
+interface CourseTemplateInput extends CourseTemplatesRecord {
+  id: string;
 }
 
 function CourseDocument({
@@ -81,6 +90,24 @@ function CourseDocument({
     },
   };
 
+  const { register, handleSubmit } = useForm<CourseTemplateInput>();
+  const onSubmitTemplate: SubmitHandler<CourseTemplateInput> = useCallback(
+    (inputData) => {
+      console.log(inputData);
+      pbClient
+        .collection(Collections.CourseTemplates)
+        .create<CourseTemplatesResponse>({
+          name: inputData.name,
+          courseId: inputData.courseId,
+          periodsCount: inputData.periodsCount,
+        } as CourseTemplatesRecord)
+        .then((success) => {
+          console.log(success);
+        });
+    },
+    [pbClient]
+  );
+
   return (
     <>
       <Head>
@@ -95,6 +122,13 @@ function CourseDocument({
           } as InputProps<CoursesRecord>)}
         ></Input>
       </FullDocument>
+      <h2>New course template modal</h2>
+      <form onSubmit={handleSubmit(onSubmitTemplate)}>
+        <input {...register("name")} />
+        <input {...register("courseId")} />
+        <input {...register("periodsCount")} />
+        <input type="submit" value="Create new course template" />
+      </form>
     </>
   );
 }

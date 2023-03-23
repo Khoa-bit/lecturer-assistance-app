@@ -67,6 +67,35 @@ func GetParticipatedFullDocuments(app *pocketbase.PocketBase, c echo.Context) er
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
 }
 
+func GetParticipatedPersonalNotes(app *pocketbase.PocketBase, c echo.Context) error {
+	authRecord, err := auth.GetUser(app, c)
+	if err != nil {
+		return err
+	}
+
+	mainCollectionName := "personalNotes"
+	hasGroupBy := false
+	fieldMetadataList := model.FieldMetaDataList{}
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("documents", "userDocument", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
+
+	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
+	userPersonId := authRecord.GetString("person")
+
+	query := app.Dao().DB().NewQuery(fmt.Sprintf(
+		`SELECT personalNote.* %s
+      FROM participants p
+        INNER JOIN fullDocuments AS fullDocument ON p.document = fullDocument.document
+        INNER JOIN documents userDocument ON p.document = userDocument.id
+        INNER JOIN personalNotes personalNote ON fullDocument.id = personalNote.fullDocument
+      WHERE p.person = '%s'`,
+		selectArgs, userPersonId))
+
+	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
+}
+
 func GetParticipatedCourses(app *pocketbase.PocketBase, c echo.Context) error {
 	authRecord, err := auth.GetUser(app, c)
 	if err != nil {

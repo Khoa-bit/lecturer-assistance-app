@@ -4,6 +4,7 @@ import {
   EventDocumentsResponse,
   FullDocumentsResponse,
   PeopleResponse,
+  PersonalNotesResponse,
   RelationshipsResponse,
 } from './pocketbase-types';
 
@@ -47,6 +48,19 @@ export interface EventDocumentsCustomResponse extends EventDocumentsResponse {
 }
 
 export interface FullDocumentsCustomResponse extends FullDocumentsResponse {
+  expand: {
+    userDocument_id: string;
+    userDocument_name: string;
+    userDocument_thumbnail: string;
+    userDocument_priority: string;
+    userDocument_status: string;
+    userDocument_richText: string;
+    userDocument_diffHash: string;
+    userDocument_owner: string;
+  };
+}
+
+export interface PersonalNotesCustomResponse extends PersonalNotesResponse {
   expand: {
     userDocument_id: string;
     userDocument_name: string;

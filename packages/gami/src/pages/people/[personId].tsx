@@ -23,6 +23,7 @@ import MajorDepartment, {
 } from "src/components/documents/MajorDepartment";
 import ParticipateDetailList from "src/components/documents/ParticipateDetailList";
 import MainLayout from "src/components/layouts/MainLayout";
+import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
 import { debounce } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
@@ -56,41 +57,41 @@ function Person({
   const departments = dataParse.departments;
   const allDocParticipation = dataParse.allDocParticipation;
 
-  const { register, handleSubmit, setValue, control } = useForm<PersonInput>({
-    defaultValues: {
-      personId: person.personId,
-      name: person.name,
-      avatar: person.avatar,
-      phone: person.phone,
-      personalEmail: person.personalEmail,
-      title: person.title,
-      placeOfBirth: person.placeOfBirth,
-      gender: person.gender,
-      major: person.major,
-      deleted: person.deleted,
-      diffHash: MD5(
-        SuperJSON.stringify({
-          personId: person.personId,
-          name: person.name,
-          avatar: undefined,
-          phone: person.phone,
-          personalEmail: person.personalEmail,
-          title: person.title,
-          placeOfBirth: person.placeOfBirth,
-          gender: person.gender,
-          major: person.major,
-          deleted: person.deleted,
-          diffHash: undefined,
-        } as PersonInput)
-      ).toString(),
-    },
-  });
+  const { register, handleSubmit, setValue, control, watch } =
+    useForm<PersonInput>({
+      defaultValues: {
+        personId: person.personId,
+        name: person.name,
+        avatar: person.avatar,
+        phone: person.phone,
+        personalEmail: person.personalEmail,
+        title: person.title,
+        placeOfBirth: person.placeOfBirth,
+        gender: person.gender,
+        major: person.major,
+        deleted: person.deleted,
+        diffHash: MD5(
+          SuperJSON.stringify({
+            personId: person.personId,
+            name: person.name,
+            avatar: undefined,
+            phone: person.phone,
+            personalEmail: person.personalEmail,
+            title: person.title,
+            placeOfBirth: person.placeOfBirth,
+            gender: person.gender,
+            major: person.major,
+            deleted: person.deleted,
+            diffHash: undefined,
+          } as PersonInput)
+        ).toString(),
+      },
+    });
 
   const [avatar, setAvatar] = useState<string | undefined>(person.avatar);
 
   const { pbClient } = usePBClient(dataParse.pbAuthCookie);
 
-  const formRef = useRef<HTMLFormElement>(null);
   const onSubmit: SubmitHandler<PersonInput> = useCallback(
     (inputData) => {
       const prevDiffHash = inputData.diffHash;
@@ -123,25 +124,14 @@ function Person({
     [pbClient, personId, setValue]
   );
 
-  const submitForm = useCallback(
-    () => handleSubmit(onSubmit)(),
-    [handleSubmit, onSubmit]
-  );
-  const debouncedSave = debounce(() => submitForm(), 1000);
+  const formRef = useRef<HTMLFormElement>(null);
+  const submitRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const keyDownEvent = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === "s") {
-        // Prevent the Save dialog to open
-        e.preventDefault();
-        // Place your code here
-        debouncedSave();
-      }
-    };
-    document.addEventListener("keydown", keyDownEvent);
-
-    return () => document.removeEventListener("keydown", keyDownEvent);
-  }, [debouncedSave]);
+  useSaveDoc({
+    formRef,
+    submitRef,
+    watch,
+  });
 
   return (
     <>
@@ -200,7 +190,7 @@ function Person({
           departments={departments}
           pbClient={pbClient}
         ></MajorDepartment>
-        <input type="submit" />
+        <input ref={submitRef} type="submit" />
       </form>
 
       {allDocParticipation && (

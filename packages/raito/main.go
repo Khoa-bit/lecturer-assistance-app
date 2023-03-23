@@ -61,6 +61,16 @@ func main() {
 			return handlers.GetParticipatedFullDocuments(app, c)
 		})
 
+		// Get all personalNotes of the current user
+		subGroup.GET("/personalNotes", func(c echo.Context) error {
+			return handlers.GetPersonalNotes(app, c)
+		})
+
+		// Get all personalNotes that the current user participate in
+		subGroup.GET("/participatedPersonalNotes", func(c echo.Context) error {
+			return handlers.GetParticipatedPersonalNotes(app, c)
+		})
+
 		// Get all classes of the current user
 		subGroup.GET("/classes", func(c echo.Context) error {
 			return handlers.GetClasses(app, c)

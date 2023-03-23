@@ -5,11 +5,7 @@ import type {
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import {
-  Collections,
-  EventDocumentsCustomResponse,
-  ParticipantsResponse,
-} from "raito";
+import type { EventDocumentsCustomResponse } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
