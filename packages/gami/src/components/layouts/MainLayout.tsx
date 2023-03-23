@@ -28,6 +28,9 @@ export default function MainLayout({ children }: Props) {
             <Link className="text-blue-700 underline" href={"/adviseClasses"}>
               Advise Classes
             </Link>
+            <Link className="text-blue-700 underline" href={"/personalNotes"}>
+              Personal Notes
+            </Link>
             <Link className="text-blue-700 underline" href={"/"}>
               Home
             </Link>

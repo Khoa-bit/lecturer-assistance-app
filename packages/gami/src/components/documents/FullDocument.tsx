@@ -1,20 +1,17 @@
 import { MD5 } from "crypto-js";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
-import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
   AttachmentsResponse,
   DocumentsRecord,
   DocumentsResponse,
-  EventDocumentsRecord,
   EventDocumentsResponse,
-  FullDocumentsCustomResponse,
+  FullDocumentsRecord,
+  FullDocumentsResponse,
   ParticipantsCustomResponse,
   PeopleResponse,
+  UsersResponse,
 } from "raito";
 import {
   Collections,
@@ -23,87 +20,102 @@ import {
   EventDocumentsRecurringOptions,
   ParticipantsPermissionOptions,
 } from "raito";
-import { useCallback, useRef, useState } from "react";
-import type { SubmitHandler } from "react-hook-form";
+import type { ReactElement } from "react";
+import { Children, createElement, useCallback, useRef, useState } from "react";
+import type {
+  FieldValues,
+  Path,
+  RegisterOptions,
+  SubmitHandler,
+  UseFormReturn,
+} from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import Attachments from "src/components/documents/Attachments";
-import MainLayout from "src/components/layouts/MainLayout";
 import { createHandleAttachment } from "src/components/wysiwyg/documents/createHandleAttachment";
 import { createHandleThumbnail } from "src/components/wysiwyg/documents/createHandleThumbnail";
 import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
 import TipTapByPermission from "src/components/wysiwyg/TipTapByPermission";
-import {
-  dateToISOLikeButLocalOrUndefined,
-  dateToISOOrUndefined,
-} from "src/lib/input_handling";
-import { usePBClient } from "src/lib/pb_client";
-import { getPBServer } from "src/lib/pb_server";
 import type { RichText } from "src/types/documents";
+import type { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
 import NewParticipantForm from "../../components/documents/NewParticipant";
 
-interface EventDocumentData {
-  eventDocument: EventDocumentsResponse<DocumentsExpand>;
-  fullDocuments: ListResult<FullDocumentsCustomResponse>;
+export interface FullDocumentData {
+  fullDocument: FullDocumentsResponse<DocumentsExpand>;
   attachments: AttachmentsResponse[];
+  upcomingEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
+  pastEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
   allDocParticipants: ListResult<ParticipantsCustomResponse>;
   permission: ParticipantsPermissionOptions;
   people: PeopleResponse<unknown>[];
-  pbAuthCookie: string;
+}
+
+export interface FullDocumentProps<TRecord> extends FullDocumentData {
+  pbClient: PBCustom;
+  user: UsersResponse<unknown>;
+  childInputOnSubmit?: (inputData: TRecord) => Promise<TRecord>;
+  childrenDefaultValue?: TRecord;
+  children?: ReactElement | ReactElement[];
 }
 
 interface DocumentsExpand {
   document: DocumentsResponse<RichText>;
 }
 
-interface EventDocumentInput
+export interface FullDocumentInput
   extends DocumentsRecord<RichText>,
-    EventDocumentsRecord {
+    FullDocumentsRecord {
+  id: string;
   attachments: AttachmentsResponse[];
 }
 
-function EventDocument({
-  data,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const dataParse = SuperJSON.parse<EventDocumentData>(data);
+export interface FullDocumentChildProps<
+  TFieldValues extends FieldValues = FieldValues
+> extends Partial<UseFormReturn<TFieldValues>> {
+  name: Path<TFieldValues>;
+  options?: RegisterOptions<TFieldValues>;
+}
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
-  const eventDocument = dataParse.eventDocument;
-  const fullDocuments = dataParse.fullDocuments;
-  const baseDocument = dataParse.eventDocument.expand?.document;
-  const eventDocumentId = eventDocument.id;
-  const documentId = eventDocument.document;
-  const allDocParticipants = dataParse.allDocParticipants;
-  const permission = dataParse.permission;
-  const people = dataParse.people;
+function FullDocument<TRecord>({
+  fullDocument,
+  attachments: initAttachments,
+  upcomingEventDocuments,
+  pastEventDocuments,
+  allDocParticipants,
+  permission,
+  people,
+  childInputOnSubmit,
+  pbClient,
+  user,
+  children,
+  childrenDefaultValue,
+}: FullDocumentProps<TRecord>) {
+  const baseDocument = fullDocument.expand?.document;
+  const fullDocumentId = fullDocument.id;
+  const documentId = fullDocument.document;
   const isWrite = permission == ParticipantsPermissionOptions.write;
 
+  const { register, control, handleSubmit, watch, setValue } =
+    useForm<FullDocumentInput>({
+      defaultValues: {
+        name: baseDocument?.name,
+        thumbnail: undefined,
+        category: fullDocument.category,
+        priority: baseDocument?.priority,
+        status: baseDocument?.status,
+        richText: baseDocument?.richText as object,
+        document: fullDocument.document,
+        diffHash: baseDocument?.diffHash,
+        ...childrenDefaultValue,
+      },
+    });
   const [thumbnail, setThumbnail] = useState<string | undefined>(
     baseDocument?.thumbnail
   );
-  const [attachments, setAttachments] = useState<AttachmentsResponse[]>(
-    dataParse.attachments
-  );
+  const [attachments, setAttachments] =
+    useState<AttachmentsResponse[]>(initAttachments);
 
-  const { register, control, handleSubmit, watch, setValue, trigger } =
-    useForm<EventDocumentInput>({
-      defaultValues: {
-        name: baseDocument?.name,
-        priority: baseDocument?.priority,
-        status: baseDocument?.status,
-        richText: baseDocument?.richText,
-        document: eventDocument.document,
-        diffHash: baseDocument?.diffHash,
-        fullDocument: eventDocument.fullDocument,
-        attachments: undefined,
-        owner: undefined,
-        startTime: dateToISOLikeButLocalOrUndefined(eventDocument.startTime),
-        endTime: dateToISOLikeButLocalOrUndefined(eventDocument.endTime),
-        recurring: eventDocument.recurring,
-      },
-    });
-
-  const onSubmit: SubmitHandler<EventDocumentInput> = useCallback(
+  const onSubmit: SubmitHandler<FullDocumentInput> = useCallback(
     (inputData) => {
       const prevDiffHash = inputData.diffHash;
       const newDiffHash = MD5(
@@ -111,20 +123,19 @@ function EventDocument({
           ...inputData,
           thumbnail: undefined, // not included in hash
           diffHash: undefined,
-        } as EventDocumentInput)
+        } as FullDocumentInput)
       ).toString();
 
       if (prevDiffHash != newDiffHash) {
         setValue("diffHash", newDiffHash);
+        if (childInputOnSubmit) childInputOnSubmit(inputData as TRecord);
+
         pbClient
-          .collection(Collections.EventDocuments)
-          .update<EventDocumentsResponse>(eventDocumentId, {
+          .collection(Collections.FullDocuments)
+          .update<FullDocumentsResponse>(fullDocumentId, {
+            category: inputData.category,
             document: inputData.document,
-            startTime: dateToISOOrUndefined(inputData.startTime),
-            endTime: dateToISOOrUndefined(inputData.endTime),
-            recurring: inputData.recurring,
-            fullDocument: inputData.fullDocument,
-          } as EventDocumentsRecord);
+          } as FullDocumentsRecord);
 
         pbClient
           .collection(Collections.Documents)
@@ -138,11 +149,12 @@ function EventDocument({
           } as DocumentsRecord);
       }
     },
-    [documentId, eventDocumentId, pbClient, setValue]
+    [childInputOnSubmit, documentId, fullDocumentId, pbClient, setValue]
   );
 
   const formRef = useRef<HTMLFormElement>(null);
   const submitRef = useRef<HTMLInputElement>(null);
+
   useSaveDoc({
     formRef,
     submitRef,
@@ -163,10 +175,6 @@ function EventDocument({
 
   return (
     <>
-      <Head>
-        <title>Event Document</title>
-      </Head>
-      <h1>Event Document</h1>
       <h2>Participants</h2>
       <NewParticipantForm
         defaultValue={allDocParticipants}
@@ -176,6 +184,35 @@ function EventDocument({
         pbClient={pbClient}
         disabled={!isWrite}
       ></NewParticipantForm>
+      <p key="newEvent">
+        <Link href={`/eventDocuments/new?fullDocId=${fullDocumentId}`}>
+          New event
+        </Link>
+      </p>
+      <p>Upcoming</p>
+      <ol>
+        {upcomingEventDocuments.items.map((eventDocument) => (
+          <li key={eventDocument.id}>
+            <Link
+              href={`/eventDocuments/${encodeURIComponent(eventDocument.id)}`}
+            >
+              {`${eventDocument.expand?.document.status} - ${eventDocument.expand?.document.name} - ${eventDocument.startTime} - ${eventDocument.endTime} - ${eventDocument.recurring}`}
+            </Link>
+          </li>
+        ))}
+      </ol>
+      <p>Past</p>
+      <ol>
+        {pastEventDocuments.items.map((eventDocument) => (
+          <li key={eventDocument.id}>
+            <Link
+              href={`/eventDocuments/${encodeURIComponent(eventDocument.id)}`}
+            >
+              {`${eventDocument.expand?.document.status} - ${eventDocument.expand?.document.name} - ${eventDocument.startTime} - ${eventDocument.endTime} - ${eventDocument.recurring}`}
+            </Link>
+          </li>
+        ))}
+      </ol>
       <form ref={formRef} onSubmit={handleSubmit(onSubmit)}>
         <input {...register("name", { required: true, disabled: !isWrite })} />
         <label htmlFor="thumbnail">Choose file to upload</label>
@@ -201,36 +238,6 @@ function EventDocument({
             </option>
           ))}
         </select>
-        <input
-          type="datetime-local"
-          {...register("startTime", {
-            required: true,
-            disabled: !isWrite,
-          })}
-        />
-        <input
-          type="datetime-local"
-          {...register("endTime", { disabled: !isWrite })}
-        />
-        <select {...register("recurring", { disabled: !isWrite })}>
-          {Object.entries(EventDocumentsRecurringOptions).map(
-            ([stringValue]) => (
-              <option key={stringValue} value={stringValue}>
-                {stringValue}
-              </option>
-            )
-          )}
-        </select>
-        <select {...register("fullDocument", { disabled: !isWrite })}>
-          <option key="None" value="">
-            None
-          </option>
-          {fullDocuments.items.map((fullDoc) => (
-            <option key={fullDoc.id} value={fullDoc.id}>
-              {fullDoc.expand?.userDocument_name}
-            </option>
-          ))}
-        </select>
         <label htmlFor="attachments">Choose attachments</label>
         <input
           id="attachments"
@@ -239,6 +246,20 @@ function EventDocument({
           onChange={handleAttachment}
           disabled={!isWrite}
         />
+        {children &&
+          Children.map(children, (child) => {
+            return child?.props.name
+              ? createElement(child.type, {
+                  ...{
+                    ...child.props,
+                    options: { ...child?.props.options, disabled: !isWrite },
+                    register,
+                    setValue,
+                    key: child.props.name,
+                  },
+                })
+              : child;
+          })}
         <Controller
           name="richText"
           control={control}
@@ -280,30 +301,47 @@ function EventDocument({
   );
 }
 
-export const getServerSideProps = async ({
-  req,
-  query,
-  resolvedUrl,
-}: GetServerSidePropsContext) => {
-  const { pbServer, user } = await getPBServer(req, resolvedUrl);
-  const eventDocId = query.eventDocId as string;
+export type FetchFullDocumentDataFunc = (
+  pbServer: PBCustom,
+  user: UsersResponse<unknown>,
+  fullDocId: string
+) => Promise<FullDocumentData>;
 
-  const eventDocument = await pbServer
-    .collection(Collections.EventDocuments)
-    .getOne<EventDocumentsResponse<DocumentsExpand>>(eventDocId, {
+export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
+  pbServer,
+  user,
+  fullDocId
+) => {
+  const fullDocument = await pbServer
+    .collection(Collections.FullDocuments)
+    .getOne<FullDocumentsResponse<DocumentsExpand>>(fullDocId, {
       expand: "document",
     });
 
-  const document = eventDocument.expand?.document;
-
-  const fullDocuments = await pbServer.apiGetList<FullDocumentsCustomResponse>(
-    "/api/user/fullDocuments"
-  );
+  const document = fullDocument.expand?.document;
 
   const attachments = await pbServer
     .collection(Collections.Attachments)
     .getFullList<AttachmentsResponse>(200, {
-      filter: `document = "${eventDocument.document}"`,
+      filter: `document = "${fullDocument.document}"`,
+    });
+
+  const nowISO = new Date().toISOString().replace("T", " ");
+
+  const upcomingEventDocuments = await pbServer
+    .collection(Collections.EventDocuments)
+    .getList<EventDocumentsResponse<DocumentsExpand>>(undefined, undefined, {
+      filter: `fullDocument = "${fullDocId}" && (startTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
+      expand: "document",
+      sort: "startTime",
+    });
+
+  const pastEventDocuments = await pbServer
+    .collection(Collections.EventDocuments)
+    .getList<EventDocumentsResponse<DocumentsExpand>>(undefined, undefined, {
+      filter: `fullDocument = "${fullDocId}" && (startTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
+      expand: "document",
+      sort: "-startTime",
     });
 
   const allDocParticipants =
@@ -329,10 +367,11 @@ export const getServerSideProps = async ({
         };
       });
 
-    permission = documentsWithPermission?.find(
-      (documentWithPermission) =>
-        documentWithPermission.documentId == document?.id
-    )?.permission;
+    permission =
+      documentsWithPermission?.find(
+        (documentWithPermission) =>
+          documentWithPermission.documentId == document?.id
+      )?.permission ?? ParticipantsPermissionOptions.read;
   }
 
   const people = await pbServer
@@ -340,22 +379,14 @@ export const getServerSideProps = async ({
     .getFullList<PeopleResponse>();
 
   return {
-    props: {
-      data: SuperJSON.stringify({
-        eventDocument,
-        attachments,
-        fullDocuments,
-        allDocParticipants,
-        permission,
-        people,
-        pbAuthCookie: pbServer.authStore.exportToCookie(),
-      } as EventDocumentData),
-    },
+    fullDocument,
+    attachments,
+    upcomingEventDocuments,
+    pastEventDocuments,
+    allDocParticipants,
+    permission,
+    people,
   };
 };
 
-EventDocument.getLayout = function getLayout(page: React.ReactElement) {
-  return <MainLayout>{page}</MainLayout>;
-};
-
-export default EventDocument;
+export default FullDocument;

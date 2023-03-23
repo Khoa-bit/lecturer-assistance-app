@@ -5,30 +5,27 @@ import type {
 import Head from "next/head";
 import { useRouter } from "next/router";
 import type {
-  CoursesRecord,
-  CoursesResponse,
   DocumentsRecord,
   DocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
-  PeopleRecord,
-  PeopleResponse,
+  PersonalNotesRecord,
+  PersonalNotesResponse,
 } from "raito";
 import { Collections } from "raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
-import { getCurrentSemester } from "src/lib/input_handling";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
-interface NewLectureCourseData {
+interface NewPersonalNoteData {
   newEventDocUrl: string;
 }
 
-function NewLectureCourse({
+function NewPersonalNote({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const dataParse = SuperJSON.parse<NewLectureCourseData>(data);
+  const dataParse = SuperJSON.parse<NewPersonalNoteData>(data);
   const router = useRouter();
 
   useEffect(() => {
@@ -38,9 +35,9 @@ function NewLectureCourse({
   return (
     <>
       <Head>
-        <title>New lecture course</title>
+        <title>New personal note</title>
       </Head>
-      <h1>Creating your new lecture course...</h1>
+      <h1>Creating your new personal note...</h1>
     </>
   );
 }
@@ -81,39 +78,25 @@ export const getServerSideProps = async ({
       category: "Draft",
     } as FullDocumentsRecord);
 
-  const person = await pbServer
-    .collection(Collections.People)
-    .getOne<PeopleResponse>(user.person);
-
-  const lectureCourse = await pbServer
-    .collection(Collections.Courses)
-    .create<CoursesResponse>({
+  const personalNote = await pbServer
+    .collection(Collections.PersonalNotes)
+    .create<PersonalNotesResponse>({
       fullDocument: baseFullDocument.id,
-      courseTemplate: undefined,
-      semester: getCurrentSemester(),
-    } as CoursesRecord);
+    } as PersonalNotesRecord);
 
-  if (!person.isAdvisor) {
-    await pbServer
-      .collection(Collections.People)
-      .update<PeopleResponse>(person.id, {
-        isAdvisor: true,
-      } as PeopleRecord);
-  }
-
-  const newEventDocUrl = `/lectureCourses/${lectureCourse.id}`;
+  const newPersonalNoteUrl = `/personalNotes/${personalNote.id}`;
 
   return {
     props: {
       data: SuperJSON.stringify({
-        newEventDocUrl,
-      } as NewLectureCourseData),
+        newEventDocUrl: newPersonalNoteUrl,
+      } as NewPersonalNoteData),
     },
   };
 };
 
-NewLectureCourse.getLayout = function getLayout(page: React.ReactElement) {
+NewPersonalNote.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;
 };
 
-export default NewLectureCourse;
+export default NewPersonalNote;

@@ -4,6 +4,13 @@ import type {
 } from "next";
 import Head from "next/head";
 import type {
+  DocumentsResponse,
+  FullDocumentsResponse,
+  PersonalNotesRecord,
+  PersonalNotesResponse,
+} from "raito";
+import { Collections } from "raito";
+import type {
   FullDocumentData,
   FullDocumentProps,
 } from "src/components/documents/FullDocument";
@@ -13,13 +20,22 @@ import FullDocument, {
 import MainLayout from "src/components/layouts/MainLayout";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
+import type { RichText } from "src/types/documents";
 import SuperJSON from "superjson";
 
 interface DocumentData extends FullDocumentData {
   pbAuthCookie: string;
 }
 
-function Document({
+interface FullDocumentsExpand {
+  fullDocument: FullDocumentsResponse<DocumentsExpand>;
+}
+
+interface DocumentsExpand {
+  document: DocumentsResponse<RichText>;
+}
+
+function PersonalNotes({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
@@ -33,7 +49,7 @@ function Document({
   const people = dataParse.people;
   const attachments = dataParse.attachments;
 
-  const fullDocumentProps: FullDocumentProps<never> = {
+  const fullDocumentProps: FullDocumentProps<PersonalNotesRecord> = {
     fullDocument,
     attachments,
     upcomingEventDocuments,
@@ -43,14 +59,17 @@ function Document({
     people,
     pbClient,
     user,
+    childrenDefaultValue: {
+      fullDocument: fullDocument.id,
+    },
   };
 
   return (
     <>
       <Head>
-        <title>Full Document</title>
+        <title>Personal notes</title>
       </Head>
-      <h1>Full Document</h1>
+      <h1>Personal notes</h1>
       <FullDocument {...fullDocumentProps}></FullDocument>
     </>
   );
@@ -62,7 +81,25 @@ export const getServerSideProps = async ({
   resolvedUrl,
 }: GetServerSidePropsContext) => {
   const { pbServer, user } = await getPBServer(req, resolvedUrl);
-  const fullDocId = query.fullDocId as string;
+  const noteId = query.noteId as string;
+
+  const personalNote = await pbServer
+    .collection(Collections.PersonalNotes)
+    .getOne<PersonalNotesResponse<FullDocumentsExpand>>(noteId, {
+      expand: "fullDocument.document",
+    });
+
+  const fullDocument = personalNote.expand?.fullDocument;
+  const fullDocId = fullDocument?.id;
+
+  if (!fullDocId) {
+    return {
+      redirect: {
+        destination: "/notFound",
+        permanent: false,
+      },
+    };
+  }
 
   const fullDocumentData = await fetchFullDocumentData(
     pbServer,
@@ -80,8 +117,8 @@ export const getServerSideProps = async ({
   };
 };
 
-Document.getLayout = function getLayout(page: React.ReactElement) {
+PersonalNotes.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;
 };
 
-export default Document;
+export default PersonalNotes;
