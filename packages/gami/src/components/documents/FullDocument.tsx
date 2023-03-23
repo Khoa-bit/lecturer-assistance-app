@@ -100,7 +100,6 @@ function FullDocument<TRecord>({
       defaultValues: {
         name: baseDocument?.name,
         thumbnail: undefined,
-        category: fullDocument.category,
         priority: baseDocument?.priority,
         status: baseDocument?.status,
         richText: baseDocument?.richText as object,
@@ -133,7 +132,6 @@ function FullDocument<TRecord>({
         pbClient
           .collection(Collections.FullDocuments)
           .update<FullDocumentsResponse>(fullDocumentId, {
-            category: inputData.category,
             document: inputData.document,
           } as FullDocumentsRecord);
 

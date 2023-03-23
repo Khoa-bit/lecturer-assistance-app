@@ -14,6 +14,7 @@ import type {
   PeopleRecord,
   PeopleResponse,
 } from "raito";
+import { FullDocumentsInternalOptions } from "raito";
 import { Collections } from "raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
@@ -78,7 +79,7 @@ export const getServerSideProps = async ({
     .collection(Collections.FullDocuments)
     .create<FullDocumentsResponse>({
       document: baseDocument.id,
-      category: "Draft",
+      internal: FullDocumentsInternalOptions.Course,
     } as FullDocumentsRecord);
 
   const person = await pbServer
