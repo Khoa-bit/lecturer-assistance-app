@@ -1,59 +1,36 @@
+import type { GetServerSidePropsContext } from "next";
 import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
-import Head from "next/head";
-import type {
-  FullDocumentData,
-  FullDocumentProps,
-} from "src/components/documents/FullDocument";
-import FullDocument, {
-  fetchFullDocumentData,
-} from "src/components/documents/FullDocument";
-import MainLayout from "src/components/layouts/MainLayout";
-import { usePBClient } from "src/lib/pb_client";
+  AcademicMaterialsResponse,
+  BaseSystemFields,
+  ClassesResponse,
+  CoursesResponse,
+  FullDocumentsResponse,
+  PersonalNotesResponse,
+} from "raito";
+import { Collections } from "raito";
+import type { FullDocumentData } from "src/components/documents/FullDocument";
 import { getPBServer } from "src/lib/pb_server";
-import SuperJSON from "superjson";
 
 interface DocumentData extends FullDocumentData {
   pbAuthCookie: string;
 }
 
-function Document({
-  data,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const dataParse = SuperJSON.parse<DocumentData>(data);
+enum RedirectEnum {
+  "academicMaterials(fullDocument)",
+  "classes(fullDocument)",
+  "courses(fullDocument)",
+  "personalNotes(fullDocument)",
+}
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
-  const fullDocument = dataParse.fullDocument;
-  const upcomingEventDocuments = dataParse.upcomingEventDocuments;
-  const pastEventDocuments = dataParse.pastEventDocuments;
-  const allDocParticipants = dataParse.allDocParticipants;
-  const permission = dataParse.permission;
-  const people = dataParse.people;
-  const attachments = dataParse.attachments;
+interface RedirectExpand {
+  "academicMaterials(fullDocument)": AcademicMaterialsResponse;
+  "classes(fullDocument)": ClassesResponse;
+  "courses(fullDocument)": CoursesResponse;
+  "personalNotes(fullDocument)": PersonalNotesResponse;
+}
 
-  const fullDocumentProps: FullDocumentProps<never> = {
-    fullDocument,
-    attachments,
-    upcomingEventDocuments,
-    pastEventDocuments,
-    allDocParticipants,
-    permission,
-    people,
-    pbClient,
-    user,
-  };
-
-  return (
-    <>
-      <Head>
-        <title>Full Document</title>
-      </Head>
-      <h1>Full Document</h1>
-      <FullDocument {...fullDocumentProps}></FullDocument>
-    </>
-  );
+function Document() {
+  return <></>;
 }
 
 export const getServerSideProps = async ({
@@ -61,27 +38,58 @@ export const getServerSideProps = async ({
   query,
   resolvedUrl,
 }: GetServerSidePropsContext) => {
-  const { pbServer, user } = await getPBServer(req, resolvedUrl);
+  const { pbServer } = await getPBServer(req, resolvedUrl);
   const fullDocId = query.fullDocId as string;
 
-  const fullDocumentData = await fetchFullDocumentData(
-    pbServer,
-    user,
-    fullDocId
-  );
+  const fullDocument = await pbServer
+    .collection(Collections.FullDocuments)
+    .getOne<FullDocumentsResponse<RedirectExpand>>(fullDocId, {
+      expand: Object.entries(RedirectEnum)
+        .map(([stringValue]) => stringValue)
+        .join(","),
+    });
+
+  if (!fullDocument.expand)
+    return {
+      redirect: {
+        destination: "/notFound",
+        permanent: false,
+      },
+    };
+
+  const fullDocumentChild = Object.entries(fullDocument.expand).at(0)?.at(1) as
+    | BaseSystemFields
+    | undefined;
+
+  let uri: string;
+  switch (fullDocumentChild?.collectionName) {
+    case Collections.AcademicMaterials:
+      uri = "academicMaterials";
+      break;
+    case Collections.Classes:
+      uri = "adviseClasses";
+      break;
+    case Collections.Courses:
+      uri = "lectureCourses";
+      break;
+    case Collections.PersonalNotes:
+      uri = "personalNotes";
+      break;
+    default:
+      return {
+        redirect: {
+          destination: "/notFound",
+          permanent: false,
+        },
+      };
+  }
 
   return {
-    props: {
-      data: SuperJSON.stringify({
-        ...fullDocumentData,
-        pbAuthCookie: pbServer.authStore.exportToCookie(),
-      } as DocumentData),
+    redirect: {
+      destination: `/${uri}/${fullDocumentChild.id}`,
+      permanent: false,
     },
   };
-};
-
-Document.getLayout = function getLayout(page: React.ReactElement) {
-  return <MainLayout>{page}</MainLayout>;
 };
 
 export default Document;

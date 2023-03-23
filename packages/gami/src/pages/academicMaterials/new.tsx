@@ -9,24 +9,27 @@ import type {
   DocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
-  PersonalNotesRecord,
-  PersonalNotesResponse,
+  AcademicMaterialsRecord,
+  AcademicMaterialsResponse,
 } from "raito";
-import { FullDocumentsInternalOptions } from "raito";
+import {
+  AcademicMaterialsCategoryOptions,
+  FullDocumentsInternalOptions,
+} from "raito";
 import { Collections } from "raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
-interface NewPersonalNoteData {
+interface NewAcademicMaterialData {
   newEventDocUrl: string;
 }
 
-function NewPersonalNote({
+function NewAcademicMaterial({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const dataParse = SuperJSON.parse<NewPersonalNoteData>(data);
+  const dataParse = SuperJSON.parse<NewAcademicMaterialData>(data);
   const router = useRouter();
 
   useEffect(() => {
@@ -36,9 +39,9 @@ function NewPersonalNote({
   return (
     <>
       <Head>
-        <title>New personal note</title>
+        <title>New Academic Material</title>
       </Head>
-      <h1>Creating your new personal note...</h1>
+      <h1>Creating your new Academic Material...</h1>
     </>
   );
 }
@@ -76,28 +79,29 @@ export const getServerSideProps = async ({
     .collection(Collections.FullDocuments)
     .create<FullDocumentsResponse>({
       document: baseDocument.id,
+      internal: FullDocumentsInternalOptions["Academic material"],
     } as FullDocumentsRecord);
 
-  const personalNote = await pbServer
-    .collection(Collections.PersonalNotes)
-    .create<PersonalNotesResponse>({
+  const AcademicMaterial = await pbServer
+    .collection(Collections.AcademicMaterials)
+    .create<AcademicMaterialsResponse>({
       fullDocument: baseFullDocument.id,
-      internal: FullDocumentsInternalOptions["Personal note"],
-    } as PersonalNotesRecord);
+      category: AcademicMaterialsCategoryOptions.Draft,
+    } as AcademicMaterialsRecord);
 
-  const newPersonalNoteUrl = `/personalNotes/${personalNote.id}`;
+  const newAcademicMaterialUrl = `/academicMaterials/${AcademicMaterial.id}`;
 
   return {
     props: {
       data: SuperJSON.stringify({
-        newEventDocUrl: newPersonalNoteUrl,
-      } as NewPersonalNoteData),
+        newEventDocUrl: newAcademicMaterialUrl,
+      } as NewAcademicMaterialData),
     },
   };
 };
 
-NewPersonalNote.getLayout = function getLayout(page: React.ReactElement) {
+NewAcademicMaterial.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;
 };
 
-export default NewPersonalNote;
+export default NewAcademicMaterial;

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { AttachmentsResponse } from "raito";
 import { Collections } from "raito";
 import type { Dispatch, SetStateAction } from "react";
@@ -18,7 +19,12 @@ function Attachments({
     <ol>
       {attachments.map((attachment) => (
         <li key={attachment.id}>
-          {attachment.file}
+          <Link
+            href={pbClient?.getFileUrl(attachment, attachment.file) ?? "#"}
+            target={"_blank"}
+          >
+            {attachment.file}
+          </Link>
           {showDelete && (
             <button
               onClick={() => {

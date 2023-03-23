@@ -7,8 +7,6 @@ import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
   ParticipantsCustomResponse,
-  PeopleResponse,
-  RelationshipsCustomResponse,
   RelationshipsRecord,
   RelationshipsResponse,
 } from "raito";
@@ -21,14 +19,10 @@ import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface RelationshipsData {
-  relationships: ListResult<mergeRelationship>;
   starredParticipants: ListResult<ParticipantsCustomResponse>;
   allAcrossParticipants: ListResult<ParticipantsCustomResponse>;
   pbAuthCookie: string;
 }
-
-export type mergeRelationship = RelationshipsCustomResponse &
-  RelationshipsResponse<{ toPerson: PeopleResponse }>;
 
 function Relationships({
   data,
@@ -156,10 +150,6 @@ export const getServerSideProps = async ({
 }: GetServerSidePropsContext) => {
   const { pbServer } = await getPBServer(req, resolvedUrl);
 
-  const relationships = await pbServer.apiGetList<RelationshipsCustomResponse>(
-    "/api/user/relationships"
-  );
-
   const starredParticipants =
     await pbServer.apiGetList<ParticipantsCustomResponse>(
       "/api/user/getStarredParticipants?fullList=true"
@@ -173,7 +163,6 @@ export const getServerSideProps = async ({
   return {
     props: {
       data: SuperJSON.stringify({
-        relationships,
         starredParticipants,
         allAcrossParticipants,
         pbAuthCookie: pbServer.authStore.exportToCookie(),

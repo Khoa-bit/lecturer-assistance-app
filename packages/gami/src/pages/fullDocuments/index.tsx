@@ -23,7 +23,7 @@ function FullDocuments({
   const fullDocumentsList = dataParse.fullDocuments.items.map((fullDoc) => (
     <li key={fullDoc.id}>
       <Link href={`/fullDocuments/${encodeURIComponent(fullDoc.id)}`}>
-        {JSON.stringify(fullDoc.expand.userDocument_name)}
+        {`${fullDoc.expand.userDocument_name} - ${fullDoc.internal}`}
       </Link>
     </li>
   )) ?? <p>{"Error when fetching full documents :<"}</p>;
@@ -32,7 +32,7 @@ function FullDocuments({
     dataParse.participatedFullDocuments.items.map((fullDoc) => (
       <li key={fullDoc.id}>
         <Link href={`/fullDocuments/${encodeURIComponent(fullDoc.id)}`}>
-          {JSON.stringify(fullDoc.expand.userDocument_name)}
+          {`${fullDoc.expand.userDocument_name} - ${fullDoc.internal}`}
         </Link>
       </li>
     )) ?? <p>{"Error when fetching full documents :<"}</p>;

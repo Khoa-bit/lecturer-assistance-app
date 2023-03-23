@@ -3,6 +3,7 @@
 */
 
 export enum Collections {
+	AcademicMaterials = "academicMaterials",
 	Attachments = "attachments",
 	Classes = "classes",
 	CourseTemplates = "courseTemplates",
@@ -16,7 +17,6 @@ export enum Collections {
 	People = "people",
 	PersonalNotes = "personalNotes",
 	Relationships = "relationships",
-	Temp = "temp",
 	Users = "users",
 }
 
@@ -43,6 +43,22 @@ export type AuthSystemFields<T = never> = {
 } & BaseSystemFields<T>
 
 // Record types for each collection
+
+export enum AcademicMaterialsCategoryOptions {
+	"International journals - Rank 1" = "International journals - Rank 1",
+	"International journals - Rank 2" = "International journals - Rank 2",
+	"International journals - Other" = "International journals - Other",
+	"National journals" = "National journals",
+	"Monographs" = "Monographs",
+	"Curriculums" = "Curriculums",
+	"Reference books" = "Reference books",
+	"Manual books" = "Manual books",
+	"Draft" = "Draft",
+}
+export type AcademicMaterialsRecord = {
+	category: AcademicMaterialsCategoryOptions
+	fullDocument: RecordIdString
+}
 
 export type AttachmentsRecord = {
 	file: string
@@ -116,26 +132,15 @@ export type EventDocumentsRecord = {
 	recurring: EventDocumentsRecurringOptions
 }
 
-export enum FullDocumentsCategoryOptions {
-	"International journals - Rank 1" = "International journals - Rank 1",
-	"International journals - Rank 2" = "International journals - Rank 2",
-	"International journals - Other" = "International journals - Other",
-	"National journals" = "National journals",
-	"Monographs" = "Monographs",
-	"Curriculums" = "Curriculums",
-	"Reference books" = "Reference books",
-	"Manual books" = "Manual books",
-	"Draft" = "Draft",
-}
-
 export enum FullDocumentsInternalOptions {
+	"Academic material" = "Academic material",
 	"Course" = "Course",
 	"Class" = "Class",
+	"Personal note" = "Personal note",
 }
 export type FullDocumentsRecord = {
 	document: RecordIdString
-	category: FullDocumentsCategoryOptions
-	internal?: FullDocumentsInternalOptions
+	internal: FullDocumentsInternalOptions
 }
 
 export type MajorsRecord = {
@@ -186,16 +191,12 @@ export type RelationshipsRecord = {
 	toPerson: RecordIdString
 }
 
-export type TempRecord = {
-	name?: string
-	person?: RecordIdString
-}
-
 export type UsersRecord = {
 	person: RecordIdString
 }
 
 // Response types include system fields and match responses from the PocketBase API
+export type AcademicMaterialsResponse<Texpand = unknown> = AcademicMaterialsRecord & BaseSystemFields<Texpand>
 export type AttachmentsResponse<Texpand = unknown> = AttachmentsRecord & BaseSystemFields<Texpand>
 export type ClassesResponse<Texpand = unknown> = ClassesRecord & BaseSystemFields<Texpand>
 export type CourseTemplatesResponse = CourseTemplatesRecord & BaseSystemFields
@@ -209,10 +210,10 @@ export type ParticipantsResponse<Texpand = unknown> = ParticipantsRecord & BaseS
 export type PeopleResponse<Texpand = unknown> = PeopleRecord & BaseSystemFields<Texpand>
 export type PersonalNotesResponse<Texpand = unknown> = PersonalNotesRecord & BaseSystemFields<Texpand>
 export type RelationshipsResponse<Texpand = unknown> = RelationshipsRecord & BaseSystemFields<Texpand>
-export type TempResponse<Texpand = unknown> = TempRecord & BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = UsersRecord & AuthSystemFields<Texpand>
 
 export type CollectionRecords = {
+	academicMaterials: AcademicMaterialsRecord
 	attachments: AttachmentsRecord
 	classes: ClassesRecord
 	courseTemplates: CourseTemplatesRecord
@@ -226,6 +227,5 @@ export type CollectionRecords = {
 	people: PeopleRecord
 	personalNotes: PersonalNotesRecord
 	relationships: RelationshipsRecord
-	temp: TempRecord
 	users: UsersRecord
 }

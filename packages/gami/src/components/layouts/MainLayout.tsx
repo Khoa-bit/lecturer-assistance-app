@@ -16,6 +16,12 @@ export default function MainLayout({ children }: Props) {
             <Link className="text-blue-700 underline" href={"/fullDocuments"}>
               Full Documents
             </Link>
+            <Link
+              className="text-blue-700 underline"
+              href={"/academicMaterials"}
+            >
+              Academic Materials
+            </Link>
             <Link className="text-blue-700 underline" href={"/people"}>
               People
             </Link>
