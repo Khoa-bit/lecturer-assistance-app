@@ -55,8 +55,10 @@ import EventsList from "./Events";
 export interface FullDocumentData {
   fullDocument: FullDocumentsResponse<DocumentsExpand>;
   attachments: AttachmentsResponse[];
-  upcomingEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
-  pastEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
+  upcomingEventDocuments: ListResult<
+    EventDocumentsResponse<FullDocumentExpand>
+  >;
+  pastEventDocuments: ListResult<EventDocumentsResponse<FullDocumentExpand>>;
   allDocParticipants: ListResult<ParticipantsCustomResponse>;
   permission: ParticipantsPermissionOptions;
   people: PeopleResponse<unknown>[];
@@ -70,6 +72,10 @@ export interface FullDocumentProps<TRecord> extends FullDocumentData {
   childrenDefaultValue?: TRecord;
   children?: ReactElement | ReactElement[];
   hasEvents?: boolean;
+}
+
+interface FullDocumentExpand {
+  fullDocument: FullDocumentsResponse<DocumentsExpand>;
 }
 
 interface DocumentsExpand {
@@ -462,19 +468,21 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
 
   const upcomingEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
-    .getList<EventDocumentsResponse<DocumentsExpand>>(undefined, undefined, {
+    .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
       filter: `fullDocument = "${fullDocId}" && (startTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
-      expand: "document",
+      expand: "fullDocument.document",
       sort: "startTime",
     });
 
   const pastEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
-    .getList<EventDocumentsResponse<DocumentsExpand>>(undefined, undefined, {
+    .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
       filter: `fullDocument = "${fullDocId}" && (startTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
-      expand: "document",
+      expand: "fullDocument.document",
       sort: "-startTime",
     });
+
+  console.log(upcomingEventDocuments, pastEventDocuments);
 
   const allDocParticipants =
     await pbServer.apiGetList<ParticipantsCustomResponse>(
