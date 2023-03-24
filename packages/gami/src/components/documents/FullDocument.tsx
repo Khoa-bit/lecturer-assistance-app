@@ -1,6 +1,5 @@
 import { MD5 } from "crypto-js";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import type { ListResult } from "pocketbase";
 import type {
@@ -269,6 +268,7 @@ function FullDocument<TRecord>({
       .collection(childCollectionName)
       .subscribe(childId, (data) => {
         const childBodyParams = Object.entries(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           childrenDefaultValue as any
         ).reduce((prev, [key, value]) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

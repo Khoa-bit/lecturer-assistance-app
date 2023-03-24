@@ -3,7 +3,7 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import Head from "next/head";
-import { ListResult } from "pocketbase";
+import type { ListResult } from "pocketbase";
 import type {
   DocumentsResponse,
   EventDocumentsRecord,
