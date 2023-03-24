@@ -1,15 +1,24 @@
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { DocumentsResponse, EventDocumentsResponse } from "raito";
+import type {
+  DocumentsResponse,
+  EventDocumentsResponse,
+  FullDocumentsResponse,
+} from "raito";
 
+interface FullDocumentExpand {
+  fullDocument: FullDocumentsResponse<DocumentsExpand>;
+}
 interface DocumentsExpand {
   document: DocumentsResponse;
 }
 
 interface EventsListProps {
   fullDocumentId: string;
-  upcomingEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
-  pastEventDocuments: ListResult<EventDocumentsResponse<DocumentsExpand>>;
+  upcomingEventDocuments: ListResult<
+    EventDocumentsResponse<FullDocumentExpand>
+  >;
+  pastEventDocuments: ListResult<EventDocumentsResponse<FullDocumentExpand>>;
   isWrite: boolean;
 }
 
@@ -19,6 +28,8 @@ function EventsList({
   pastEventDocuments,
   isWrite,
 }: EventsListProps) {
+  console.log(fullDocumentId);
+  console.log(upcomingEventDocuments, pastEventDocuments);
   return (
     <>
       {isWrite && (
@@ -35,7 +46,7 @@ function EventsList({
             <Link
               href={`/eventDocuments/${encodeURIComponent(eventDocument.id)}`}
             >
-              {`${eventDocument.expand?.document.status} - ${eventDocument.expand?.document.name} - ${eventDocument.startTime} - ${eventDocument.endTime} - ${eventDocument.recurring}`}
+              {`${eventDocument.expand?.fullDocument.expand?.document.status} - ${eventDocument.expand?.fullDocument.expand?.document.name} - ${eventDocument.startTime} - ${eventDocument.endTime} - ${eventDocument.recurring}`}
             </Link>
           </li>
         ))}
@@ -47,7 +58,7 @@ function EventsList({
             <Link
               href={`/eventDocuments/${encodeURIComponent(eventDocument.id)}`}
             >
-              {`${eventDocument.expand?.document.status} - ${eventDocument.expand?.document.name} - ${eventDocument.startTime} - ${eventDocument.endTime} - ${eventDocument.recurring}`}
+              {`${eventDocument.expand?.fullDocument.expand?.document.status} - ${eventDocument.expand?.fullDocument.expand?.document.name} - ${eventDocument.startTime} - ${eventDocument.endTime} - ${eventDocument.recurring}`}
             </Link>
           </li>
         ))}
