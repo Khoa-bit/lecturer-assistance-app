@@ -107,14 +107,16 @@ export enum DocumentsStatusOptions {
 	"Done" = "Done",
 	"Closed" = "Closed",
 }
-export type DocumentsRecord<TrichText = unknown> = {
+export type DocumentsRecord = {
 	name: string
 	thumbnail?: string
 	priority: DocumentsPriorityOptions
 	status: DocumentsStatusOptions
-	richText?: null | TrichText
 	diffHash?: string
 	owner: RecordIdString
+	deleted?: IsoDateString
+	richText?: string
+	attachmentsHash?: string
 }
 
 export enum EventDocumentsRecurringOptions {
@@ -125,11 +127,11 @@ export enum EventDocumentsRecurringOptions {
 	"Annually" = "Annually",
 }
 export type EventDocumentsRecord = {
-	document: RecordIdString
-	fullDocument?: RecordIdString
+	fullDocument: RecordIdString
 	startTime?: IsoDateString
 	endTime?: IsoDateString
 	recurring: EventDocumentsRecurringOptions
+	toFullDocument?: RecordIdString
 }
 
 export enum FullDocumentsInternalOptions {
@@ -137,6 +139,7 @@ export enum FullDocumentsInternalOptions {
 	"Course" = "Course",
 	"Class" = "Class",
 	"Personal note" = "Personal note",
+	"Event" = "Event",
 }
 export type FullDocumentsRecord = {
 	document: RecordIdString
@@ -202,7 +205,7 @@ export type ClassesResponse<Texpand = unknown> = ClassesRecord & BaseSystemField
 export type CourseTemplatesResponse = CourseTemplatesRecord & BaseSystemFields
 export type CoursesResponse<Texpand = unknown> = CoursesRecord & BaseSystemFields<Texpand>
 export type DepartmentsResponse = DepartmentsRecord & BaseSystemFields
-export type DocumentsResponse<TrichText = unknown, Texpand = unknown> = DocumentsRecord<TrichText> & BaseSystemFields<Texpand>
+export type DocumentsResponse<Texpand = unknown> = DocumentsRecord & BaseSystemFields<Texpand>
 export type EventDocumentsResponse<Texpand = unknown> = EventDocumentsRecord & BaseSystemFields<Texpand>
 export type FullDocumentsResponse<Texpand = unknown> = FullDocumentsRecord & BaseSystemFields<Texpand>
 export type MajorsResponse<Texpand = unknown> = MajorsRecord & BaseSystemFields<Texpand>

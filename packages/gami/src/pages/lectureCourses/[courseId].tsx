@@ -12,7 +12,7 @@ import type {
   FullDocumentsResponse,
 } from "raito";
 import { Collections } from "raito";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import type {
@@ -24,14 +24,20 @@ import FullDocument, {
 } from "src/components/documents/FullDocument";
 import type { InputProps } from "src/components/documents/Input";
 import Input from "src/components/documents/Input";
+import type {
+  SelectOption,
+  SelectProps,
+} from "src/components/documents/Select";
+import Select from "src/components/documents/Select";
 import MainLayout from "src/components/layouts/MainLayout";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
-import type { RichText } from "src/types/documents";
 import SuperJSON from "superjson";
 
-interface DocumentData extends FullDocumentData {
+interface DocumentData {
+  fullDocumentData: FullDocumentData;
   course: CoursesResponse<FullDocumentsExpand>;
+  courseTemplatesOptions: CourseTemplatesResponse[];
   pbAuthCookie: string;
 }
 
@@ -40,7 +46,7 @@ interface FullDocumentsExpand {
 }
 
 interface DocumentsExpand {
-  document: DocumentsResponse<RichText>;
+  document: DocumentsResponse;
 }
 
 interface CourseTemplateInput extends CourseTemplatesRecord {
@@ -54,46 +60,42 @@ function CourseDocument({
 
   const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
   const course = dataParse.course;
-  const fullDocument = dataParse.fullDocument;
-  const upcomingEventDocuments = dataParse.upcomingEventDocuments;
-  const pastEventDocuments = dataParse.pastEventDocuments;
-  const allDocParticipants = dataParse.allDocParticipants;
-  const permission = dataParse.permission;
-  const people = dataParse.people;
-  const attachments = dataParse.attachments;
+  const fullDocumentData = dataParse.fullDocumentData;
+  const courseTemplateId = course.courseTemplate;
+  const initCourseTemplatesOptions = dataParse.courseTemplatesOptions;
+  const [courseTemplatesOptions, setCourseTemplatesOptions] = useState<
+    CourseTemplatesResponse[]
+  >(initCourseTemplatesOptions);
 
-  const onSubmit = async (inputData: CoursesRecord) => {
-    return await pbClient
-      .collection(Collections.Courses)
-      .update<CoursesResponse>(course.id, {
-        fullDocument: fullDocument.id,
-        semester: inputData.semester,
-        courseTemplate: undefined,
-      } as CoursesRecord);
-  };
+  const courseTemplatesOption = courseTemplatesOptions.find(
+    (courseTemplatesOption) => courseTemplatesOption.id == courseTemplateId
+  );
+  const [templateCourseId, setTemplateCourseId] = useState<string>(
+    courseTemplatesOption?.courseId ?? ""
+  );
+  const [templatePeriodsCount, setTemplatePeriodsCount] = useState<number>(
+    courseTemplatesOption?.periodsCount ?? 0
+  );
+
+  const childCollectionName = Collections.Courses;
+  const childId = course.id;
 
   const fullDocumentProps: FullDocumentProps<CoursesRecord> = {
-    fullDocument,
-    attachments,
-    upcomingEventDocuments,
-    pastEventDocuments,
-    allDocParticipants,
-    permission,
-    people,
+    childCollectionName,
+    childId,
+    ...fullDocumentData,
     pbClient,
     user,
-    childInputOnSubmit: onSubmit,
     childrenDefaultValue: {
-      fullDocument: fullDocument.id,
+      fullDocument: course.fullDocument,
       semester: course.semester,
-      courseTemplate: undefined,
+      courseTemplate: courseTemplateId,
     },
   };
 
   const { register, handleSubmit } = useForm<CourseTemplateInput>();
   const onSubmitTemplate: SubmitHandler<CourseTemplateInput> = useCallback(
     (inputData) => {
-      console.log(inputData);
       pbClient
         .collection(Collections.CourseTemplates)
         .create<CourseTemplatesResponse>({
@@ -101,12 +103,30 @@ function CourseDocument({
           courseId: inputData.courseId,
           periodsCount: inputData.periodsCount,
         } as CourseTemplatesRecord)
-        .then((success) => {
-          console.log(success);
+        .then((newCourseTemplatesOption) => {
+          console.log(newCourseTemplatesOption);
+          setCourseTemplatesOptions((courseTemplatesOptions) => [
+            ...courseTemplatesOptions,
+            newCourseTemplatesOption,
+          ]);
         });
     },
     [pbClient]
   );
+
+  const courseTemplateOnChange = (courseTemplateId: string) => {
+    const courseTemplatesOption = courseTemplatesOptions.find(
+      (courseTemplatesOption) => courseTemplatesOption.id == courseTemplateId
+    );
+
+    setTemplateCourseId(
+      (templateCourseId) => courseTemplatesOption?.courseId ?? templateCourseId
+    );
+    setTemplatePeriodsCount(
+      (templatePeriodsCount) =>
+        courseTemplatesOption?.periodsCount ?? templatePeriodsCount
+    );
+  };
 
   return (
     <>
@@ -121,6 +141,31 @@ function CourseDocument({
             options: { required: true },
           } as InputProps<CoursesRecord>)}
         ></Input>
+        <Select
+          {...({
+            name: "courseTemplate",
+            selectOptions: courseTemplatesOptions.map(
+              (courseTemplatesOption) => {
+                return {
+                  key: courseTemplatesOption.id,
+                  value: courseTemplatesOption.id,
+                  content: `${courseTemplatesOption.name} - ${courseTemplatesOption.periodsCount}`,
+                } as SelectOption;
+              }
+            ),
+            options: { required: true },
+            defaultValue: templateCourseId,
+            onChange: (e) => {
+              courseTemplateOnChange(e.currentTarget.value);
+            },
+          } as SelectProps<CoursesRecord>)}
+        >
+          <option value="" disabled hidden>
+            Select Course Template
+          </option>
+        </Select>
+        <input id="courseId" disabled value={templateCourseId} />
+        <input id="periodsCount" disabled value={templatePeriodsCount} />
       </FullDocument>
       <h2>New course template modal</h2>
       <form onSubmit={handleSubmit(onSubmitTemplate)}>
@@ -165,11 +210,16 @@ export const getServerSideProps = async ({
     fullDocId
   );
 
+  const courseTemplatesOptions = await pbServer
+    .collection(Collections.CourseTemplates)
+    .getFullList<CourseTemplatesResponse>();
+
   return {
     props: {
       data: SuperJSON.stringify({
-        ...fullDocumentData,
+        fullDocumentData,
         course,
+        courseTemplatesOptions,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as DocumentData),
     },

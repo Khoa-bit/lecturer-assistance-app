@@ -1,24 +1,15 @@
 import Link from "next/link";
-import { Collection, ListResult } from "pocketbase";
-import {
-  Collections,
+import type { ListResult } from "pocketbase";
+import type {
   ParticipantsCustomResponse,
-  ParticipantsPermissionOptions,
   ParticipantsRecord,
   ParticipantsResponse,
   PeopleResponse,
   UsersResponse,
 } from "raito";
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { collapseToast } from "react-toastify";
-import { PBCustom } from "src/types/pb-custom";
+import { Collections, ParticipantsPermissionOptions } from "raito";
+import { useMemo, useState } from "react";
+import type { PBCustom } from "src/types/pb-custom";
 
 interface NewParticipantFormProps {
   docId: string;
@@ -27,10 +18,6 @@ interface NewParticipantFormProps {
   defaultValue: ListResult<ParticipantsCustomResponse>;
   pbClient: PBCustom;
   disabled: boolean;
-}
-
-interface NewParticipantFormInput {
-  newPerson: string;
 }
 
 function NewParticipantForm({
@@ -57,10 +44,9 @@ function NewParticipantForm({
   const participantsList = useMemo(
     () =>
       allDocParticipants.items.map((allDocParticipant) =>
-        allDocParticipant.expand.userDocument_id_list.map(
-          (userDocId, index) => {
-            if (userDocId != docId) return <></>;
-
+        allDocParticipant.expand.userDocument_id_list
+          .filter((userDocId) => userDocId == docId)
+          .map((_, index) => {
             return (
               <li key={allDocParticipant.id}>
                 <Link
@@ -94,30 +80,31 @@ function NewParticipantForm({
                     )
                   )}
                 </select>
-                <button
-                  onClick={async () => {
-                    const participantId =
-                      allDocParticipant.expand.participant_id_list.at(index);
+                {!disabled && (
+                  <button
+                    onClick={async () => {
+                      const participantId =
+                        allDocParticipant.expand.participant_id_list.at(index);
 
-                    if (!participantId) return;
+                      if (!participantId) return;
 
-                    await pbClient
-                      .collection(Collections.Participants)
-                      .delete(participantId);
+                      await pbClient
+                        .collection(Collections.Participants)
+                        .delete(participantId);
 
-                    await pbClient
-                      ?.apiGetList<ParticipantsCustomResponse>(
-                        `/api/user/getAllDocParticipants/${docId}?fullList=true`
-                      )
-                      .then((value) => setAllDocParticipants(value));
-                  }}
-                >
-                  {" - Delete"}
-                </button>
+                      await pbClient
+                        ?.apiGetList<ParticipantsCustomResponse>(
+                          `/api/user/getAllDocParticipants/${docId}?fullList=true`
+                        )
+                        .then((value) => setAllDocParticipants(value));
+                    }}
+                  >
+                    {" - Delete"}
+                  </button>
+                )}
               </li>
             );
-          }
-        )
+          })
       ),
     [allDocParticipants.items, disabled, docId, pbClient]
   );

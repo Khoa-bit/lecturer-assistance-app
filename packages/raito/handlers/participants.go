@@ -29,10 +29,11 @@ func GetParticipatedEventDocuments(app *pocketbase.PocketBase, c echo.Context) e
 	userPersonId := authRecord.GetString("person")
 
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
-		`SELECT ed.* %s
+		`SELECT eventDocument.* %s
       FROM participants p
-        INNER JOIN eventDocuments ed ON p.document = ed.document
-        INNER JOIN documents userDocument ON p.document = userDocument.id
+        INNER JOIN fullDocuments AS fullDocument ON p.document = fullDocument.document
+        INNER JOIN documents userDocument ON p.document = userDocument.id AND userDocument.deleted == ''
+        INNER JOIN eventDocuments eventDocument ON fullDocument.id = eventDocument.toFullDocument
       WHERE p.person = '%s'`,
 		selectArgs, userPersonId))
 
@@ -59,8 +60,8 @@ func GetParticipatedFullDocuments(app *pocketbase.PocketBase, c echo.Context) er
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
 		`SELECT fd.* %s
       FROM participants p
-        INNER JOIN fullDocuments fd ON p.document = fd.document
-        INNER JOIN documents userDocument ON p.document = userDocument.id
+        INNER JOIN fullDocuments fd ON p.document = fd.document AND fd.internal != 'Event'
+        INNER JOIN documents userDocument ON p.document = userDocument.id AND userDocument.deleted == ''
       WHERE p.person = '%s'`,
 		selectArgs, userPersonId))
 
@@ -88,7 +89,7 @@ func GetParticipatedAcademicMaterials(app *pocketbase.PocketBase, c echo.Context
 		`SELECT academicMaterial.* %s
       FROM participants p
         INNER JOIN fullDocuments AS fullDocument ON p.document = fullDocument.document
-        INNER JOIN documents userDocument ON p.document = userDocument.id
+        INNER JOIN documents userDocument ON p.document = userDocument.id AND userDocument.deleted == ''
         INNER JOIN academicMaterials academicMaterial ON fullDocument.id = academicMaterial.fullDocument
       WHERE p.person = '%s'`,
 		selectArgs, userPersonId))
@@ -117,7 +118,7 @@ func GetParticipatedPersonalNotes(app *pocketbase.PocketBase, c echo.Context) er
 		`SELECT personalNote.* %s
       FROM participants p
         INNER JOIN fullDocuments AS fullDocument ON p.document = fullDocument.document
-        INNER JOIN documents userDocument ON p.document = userDocument.id
+        INNER JOIN documents userDocument ON p.document = userDocument.id AND userDocument.deleted == ''
         INNER JOIN personalNotes personalNote ON fullDocument.id = personalNote.fullDocument
       WHERE p.person = '%s'`,
 		selectArgs, userPersonId))
@@ -146,7 +147,7 @@ func GetParticipatedCourses(app *pocketbase.PocketBase, c echo.Context) error {
 		`SELECT course.* %s
       FROM participants p
         INNER JOIN fullDocuments AS fullDocument ON p.document = fullDocument.document
-        INNER JOIN documents userDocument ON p.document = userDocument.id
+        INNER JOIN documents userDocument ON p.document = userDocument.id AND userDocument.deleted == ''
         INNER JOIN courses course ON fullDocument.id = course.fullDocument
       WHERE p.person = '%s'`,
 		selectArgs, userPersonId))
@@ -175,7 +176,7 @@ func GetParticipatedClasses(app *pocketbase.PocketBase, c echo.Context) error {
 		`SELECT class.* %s
       FROM participants p
         INNER JOIN fullDocuments AS fullDocument ON p.document = fullDocument.document
-        INNER JOIN documents userDocument ON p.document = userDocument.id
+        INNER JOIN documents userDocument ON p.document = userDocument.id AND userDocument.deleted == ''
         INNER JOIN classes class ON fullDocument.id = class.fullDocument
       WHERE p.person = '%s'`,
 		selectArgs, userPersonId))
@@ -223,11 +224,11 @@ func GetAllAcrossParticipants(app *pocketbase.PocketBase, c echo.Context) error 
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
 		`SELECT ppl.* %s
       FROM participants participant
-          INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.owner = '%s'
+          INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.owner = '%s'
           INNER JOIN people ppl ON participant.person == ppl.id
           LEFT JOIN relationships relationship ON FALSE
           LEFT JOIN fullDocuments fullDocument ON participant.document == fullDocument.document
-          LEFT JOIN eventDocuments eventDocument ON participant.document == eventDocument.document
+          LEFT JOIN eventDocuments eventDocument ON fullDocument.document == eventDocument.fullDocument
       GROUP BY ppl.id`,
 		selectArgs, userPersonId))
 
@@ -272,9 +273,9 @@ func GetStarredParticipants(app *pocketbase.PocketBase, c echo.Context) error {
       FROM relationships relationship
         INNER JOIN people ppl ON relationship.toPerson = ppl.id
         LEFT JOIN participants participant ON relationship.toPerson = participant.person
-        LEFT JOIN documents userDocument ON participant.document == userDocument.id
+        LEFT JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == ''
         LEFT JOIN fullDocuments fullDocument ON participant.document == fullDocument.document
-        LEFT JOIN eventDocuments eventDocument ON participant.document == eventDocument.document
+        LEFT JOIN eventDocuments eventDocument ON fullDocument.document == eventDocument.fullDocument
       WHERE fromPerson = '%s'
       GROUP BY ppl.id`,
 		selectArgs, userPersonId))
@@ -327,11 +328,11 @@ func GetAllDocParticipation(app *pocketbase.PocketBase, c echo.Context) error {
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
 		`SELECT ppl.* %s
       FROM participants participant
-          INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.owner = '%s'
+          INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.owner = '%s'
           INNER JOIN people ppl ON participant.person == ppl.id
           LEFT JOIN relationships relationship ON FALSE
           LEFT JOIN fullDocuments fullDocument ON participant.document == fullDocument.document
-          LEFT JOIN eventDocuments eventDocument ON participant.document == eventDocument.document
+          LEFT JOIN eventDocuments eventDocument ON fullDocument.document == eventDocument.fullDocument
       WHERE participant.person = {:toPerson}
       GROUP BY ppl.id`,
 		selectArgs, userPersonId))
@@ -385,11 +386,11 @@ func GetAllDocParticipants(app *pocketbase.PocketBase, c echo.Context) error {
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
 		`SELECT ppl.* %s
       FROM participants participant
-          INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.id == {:docId}
+          INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.id == {:docId}
           INNER JOIN people ppl ON participant.person == ppl.id
           LEFT JOIN relationships relationship ON FALSE
           LEFT JOIN fullDocuments fullDocument ON participant.document == fullDocument.document
-          LEFT JOIN eventDocuments eventDocument ON participant.document == eventDocument.document
+          LEFT JOIN eventDocuments eventDocument ON fullDocument.document == eventDocument.fullDocument
       GROUP BY ppl.id`,
 		selectArgs))
 

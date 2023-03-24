@@ -11,9 +11,8 @@ import { BubbleMenu, EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import type { Step } from "prosemirror-transform";
 import type { UsersResponse } from "raito";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatDate } from "src/lib/input_handling";
-import type { RichText } from "src/types/documents";
 import SuperJSON from "superjson";
 import CustomImage from "./customImageExtension/image";
 import suggestion from "./suggestion";
@@ -41,7 +40,7 @@ interface AddMarkStep extends Step {
 
 interface TipTapProps {
   onChange: (...event: unknown[]) => void;
-  richText: RichText;
+  richText: string;
   user: UsersResponse;
 }
 
@@ -49,6 +48,11 @@ const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
 
 const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
   const username = user?.username ?? "Anonymous";
+  const content: object = SuperJSON.parse(
+    richText.length >= 2 ? richText : "{}"
+  );
+
+  const [prevContent, setPrevContent] = useState(content);
 
   const {
     commentText,
@@ -142,8 +146,16 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
       }),
       Comment,
     ],
-    content: richText?.json,
+    content: content,
   });
+
+  useEffect(() => {
+    if (SuperJSON.stringify(prevContent) == SuperJSON.stringify(content))
+      return;
+
+    editor?.commands.setContent(content);
+    setPrevContent(content);
+  }, [editor?.commands, content, prevContent]);
 
   useInitComments(editor, setAllCommentSpans);
 

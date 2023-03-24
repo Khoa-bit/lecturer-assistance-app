@@ -31,10 +31,10 @@ func GetFullDocuments(app *pocketbase.PocketBase, c echo.Context) error {
     FROM (
       SELECT d.*
       FROM users AS u
-        INNER JOIN documents AS d ON d.owner = u.person
+        INNER JOIN documents AS d ON d.owner = u.person AND d.deleted == ''
       WHERE u.id='%s'
       ) as userDocument
-      INNER JOIN fullDocuments AS fd ON fd.document = userDocument.id`,
+      INNER JOIN fullDocuments AS fd ON fd.document = userDocument.id AND fd.internal != 'Event'`,
 		selectArgs, authRecord.Id))
 
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)

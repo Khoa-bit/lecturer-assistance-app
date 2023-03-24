@@ -8,34 +8,34 @@ interface ParticipateDetailListProps {
 function ParticipateDetailList({ participant }: ParticipateDetailListProps) {
   return (
     <ol key={participant.id}>
-      {participant.expand.fullDocument_id_list.map((fullDocId, index) => {
-        if (fullDocId.length <= 0) return <></>;
-
-        return (
-          <li key={fullDocId}>
-            <Link href={`/fullDocuments/${encodeURIComponent(fullDocId)}`}>
-              {participant.expand.userDocument_name_list.at(index)}
-            </Link>
-            <span>{` - ${participant.expand.participant_permission_list.at(
-              index
-            )}`}</span>
-          </li>
-        );
-      })}
-      {participant.expand.eventDocument_id_list.map((eventDocId, index) => {
-        if (eventDocId.length <= 0) return <></>;
-
-        return (
-          <li key={eventDocId}>
-            <Link href={`/eventDocuments/${encodeURIComponent(eventDocId)}`}>
-              {participant.expand.userDocument_name_list.at(index)}
-            </Link>
-            <span>{` - ${participant.expand.participant_permission_list.at(
-              index
-            )}`}</span>
-          </li>
-        );
-      })}
+      {participant.expand.fullDocument_id_list
+        .filter((fullDocId) => fullDocId.length > 0)
+        .map((fullDocId, index) => {
+          return (
+            <li key={fullDocId}>
+              <Link href={`/fullDocuments/${encodeURIComponent(fullDocId)}`}>
+                {participant.expand.userDocument_name_list.at(index)}
+              </Link>
+              <span>{` - ${participant.expand.participant_permission_list.at(
+                index
+              )}`}</span>
+            </li>
+          );
+        })}
+      {participant.expand.eventDocument_id_list
+        .filter((fullDocId) => fullDocId.length > 0)
+        .map((eventDocId, index) => {
+          return (
+            <li key={eventDocId}>
+              <Link href={`/eventDocuments/${encodeURIComponent(eventDocId)}`}>
+                {participant.expand.userDocument_name_list.at(index)}
+              </Link>
+              <span>{` - ${participant.expand.participant_permission_list.at(
+                index
+              )}`}</span>
+            </li>
+          );
+        })}
     </ol>
   );
 }

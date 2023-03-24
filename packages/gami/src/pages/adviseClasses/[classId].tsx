@@ -32,10 +32,10 @@ import Select from "src/components/documents/Select";
 import MainLayout from "src/components/layouts/MainLayout";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
-import type { RichText } from "src/types/documents";
 import SuperJSON from "superjson";
 
-interface DocumentData extends FullDocumentData {
+interface DocumentData {
+  fullDocumentData: FullDocumentData;
   adviseClass: ClassesResponse<ClassesExpand>;
   departments: DepartmentsResponse[];
   majorOptions: MajorsResponse<unknown>[];
@@ -49,7 +49,7 @@ interface FullDocumentsExpand {
 }
 
 interface DocumentsExpand {
-  document: DocumentsResponse<RichText>;
+  document: DocumentsResponse;
 }
 
 interface MajorsExpand {
@@ -63,43 +63,21 @@ function ClassDocument({
 
   const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
   const adviseClass = dataParse.adviseClass;
-  const fullDocument = dataParse.fullDocument;
-  const upcomingEventDocuments = dataParse.upcomingEventDocuments;
-  const pastEventDocuments = dataParse.pastEventDocuments;
-  const allDocParticipants = dataParse.allDocParticipants;
-  const permission = dataParse.permission;
-  const people = dataParse.people;
-  const attachments = dataParse.attachments;
+  const fullDocumentData = dataParse.fullDocumentData;
   const departments = dataParse.departments;
   const majorOptions = dataParse.majorOptions;
 
-  const onSubmit = async (inputData: ClassesRecord) => {
-    console.log(inputData.major);
-
-    return await pbClient
-      .collection(Collections.Classes)
-      .update<ClassesResponse>(adviseClass.id, {
-        fullDocument: fullDocument.id,
-        cohort: inputData.cohort,
-        major: inputData.major,
-        trainingSystem: inputData.trainingSystem,
-        classId: inputData.classId,
-      } as ClassesRecord);
-  };
+  const childCollectionName = Collections.Classes;
+  const childId = adviseClass.id;
 
   const fullDocumentProps: FullDocumentProps<ClassesRecord> = {
-    fullDocument,
-    attachments,
-    upcomingEventDocuments,
-    pastEventDocuments,
-    allDocParticipants,
-    permission,
-    people,
+    childCollectionName,
+    childId,
+    ...fullDocumentData,
     pbClient,
     user,
-    childInputOnSubmit: onSubmit,
     childrenDefaultValue: {
-      fullDocument: fullDocument.id,
+      fullDocument: adviseClass.fullDocument,
       cohort: adviseClass.cohort,
       major: adviseClass.major,
       trainingSystem: adviseClass.trainingSystem,
@@ -193,7 +171,7 @@ export const getServerSideProps = async ({
   return {
     props: {
       data: SuperJSON.stringify({
-        ...fullDocumentData,
+        fullDocumentData,
         adviseClass,
         departments,
         majorOptions,

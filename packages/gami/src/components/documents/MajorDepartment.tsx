@@ -32,7 +32,9 @@ function MajorDepartment({
   setValue,
 }: MajorDepartmentProps<MajorDepartmentInput>) {
   if (env.NEXT_PUBLIC_DEBUG_MODE && name != "major")
-    console.error("Incorrect name");
+    console.warn(
+      "Name must be major - parameters is available here for FullDocument to detect if this is an input field"
+    );
   const [departmentId, setDepartmentId] = useState<string>(initDepartmentId);
   const [majorOptions, setMajorOptions] =
     useState<MajorsResponse[]>(initMajorOptions);
