@@ -35,7 +35,7 @@ func GetCourses(app *pocketbase.PocketBase, c echo.Context) error {
     FROM (
       SELECT d.*
       FROM users AS u
-        INNER JOIN documents AS d ON d.owner = u.person
+        INNER JOIN documents AS d ON d.owner = u.person AND d.deleted == ''
       WHERE u.id='%s'
       ) as userDocument
       INNER JOIN fullDocuments AS fullDocument ON userDocument.id = fullDocument.document

@@ -11,22 +11,18 @@ import { Collections } from "raito";
 import type { FullDocumentData } from "src/components/documents/FullDocument";
 import { getPBServer } from "src/lib/pb_server";
 
-interface DocumentData extends FullDocumentData {
-  pbAuthCookie: string;
-}
-
-enum RedirectEnum {
+const expandRedirect = [
   "academicMaterials(fullDocument)",
   "classes(fullDocument)",
   "courses(fullDocument)",
   "personalNotes(fullDocument)",
-}
+];
 
 interface RedirectExpand {
-  "academicMaterials(fullDocument)": AcademicMaterialsResponse;
-  "classes(fullDocument)": ClassesResponse;
-  "courses(fullDocument)": CoursesResponse;
-  "personalNotes(fullDocument)": PersonalNotesResponse;
+  "academicMaterials(fullDocument)"?: AcademicMaterialsResponse;
+  "classes(fullDocument)"?: ClassesResponse;
+  "courses(fullDocument)"?: CoursesResponse;
+  "personalNotes(fullDocument)"?: PersonalNotesResponse;
 }
 
 function Document() {
@@ -40,13 +36,12 @@ export const getServerSideProps = async ({
 }: GetServerSidePropsContext) => {
   const { pbServer } = await getPBServer(req, resolvedUrl);
   const fullDocId = query.fullDocId as string;
+  const expandStr = expandRedirect.join(",");
 
   const fullDocument = await pbServer
     .collection(Collections.FullDocuments)
     .getOne<FullDocumentsResponse<RedirectExpand>>(fullDocId, {
-      expand: Object.entries(RedirectEnum)
-        .map(([stringValue]) => stringValue)
-        .join(","),
+      expand: expandStr,
     });
 
   if (!fullDocument.expand)
@@ -57,7 +52,7 @@ export const getServerSideProps = async ({
       },
     };
 
-  const fullDocumentChild = Object.entries(fullDocument.expand).at(0)?.at(1) as
+  const fullDocumentChild = Object.values(fullDocument.expand).at(0) as
     | BaseSystemFields
     | undefined;
 

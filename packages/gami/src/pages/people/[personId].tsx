@@ -15,7 +15,7 @@ import type {
 } from "raito";
 import { Collections, PeopleGenderOptions } from "raito";
 import type { ChangeEvent } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import MajorDepartment, {
@@ -24,7 +24,6 @@ import MajorDepartment, {
 import ParticipateDetailList from "src/components/documents/ParticipateDetailList";
 import MainLayout from "src/components/layouts/MainLayout";
 import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
-import { debounce } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";

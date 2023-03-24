@@ -25,10 +25,10 @@ import Select from "src/components/documents/Select";
 import MainLayout from "src/components/layouts/MainLayout";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
-import type { RichText } from "src/types/documents";
 import SuperJSON from "superjson";
 
-interface DocumentData extends FullDocumentData {
+interface DocumentData {
+  fullDocumentData: FullDocumentData;
   academicMaterial: AcademicMaterialsResponse<FullDocumentsExpand>;
   pbAuthCookie: string;
 }
@@ -38,7 +38,7 @@ interface FullDocumentsExpand {
 }
 
 interface DocumentsExpand {
-  document: DocumentsResponse<RichText>;
+  document: DocumentsResponse;
 }
 
 function AcademicMaterial({
@@ -48,26 +48,19 @@ function AcademicMaterial({
 
   const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
   const academicMaterial = dataParse.academicMaterial;
-  const fullDocument = dataParse.fullDocument;
-  const upcomingEventDocuments = dataParse.upcomingEventDocuments;
-  const pastEventDocuments = dataParse.pastEventDocuments;
-  const allDocParticipants = dataParse.allDocParticipants;
-  const permission = dataParse.permission;
-  const people = dataParse.people;
-  const attachments = dataParse.attachments;
+  const fullDocumentData = dataParse.fullDocumentData;
+
+  const childCollectionName = Collections.AcademicMaterials;
+  const childId = academicMaterial.id;
 
   const fullDocumentProps: FullDocumentProps<AcademicMaterialsRecord> = {
-    fullDocument,
-    attachments,
-    upcomingEventDocuments,
-    pastEventDocuments,
-    allDocParticipants,
-    permission,
-    people,
+    childCollectionName,
+    childId,
+    ...fullDocumentData,
     pbClient,
     user,
     childrenDefaultValue: {
-      fullDocument: fullDocument.id,
+      fullDocument: academicMaterial.fullDocument,
       category: academicMaterial.category,
     },
   };
@@ -138,7 +131,7 @@ export const getServerSideProps = async ({
     props: {
       data: SuperJSON.stringify({
         academicMaterial,
-        ...fullDocumentData,
+        fullDocumentData,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as DocumentData),
     },

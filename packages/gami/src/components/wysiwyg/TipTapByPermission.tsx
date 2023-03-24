@@ -1,14 +1,13 @@
 import type { UsersResponse, AttachmentsResponse } from "raito";
 import { ParticipantsPermissionOptions } from "raito";
 import type { Dispatch, SetStateAction } from "react";
-import type { RichText } from "src/types/documents";
 import type { PBCustom } from "src/types/pb-custom";
 import TipTap from "./TipTap";
 import TipTapComment from "./TipTapComment";
 import TipTapView from "./TipTapView";
 
 type TipTapByPermissionProps = {
-  richText: RichText;
+  richText: string;
   user: UsersResponse;
   permission: ParticipantsPermissionOptions;
   documentId?: string;

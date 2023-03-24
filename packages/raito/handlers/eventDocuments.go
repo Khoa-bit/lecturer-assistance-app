@@ -27,14 +27,15 @@ func GetEventDocuments(app *pocketbase.PocketBase, c echo.Context) error {
 	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
 
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
-		`SELECT ed.* %s
+		`SELECT eventDocument.* %s
     FROM (
       SELECT d.*
       FROM users AS u
-        INNER JOIN documents AS d ON d.owner = u.person
+        INNER JOIN documents AS d ON d.owner = u.person AND d.deleted == ''
       WHERE u.id='%s'
       ) as userDocument
-      INNER JOIN eventDocuments AS ed ON ed.document = userDocument.id`,
+      INNER JOIN fullDocuments AS fullDocument ON userDocument.id = fullDocument.document
+      INNER JOIN eventDocuments AS eventDocument ON fullDocument.id = eventDocument.fullDocument`,
 		selectArgs, authRecord.Id))
 
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)

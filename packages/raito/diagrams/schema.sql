@@ -59,11 +59,11 @@ CREATE TABLE `courses` (`courseTemplate` TEXT DEFAULT '', `created` TEXT DEFAULT
 CREATE INDEX `_2vda8dzur6jhdxy_created_idx` ON `courses` (`created`);
 CREATE TABLE `departments` (`created` TEXT DEFAULT '' NOT NULL, `id` TEXT PRIMARY KEY NOT NULL, `name` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL);
 CREATE INDEX `_rncqe4klgabuo3x_created_idx` ON `departments` (`created`);
-CREATE TABLE `documents` (`created` TEXT DEFAULT '' NOT NULL, `id` TEXT PRIMARY KEY NOT NULL, `name` TEXT DEFAULT '', `priority` TEXT DEFAULT '', `richText` JSON DEFAULT NULL, `status` TEXT DEFAULT '', `thumbnail` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL, "diffHash" TEXT DEFAULT '', "owner" TEXT DEFAULT '');
+CREATE TABLE `documents` (`created` TEXT DEFAULT '' NOT NULL, `id` TEXT PRIMARY KEY NOT NULL, `name` TEXT DEFAULT '', `priority` TEXT DEFAULT '', `status` TEXT DEFAULT '', `thumbnail` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL, "diffHash" TEXT DEFAULT '', "owner" TEXT DEFAULT '', "deleted" TEXT DEFAULT '', "richText" TEXT DEFAULT '', "attachmentsHash" TEXT DEFAULT '');
 CREATE INDEX `_j4ausx28rc681dq_created_idx` ON `documents` (`created`);
-CREATE TABLE `eventDocuments` (`created` TEXT DEFAULT '' NOT NULL, `document` TEXT DEFAULT '', `endTime` TEXT DEFAULT '', `fullDocument` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `startTime` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL, "recurring" TEXT DEFAULT '');
+CREATE TABLE `eventDocuments` (`created` TEXT DEFAULT '' NOT NULL, `endTime` TEXT DEFAULT '', `fullDocument` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `startTime` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL, "recurring" TEXT DEFAULT '', "toFullDocument" TEXT DEFAULT '');
 CREATE INDEX `_fdvpbps19x0r7r0_created_idx` ON `eventDocuments` (`created`);
-CREATE TABLE `fullDocuments` (`created` TEXT DEFAULT '' NOT NULL, `document` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `updated` TEXT DEFAULT '' NOT NULL, "category" TEXT DEFAULT '', "internal" TEXT DEFAULT '');
+CREATE TABLE `fullDocuments` (`created` TEXT DEFAULT '' NOT NULL, `document` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `updated` TEXT DEFAULT '' NOT NULL, "internal" TEXT DEFAULT '');
 CREATE INDEX `_gcqfd846lugrlnj_created_idx` ON `fullDocuments` (`created`);
 CREATE TABLE `majors` (`created` TEXT DEFAULT '' NOT NULL, `id` TEXT PRIMARY KEY NOT NULL, `name` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL, "department" TEXT DEFAULT '');
 CREATE INDEX `_8qzwbi8qig96dy3_created_idx` ON `majors` (`created`);
@@ -73,7 +73,7 @@ CREATE TABLE `people` (`avatar` TEXT DEFAULT '', `created` TEXT DEFAULT '' NOT N
 CREATE INDEX `_vks6ezu0clb3qja_created_idx` ON `people` (`created`);
 CREATE TABLE IF NOT EXISTS "relationships" (`created` TEXT DEFAULT '' NOT NULL, `fromPerson` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `toPerson` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL);
 CREATE INDEX `_q22h280gruk59ry_created_idx` ON "relationships" (`created`);
-CREATE TABLE `temp` (`created` TEXT DEFAULT '' NOT NULL, `id` TEXT PRIMARY KEY NOT NULL, `name` TEXT DEFAULT '', `person` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL);
-CREATE INDEX `_6h0ngwmqmx7ikjz_created_idx` ON `temp` (`created`);
 CREATE TABLE `personalNotes` (`created` TEXT DEFAULT '' NOT NULL, `fullDocument` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `updated` TEXT DEFAULT '' NOT NULL);
 CREATE INDEX `_fewbiz09m7bi4kg_created_idx` ON `personalNotes` (`created`);
+CREATE TABLE `academicMaterials` (`category` TEXT DEFAULT '', `created` TEXT DEFAULT '' NOT NULL, `fullDocument` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `updated` TEXT DEFAULT '' NOT NULL);
+CREATE INDEX `_ykaefycx2ie9dtn_created_idx` ON `academicMaterials` (`created`);

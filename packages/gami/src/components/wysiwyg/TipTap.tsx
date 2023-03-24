@@ -16,9 +16,9 @@ import {
 import StarterKit from "@tiptap/starter-kit";
 import type { AttachmentsResponse, UsersResponse } from "raito";
 import type { Dispatch, SetStateAction } from "react";
+import { useEffect, useState } from "react";
 import { useMemo } from "react";
 import { formatDate } from "src/lib/input_handling";
-import type { RichText } from "src/types/documents";
 import type { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
 import CustomImage from "./customImageExtension/image";
@@ -33,7 +33,7 @@ import {
 
 interface TipTapProps {
   onChange: (...event: unknown[]) => void;
-  richText: RichText;
+  richText: string;
   documentId: string;
   pbClient: PBCustom;
   user: UsersResponse;
@@ -51,6 +51,11 @@ const TipTap = ({
   setCurAttachments,
 }: TipTapProps) => {
   const username = user?.username ?? "Anonymous";
+  const content: object = SuperJSON.parse(
+    richText.length >= 2 ? richText : "{}"
+  );
+
+  const [prevContent, setPrevContent] = useState(content);
 
   const { imageProxy, imageHandleDrop, addImage } = useImage(
     pbClient,
@@ -142,8 +147,16 @@ const TipTap = ({
       }),
       Comment,
     ],
-    content: richText?.json,
+    content: content,
   });
+
+  useEffect(() => {
+    if (SuperJSON.stringify(prevContent) == SuperJSON.stringify(content))
+      return;
+
+    editor?.commands.setContent(content);
+    setPrevContent(content);
+  }, [editor?.commands, content, prevContent]);
 
   useInitComments(editor, setAllCommentSpans);
 

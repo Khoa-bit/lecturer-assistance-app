@@ -6,6 +6,7 @@ export type InputProps<TFieldValues extends FieldValues = FieldValues> =
 
 function Input<TFieldValues extends FieldValues = FieldValues>({
   name,
+  type,
   register,
   options,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -14,7 +15,7 @@ function Input<TFieldValues extends FieldValues = FieldValues>({
 }: InputProps<TFieldValues>) {
   if (!register) return <></>;
 
-  return <input {...register(name, options)} {...rest} />;
+  return <input {...register(name, options)} {...rest} type={type ?? "text"} />;
 }
 
 export default Input;

@@ -45,6 +45,10 @@ export interface EventDocumentsCustomResponse extends EventDocumentsResponse {
     userDocument_richText: string;
     userDocument_diffHash: string;
     userDocument_owner: string;
+    userDocument_attachmentsHash: string;
+    userDocument_deleted: string;
+    userDocument_created: string;
+    userDocument_updated: string;
   };
 }
 
@@ -58,6 +62,10 @@ export interface FullDocumentsCustomResponse extends FullDocumentsResponse {
     userDocument_richText: string;
     userDocument_diffHash: string;
     userDocument_owner: string;
+    userDocument_attachmentsHash: string;
+    userDocument_deleted: string;
+    userDocument_created: string;
+    userDocument_updated: string;
   };
 }
 
@@ -72,6 +80,10 @@ export interface AcademicMaterialsCustomResponse
     userDocument_richText: string;
     userDocument_diffHash: string;
     userDocument_owner: string;
+    userDocument_attachmentsHash: string;
+    userDocument_deleted: string;
+    userDocument_created: string;
+    userDocument_updated: string;
   };
 }
 
@@ -85,6 +97,10 @@ export interface PersonalNotesCustomResponse extends PersonalNotesResponse {
     userDocument_richText: string;
     userDocument_diffHash: string;
     userDocument_owner: string;
+    userDocument_attachmentsHash: string;
+    userDocument_deleted: string;
+    userDocument_created: string;
+    userDocument_updated: string;
   };
 }
 
@@ -98,6 +114,10 @@ export interface ClassesCustomResponse extends ClassesResponse {
     userDocument_richText: string;
     userDocument_diffHash: string;
     userDocument_owner: string;
+    userDocument_attachmentsHash: string;
+    userDocument_deleted: string;
+    userDocument_created: string;
+    userDocument_updated: string;
   };
 }
 
@@ -111,6 +131,10 @@ export interface CoursesCustomResponse extends CoursesResponse {
     userDocument_richText: string;
     userDocument_diffHash: string;
     userDocument_owner: string;
+    userDocument_attachmentsHash: string;
+    userDocument_deleted: string;
+    userDocument_created: string;
+    userDocument_updated: string;
   };
 }
 
@@ -147,6 +171,8 @@ export interface ParticipantsCustomResponse extends PeopleResponse {
     userDocument_id_list: string[];
     userDocument_name_list: string[];
     userDocument_owner_list: string[];
+    userDocument_attachmentsHash: string;
+    userDocument_deleted: string;
     userDocument_priority_list: string[];
     userDocument_richText_list: string[];
     userDocument_status_list: string[];

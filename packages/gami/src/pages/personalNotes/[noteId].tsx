@@ -20,10 +20,11 @@ import FullDocument, {
 import MainLayout from "src/components/layouts/MainLayout";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
-import type { RichText } from "src/types/documents";
 import SuperJSON from "superjson";
 
-interface DocumentData extends FullDocumentData {
+interface DocumentData {
+  fullDocumentData: FullDocumentData;
+  personalNote: PersonalNotesResponse<FullDocumentsExpand>;
   pbAuthCookie: string;
 }
 
@@ -32,7 +33,7 @@ interface FullDocumentsExpand {
 }
 
 interface DocumentsExpand {
-  document: DocumentsResponse<RichText>;
+  document: DocumentsResponse;
 }
 
 function PersonalNotes({
@@ -41,26 +42,20 @@ function PersonalNotes({
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
   const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
-  const fullDocument = dataParse.fullDocument;
-  const upcomingEventDocuments = dataParse.upcomingEventDocuments;
-  const pastEventDocuments = dataParse.pastEventDocuments;
-  const allDocParticipants = dataParse.allDocParticipants;
-  const permission = dataParse.permission;
-  const people = dataParse.people;
-  const attachments = dataParse.attachments;
+  const fullDocumentData = dataParse.fullDocumentData;
+  const personalNote = dataParse.personalNote;
+
+  const childCollectionName = Collections.PersonalNotes;
+  const childId = personalNote.id;
 
   const fullDocumentProps: FullDocumentProps<PersonalNotesRecord> = {
-    fullDocument,
-    attachments,
-    upcomingEventDocuments,
-    pastEventDocuments,
-    allDocParticipants,
-    permission,
-    people,
+    childCollectionName,
+    childId,
+    ...fullDocumentData,
     pbClient,
     user,
     childrenDefaultValue: {
-      fullDocument: fullDocument.id,
+      fullDocument: personalNote.fullDocument,
     },
   };
 
@@ -110,7 +105,8 @@ export const getServerSideProps = async ({
   return {
     props: {
       data: SuperJSON.stringify({
-        ...fullDocumentData,
+        fullDocumentData,
+        personalNote,
         pbAuthCookie: pbServer.authStore.exportToCookie(),
       } as DocumentData),
     },

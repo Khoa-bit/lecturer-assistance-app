@@ -9,9 +9,14 @@ import type {
   DocumentsResponse,
   EventDocumentsRecord,
   EventDocumentsResponse,
+  FullDocumentsRecord,
   FullDocumentsResponse,
 } from "raito";
-import { Collections, EventDocumentsRecurringOptions } from "raito";
+import {
+  Collections,
+  EventDocumentsRecurringOptions,
+  FullDocumentsInternalOptions,
+} from "raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
@@ -48,16 +53,16 @@ export const getServerSideProps = async ({
 }: GetServerSidePropsContext) => {
   const { pbServer, user } = await getPBServer(req, resolvedUrl);
 
-  let fullDocId = query.fullDocId as string | undefined;
+  let toFullDocId = query.toFullDocId as string | undefined;
 
-  // Check if the fullDocId is valid
-  if (fullDocId) {
+  // Check if the toFullDocId is valid
+  if (toFullDocId) {
     try {
       await pbServer
         .collection(Collections.FullDocuments)
-        .getOne<FullDocumentsResponse>(fullDocId);
+        .getOne<FullDocumentsResponse>(toFullDocId);
     } catch (error) {
-      fullDocId = undefined;
+      toFullDocId = undefined;
     }
   }
 
@@ -70,11 +75,18 @@ export const getServerSideProps = async ({
       owner: user.person,
     } as DocumentsRecord);
 
+  const baseFullDocument = await pbServer
+    .collection(Collections.FullDocuments)
+    .create<FullDocumentsResponse>({
+      document: baseDocument.id,
+      internal: FullDocumentsInternalOptions.Event,
+    } as FullDocumentsRecord);
+
   const eventDocument = await pbServer
     .collection(Collections.EventDocuments)
     .create<EventDocumentsResponse>({
-      document: baseDocument.id,
-      fullDocument: fullDocId,
+      fullDocument: baseFullDocument.id,
+      toFullDocument: toFullDocId,
       recurring: EventDocumentsRecurringOptions.Once,
     } as EventDocumentsRecord);
 

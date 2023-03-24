@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import type { RefObject } from "react";
+import { MutableRefObject, RefObject, useState } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import type { FieldValues, UseFormWatch } from "react-hook-form";
 import { debounce } from "src/lib/input_handling";
@@ -55,7 +55,10 @@ export function useSaveDoc<T extends FieldValues>({
 
     hasSaved.current = true;
   }, [formRef, submitRef]);
-  const debouncedSave = debounce(() => submitForm(), 500);
+
+  const debouncedSave = debounce(() => {
+    submitForm();
+  }, 1000);
 
   useEffect(() => {
     const keyDownEvent = (e: KeyboardEvent) => {
@@ -72,7 +75,8 @@ export function useSaveDoc<T extends FieldValues>({
 
   useEffect(() => {
     const subscription = watch((data, { name }) => {
-      if (name == "diffHash") return;
+      // name == undefined to disregard form reset() that updates the whole form
+      if (name == undefined || name == "diffHash") return;
       if (initial.current) {
         initial.current = false;
         return;

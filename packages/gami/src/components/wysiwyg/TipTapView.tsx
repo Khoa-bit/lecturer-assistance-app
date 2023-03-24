@@ -9,9 +9,9 @@ import TextStyle from "@tiptap/extension-text-style";
 import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatDate } from "src/lib/input_handling";
-import type { RichText } from "src/types/documents";
+import SuperJSON from "superjson";
 import CustomImage from "./customImageExtension/image";
 import suggestion from "./suggestion";
 import { Comment } from "./tiptapCommentExtension/comment";
@@ -22,12 +22,18 @@ import {
 } from "./tiptapCommentExtension/commentHooks";
 
 interface TipTapProps {
-  richText: RichText;
+  richText: string;
 }
 
 const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
 
 const TipTapView = ({ richText }: TipTapProps) => {
+  const content: object = SuperJSON.parse(
+    richText.length >= 2 ? richText : "{}"
+  );
+
+  const [prevContent, setPrevContent] = useState(content);
+
   const {
     commentText,
     setCommentText,
@@ -91,8 +97,16 @@ const TipTapView = ({ richText }: TipTapProps) => {
       }),
       Comment,
     ],
-    content: richText?.json,
+    content: content,
   });
+
+  useEffect(() => {
+    if (SuperJSON.stringify(prevContent) == SuperJSON.stringify(content))
+      return;
+
+    editor?.commands.setContent(content);
+    setPrevContent(content);
+  }, [editor?.commands, content, prevContent]);
 
   useInitComments(editor, setAllCommentSpans);
 
