@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { MutableRefObject, RefObject, useState } from "react";
+import type { RefObject } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import type { FieldValues, UseFormWatch } from "react-hook-form";
 import { debounce } from "src/lib/input_handling";

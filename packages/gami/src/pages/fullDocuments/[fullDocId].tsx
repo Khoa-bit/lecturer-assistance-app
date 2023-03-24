@@ -8,7 +8,6 @@ import type {
   PersonalNotesResponse,
 } from "raito";
 import { Collections } from "raito";
-import type { FullDocumentData } from "src/components/documents/FullDocument";
 import { getPBServer } from "src/lib/pb_server";
 
 const expandRedirect = [
