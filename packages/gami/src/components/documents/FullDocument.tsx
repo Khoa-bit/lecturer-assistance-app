@@ -46,6 +46,7 @@ import { env } from "src/env/client.mjs";
 import {
   dateToISOLikeButLocal,
   dateToISOLikeButLocalOrUndefined,
+  dateToISOOrUndefined,
 } from "src/lib/input_handling";
 import type { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
@@ -145,6 +146,7 @@ function FullDocument<TRecord>({
   // Custom input field that is outside of the form
   const registerThumbnail = register("thumbnail", { disabled: !isWrite });
   const registerAttachments = register("attachments", { disabled: !isWrite });
+  const hasSaved = useRef(true);
 
   const onSubmit: SubmitHandler<FullDocumentInput> = useCallback(
     (inputData) => {
@@ -176,11 +178,16 @@ function FullDocument<TRecord>({
         ).reduce((prev, [key, value]) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let inputValue: string = (inputData as any)[key] ?? (value as string);
+          console.log("childBodyParams to update send to PB", inputValue);
 
           // Matches the datetime format "2023-03-08T01:01" for input type "datetime-local"
           // To convert it into PocketBase local date time format
-          if (inputValue.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)) {
-            inputValue = dateToISOLikeButLocalOrUndefined(inputValue) ?? "";
+          if (inputValue.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/)) {
+            console.log(
+              "Matched!! childBodyParams to update send to PB",
+              inputValue
+            );
+            inputValue = dateToISOOrUndefined(inputValue) ?? "";
           }
           return { ...prev, [key]: inputValue };
         }, {});
@@ -188,9 +195,6 @@ function FullDocument<TRecord>({
         pbClient
           .collection(childCollectionName)
           .update(childId, childBodyParams)
-          .then((val) => {
-            console.log(val);
-          })
           .catch((err) => {
             if (env.NEXT_PUBLIC_DEBUG_MODE) console.error(err);
           });
@@ -207,6 +211,7 @@ function FullDocument<TRecord>({
             attachmentsHash: newAttachmentsHash,
           } as DocumentsRecord);
 
+        hasSaved.current = true;
         if (env.NEXT_PUBLIC_DEBUG_MODE)
           console.log("Sending UPDATE requests...");
       }
@@ -226,6 +231,7 @@ function FullDocument<TRecord>({
   const submitRef = useRef<HTMLInputElement>(null);
 
   useSaveDoc({
+    hasSaved,
     formRef,
     submitRef,
     watch,
@@ -278,7 +284,17 @@ function FullDocument<TRecord>({
           childrenDefaultValue as any
         ).reduce((prev, [key, value]) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const inputValue = (data as any).record[key] ?? value;
+          let inputValue = (data as any).record[key] ?? value;
+          console.log("subscribe reduce send to input", inputValue);
+
+          // Matches the datetime format "2023-03-29 09:06:00.000Z" for input type "datetime-local"
+          // To convert it into PocketBase local date time format
+          if (
+            inputValue.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3}Z$/)
+          ) {
+            console.log("Matched!! subscribe reduce send to input", inputValue);
+            inputValue = dateToISOLikeButLocalOrUndefined(inputValue) ?? "";
+          }
           return { ...prev, [key]: inputValue };
         }, {});
 
@@ -481,8 +497,6 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
       expand: "fullDocument.document",
       sort: "-startTime",
     });
-
-  console.log(upcomingEventDocuments, pastEventDocuments);
 
   const allDocParticipants =
     await pbServer.apiGetList<ParticipantsCustomResponse>(

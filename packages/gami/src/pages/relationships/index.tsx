@@ -14,6 +14,9 @@ import { Collections } from "raito";
 import { useMemo, useState } from "react";
 import ParticipateDetailList from "src/components/documents/ParticipateDetailList";
 import MainLayout from "src/components/layouts/MainLayout";
+import ContactsTable, {
+  RemoveStar,
+} from "src/components/relationships/ContactsTable";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
@@ -135,11 +138,34 @@ function Relationships({
       <Head>
         <title>Contacts</title>
       </Head>
-      <h1>Contacts</h1>
-      <h2>Starred Participants</h2>
-      <ol>{starredParticipantsList}</ol>
-      <h2>Participants</h2>
-      <ol>{allAcrossParticipantsList}</ol>
+      <header className="flex w-full justify-between">
+        <h1 className="text-2xl font-bold">Contacts</h1>
+      </header>
+      <section className="my-4 rounded-lg bg-white py-5 px-7">
+        <h2 className="pb-5 text-xl font-semibold text-gray-700">
+          Starred Participants
+        </h2>
+        <ContactsTable
+          isStarTable={true}
+          participants={starredParticipants}
+          pbClient={pbClient}
+          user={user}
+          setStarredParticipants={setStarredParticipants}
+        ></ContactsTable>
+      </section>
+      <section className="my-4 rounded-lg bg-white py-5 px-7">
+        <h2 className="pb-5 text-xl font-semibold text-gray-700">
+          Participants
+        </h2>
+        <ContactsTable
+          isStarTable={false}
+          participants={allAcrossParticipants}
+          pbClient={pbClient}
+          user={user}
+          starredParticipants={starredParticipants}
+          setStarredParticipants={setStarredParticipants}
+        ></ContactsTable>
+      </section>
     </>
   );
 }
@@ -159,6 +185,11 @@ export const getServerSideProps = async ({
     await pbServer.apiGetList<ParticipantsCustomResponse>(
       "/api/user/allAcrossParticipants?fullList=true"
     );
+
+  console.log(
+    JSON.stringify(allAcrossParticipants, null, 2),
+    JSON.stringify(starredParticipants, null, 2)
+  );
 
   return {
     props: {

@@ -23,7 +23,7 @@ func GetCourses(app *pocketbase.PocketBase, c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("fullDocuments", "fullDocument", hasGroupBy, app)
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("courseTemplates", "courseTemplate", hasGroupBy, app)
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,8 @@ func GetCourses(app *pocketbase.PocketBase, c echo.Context) error {
       WHERE u.id='%s'
       ) as userDocument
       INNER JOIN fullDocuments AS fullDocument ON userDocument.id = fullDocument.document
-      INNER JOIN courses AS course ON fullDocument.id = course.fullDocument`,
+      INNER JOIN courses AS course ON fullDocument.id = course.fullDocument
+      INNER JOIN courseTemplates AS courseTemplate ON courseTemplate.id = course.courseTemplate`,
 		selectArgs, authRecord.Id))
 
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)

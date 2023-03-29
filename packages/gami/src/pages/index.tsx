@@ -1,9 +1,10 @@
-import { type NextPage } from "next";
+import { GetServerSidePropsContext, type NextPage } from "next";
 import Link from "next/link";
 import { useAuthContext } from "src/lib/auth_client";
+import SuperJSON from "superjson";
 
 const Home: NextPage = () => {
-  const { user } = useAuthContext();
+  const { userPerson } = useAuthContext();
 
   return (
     <>
@@ -19,7 +20,7 @@ const Home: NextPage = () => {
           Auth Page
         </Link>
       </p>
-      <p>{JSON.stringify(user)}</p>
+      <p>{JSON.stringify(userPerson)}</p>
     </>
   );
 };

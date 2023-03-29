@@ -59,3 +59,20 @@ func (fieldMetadataList FieldMetaDataList) AppendCollectionByNameOrId(nameOrId s
 
 	return append(fieldMetadataList, newFieldMetadata...), nil
 }
+
+func (fieldMetadataList FieldMetaDataList) AppendColumnAliases(columnAliases []string, dataTypes []string) (FieldMetaDataList, error) {
+	if len(columnAliases) != len(dataTypes) {
+		return nil, fmt.Errorf("each column must correspond to a single datatype")
+	}
+	newFieldMetadata := make(FieldMetaDataList, len(columnAliases))
+
+	for index, columnAlias := range columnAliases {
+		newFieldMetadata[index] = FieldMetadata{
+			Column:   "",
+			Alias:    columnAlias,
+			DataType: toDataType(dataTypes[index]),
+		}
+	}
+
+	return append(fieldMetadataList, newFieldMetadata...), nil
+}

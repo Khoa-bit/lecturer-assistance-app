@@ -11,8 +11,15 @@ export async function middleware(request: NextRequest) {
     url.pathname
   );
 
+  console.log("hello", request.nextUrl.pathname);
+
   if (!user && !request.nextUrl.pathname.startsWith("/auth")) {
     url.pathname = `/auth/login/`;
+    console.log(`Being redirect to ${url}`);
+
+    return NextResponse.redirect(url);
+  } else if (request.nextUrl.pathname.length <= 1) {
+    url.pathname = `/eventDocuments`;
     console.log(`Being redirect to ${url}`);
 
     return NextResponse.redirect(url);
@@ -40,5 +47,5 @@ export async function middleware(request: NextRequest) {
  * - favicon.ico (favicon file)
  */
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).+)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).+)", "/"],
 };

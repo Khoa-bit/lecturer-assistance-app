@@ -6,6 +6,7 @@ import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type { ClassesCustomResponse } from "raito";
+import AdviseClassesTable from "src/components/adviseClasses/ClassTable";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
@@ -19,36 +20,39 @@ function AdviseClasses({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<AdviseClassesData>(data);
-
-  const adviseClassesList = dataParse.adviseClasses.items.map((adviseClass) => (
-    <li key={adviseClass.id}>
-      <Link href={`/adviseClasses/${encodeURIComponent(adviseClass.id)}`}>
-        {JSON.stringify(adviseClass.expand.userDocument_name)}
-      </Link>
-    </li>
-  )) ?? <p>{"Error when fetching adviseClassesList :<"}</p>;
-
-  const participatedAdviseClassesList =
-    dataParse.participatedAdviseClasses.items.map((adviseClass) => (
-      <li key={adviseClass.id}>
-        <Link href={`/adviseClasses/${encodeURIComponent(adviseClass.id)}`}>
-          {JSON.stringify(adviseClass.expand.userDocument_name)}
-        </Link>
-      </li>
-    )) ?? <p>{"Error when fetching participatedAdviseClassesList :<"}</p>;
+  const adviseClasses = dataParse.adviseClasses;
+  const participatedAdviseClasses = dataParse.participatedAdviseClasses;
 
   return (
     <>
       <Head>
-        <title>AdviseClasses</title>
+        <title>Advise Classes</title>
       </Head>
-      <h1>AdviseClasses</h1>
-      <Link className="text-blue-700 underline" href="/adviseClasses/new">
-        New Advise Class
-      </Link>
-      <ol>{adviseClassesList}</ol>
-      <h1>Participated AdviseClasses</h1>
-      <ol>{participatedAdviseClassesList}</ol>
+      <header className="flex w-full justify-between">
+        <h1 className="text-2xl font-bold">Advise classes</h1>
+
+        <Link
+          className="flex justify-center rounded bg-blue-500 p-3 font-bold text-white hover:bg-blue-400"
+          href="/adviseClasses/new"
+        >
+          <span className="material-symbols-rounded select-none">add</span> New
+          advise class
+        </Link>
+      </header>
+      <section className="my-4 rounded-lg bg-white py-5 px-7">
+        <h2 className="pb-5 text-xl font-semibold text-gray-700">
+          My advise classes
+        </h2>
+        <AdviseClassesTable adviseClasses={adviseClasses}></AdviseClassesTable>
+      </section>
+      <section className="my-4 rounded-lg bg-white py-5 px-7">
+        <h2 className="pb-5 text-xl font-semibold text-gray-700">
+          Participate advise classes
+        </h2>
+        <AdviseClassesTable
+          adviseClasses={participatedAdviseClasses}
+        ></AdviseClassesTable>
+      </section>
     </>
   );
 }

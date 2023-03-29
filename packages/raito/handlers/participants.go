@@ -139,6 +139,10 @@ func GetParticipatedCourses(app *pocketbase.PocketBase, c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("courseTemplates", "courseTemplate", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
 
 	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
 	userPersonId := authRecord.GetString("person")
@@ -149,6 +153,7 @@ func GetParticipatedCourses(app *pocketbase.PocketBase, c echo.Context) error {
         INNER JOIN fullDocuments AS fullDocument ON p.document = fullDocument.document
         INNER JOIN documents userDocument ON p.document = userDocument.id AND userDocument.deleted == ''
         INNER JOIN courses course ON fullDocument.id = course.fullDocument
+        INNER JOIN courseTemplates AS courseTemplate ON courseTemplate.id = course.courseTemplate
       WHERE p.person = '%s'`,
 		selectArgs, userPersonId))
 
@@ -168,6 +173,10 @@ func GetParticipatedClasses(app *pocketbase.PocketBase, c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("majors", "major", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
 
 	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
 	userPersonId := authRecord.GetString("person")
@@ -178,6 +187,7 @@ func GetParticipatedClasses(app *pocketbase.PocketBase, c echo.Context) error {
         INNER JOIN fullDocuments AS fullDocument ON p.document = fullDocument.document
         INNER JOIN documents userDocument ON p.document = userDocument.id AND userDocument.deleted == ''
         INNER JOIN classes class ON fullDocument.id = class.fullDocument
+        INNER JOIN majors AS major ON major.id = class.major
       WHERE p.person = '%s'`,
 		selectArgs, userPersonId))
 
@@ -209,11 +219,15 @@ func GetAllAcrossParticipants(app *pocketbase.PocketBase, c echo.Context) error 
 	if err != nil {
 		return err
 	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("documents", "userDocument", hasGroupBy, app)
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("participants", "participant", hasGroupBy, app)
 	if err != nil {
 		return err
 	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("participants", "participant", hasGroupBy, app)
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("users", "user", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
+	fieldMetadataList, err = fieldMetadataList.AppendColumnAliases([]string{"user_email_list"}, []string{"string"})
 	if err != nil {
 		return err
 	}
@@ -222,13 +236,14 @@ func GetAllAcrossParticipants(app *pocketbase.PocketBase, c echo.Context) error 
 	userPersonId := authRecord.GetString("person")
 
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
-		`SELECT ppl.* %s
+		`SELECT ppl.*, GROUP_CONCAT(IIF(emailVisibility == 1, email, ''), ', ') as user_email_list %s
       FROM participants participant
           INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.owner = '%s'
           INNER JOIN people ppl ON participant.person == ppl.id
           LEFT JOIN relationships relationship ON FALSE
           LEFT JOIN fullDocuments fullDocument ON participant.document == fullDocument.document
           LEFT JOIN eventDocuments eventDocument ON fullDocument.document == eventDocument.fullDocument
+          LEFT JOIN users user ON user.person = ppl.id
       GROUP BY ppl.id`,
 		selectArgs, userPersonId))
 
@@ -264,18 +279,27 @@ func GetStarredParticipants(app *pocketbase.PocketBase, c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("users", "user", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
+	fieldMetadataList, err = fieldMetadataList.AppendColumnAliases([]string{"user_email_list"}, []string{"string"})
+	if err != nil {
+		return err
+	}
 
 	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
 	userPersonId := authRecord.GetString("person")
 
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
-		`SELECT ppl.* %s
+		`SELECT ppl.*, GROUP_CONCAT(IIF(emailVisibility == 1, email, ''), ', ') as user_email_list %s
       FROM relationships relationship
         INNER JOIN people ppl ON relationship.toPerson = ppl.id
         LEFT JOIN participants participant ON relationship.toPerson = participant.person
         LEFT JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == ''
         LEFT JOIN fullDocuments fullDocument ON participant.document == fullDocument.document
         LEFT JOIN eventDocuments eventDocument ON fullDocument.document == eventDocument.fullDocument
+        LEFT JOIN users user ON user.person = ppl.id
       WHERE fromPerson = '%s'
       GROUP BY ppl.id`,
 		selectArgs, userPersonId))

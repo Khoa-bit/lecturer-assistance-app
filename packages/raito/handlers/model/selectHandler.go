@@ -9,6 +9,11 @@ import (
 func BuildSelectArgs(fieldMetadataList FieldMetaDataList, hasGroupBy bool) string {
 	selectBuilder := strings.Builder{}
 	for _, metadata := range fieldMetadataList {
+		// Skip custom column aliases
+		if len(metadata.Column) == 0 {
+			continue
+		}
+
 		if hasGroupBy {
 			selectBuilder.WriteString(fmt.Sprintf(", GROUP_CONCAT(COALESCE(%s, ''), ', ') AS %s", metadata.Column, metadata.Alias))
 		} else {

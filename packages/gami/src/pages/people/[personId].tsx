@@ -90,6 +90,7 @@ function Person({
   const [avatar, setAvatar] = useState<string | undefined>(person.avatar);
 
   const { pbClient } = usePBClient(dataParse.pbAuthCookie);
+  const hasSaved = useRef(true);
 
   const onSubmit: SubmitHandler<PersonInput> = useCallback(
     (inputData) => {
@@ -127,6 +128,7 @@ function Person({
   const submitRef = useRef<HTMLInputElement>(null);
 
   useSaveDoc({
+    hasSaved,
     formRef,
     submitRef,
     watch,

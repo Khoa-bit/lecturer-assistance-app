@@ -7,6 +7,7 @@ import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type { PersonalNotesCustomResponse } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
+import PersonalNotesTable from "src/components/personalNotes/NotesTable";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
@@ -19,38 +20,39 @@ function PersonalNotes({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<PersonalNotesData>(data);
-
-  const personalNotesList = dataParse.personalNotes.items.map(
-    (personalNote) => (
-      <li key={personalNote.id}>
-        <Link href={`/personalNotes/${encodeURIComponent(personalNote.id)}`}>
-          {JSON.stringify(personalNote.expand.userDocument_name)}
-        </Link>
-      </li>
-    )
-  ) ?? <p>{"Error when fetching personalNotesList :<"}</p>;
-
-  const participatedPersonalNotesList =
-    dataParse.participatedPersonalNotes.items.map((personalNote) => (
-      <li key={personalNote.id}>
-        <Link href={`/personalNotes/${encodeURIComponent(personalNote.id)}`}>
-          {JSON.stringify(personalNote.expand.userDocument_name)}
-        </Link>
-      </li>
-    )) ?? <p>{"Error when fetching full documents :<"}</p>;
+  const personalNotes = dataParse.personalNotes;
+  const participatedPersonalNotes = dataParse.participatedPersonalNotes;
 
   return (
     <>
       <Head>
         <title>Personal Notes</title>
       </Head>
-      <h1>Personal Notes</h1>
-      <Link className="text-blue-700 underline" href="/personalNotes/new">
-        New Personal Note
-      </Link>
-      <ol>{personalNotesList}</ol>
-      <h1>Participated Personal Notes</h1>
-      <ol>{participatedPersonalNotesList}</ol>
+      <header className="flex w-full justify-between">
+        <h1 className="text-2xl font-bold">Personal notes</h1>
+
+        <Link
+          className="flex justify-center rounded bg-blue-500 p-3 font-bold text-white hover:bg-blue-400"
+          href="/personalNotes/new"
+        >
+          <span className="material-symbols-rounded select-none">add</span> New
+          personal note
+        </Link>
+      </header>
+      <section className="my-4 rounded-lg bg-white py-5 px-7">
+        <h2 className="pb-5 text-xl font-semibold text-gray-700">
+          My personal notes
+        </h2>
+        <PersonalNotesTable personalNotes={personalNotes}></PersonalNotesTable>
+      </section>
+      <section className="my-4 rounded-lg bg-white py-5 px-7">
+        <h2 className="pb-5 text-xl font-semibold text-gray-700">
+          Participate personal notes
+        </h2>
+        <PersonalNotesTable
+          personalNotes={participatedPersonalNotes}
+        ></PersonalNotesTable>
+      </section>
     </>
   );
 }

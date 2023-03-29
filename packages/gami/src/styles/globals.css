@@ -2,13 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .material-symbols-rounded {
+    font-family: var(--font-materialSymbolsRounded);
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px; /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+    user-select: none;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
   }
 }
 
-img {
+.ProseMirror img {
   width: auto;
   height: auto;
 }

@@ -8,6 +8,7 @@ import type { ListResult } from "pocketbase";
 import type { PeopleResponse, UsersResponse } from "raito";
 import { Collections } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
+import PeopleTable from "src/components/people/PeopleTable";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
@@ -23,6 +24,7 @@ function People({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<PeopleData>(data);
+  const people = dataParse.people;
 
   const peopleList = dataParse.people.items.map((person) => (
     <li key={person.id}>
@@ -39,12 +41,20 @@ function People({
       <Head>
         <title>People</title>
       </Head>
-      <h1>People</h1>
-      <Link className="text-blue-700 underline" href="/people/new">
-        New Person (This new button should only be visible when user cannot find
-        the people they are looking for)
-      </Link>
-      <ol>{peopleList}</ol>
+      <header className="flex w-full justify-between">
+        <h1 className="text-2xl font-bold">People</h1>
+
+        <Link
+          className="flex justify-center rounded bg-blue-500 p-3 font-bold text-white hover:bg-blue-400"
+          href="/people/new"
+        >
+          <span className="material-symbols-rounded select-none">add</span> Add
+          new person
+        </Link>
+      </header>
+      <section className="my-4 rounded-lg bg-white py-5 px-7">
+        <PeopleTable people={people}></PeopleTable>
+      </section>
     </>
   );
 }

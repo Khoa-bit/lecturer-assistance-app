@@ -1,6 +1,6 @@
-import type { Admin, Record } from "pocketbase";
+import { Admin, Collection, Record } from "pocketbase";
 import PocketBase from "pocketbase";
-import type { UsersResponse } from "raito";
+import { Collections, PeopleResponse, UsersResponse } from "raito";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { env } from "src/env/client.mjs";
@@ -15,12 +15,16 @@ import {
 import type { PBClearResponse } from "src/pages/api/auth/pbClear";
 import { AuthContext } from "./AuthContext";
 
+interface PersonExpand {
+  person: PeopleResponse;
+}
+
 // Casting to convert (Record | Admin | null) from authStore.model to UsersResponse
 export type User = UsersResponse & (Record | Admin | null);
 
 export type AuthContextType = {
   isValid: boolean;
-  user: UsersResponse | null;
+  userPerson: UsersResponse<PersonExpand> | null;
   pbClient: PocketBase;
   signInWithPassword: (
     username: string,
@@ -50,6 +54,21 @@ export default function AuthContextProvider({
   );
   const [isValid, setIsValid] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [userPerson, setUserPerson] =
+    useState<UsersResponse<PersonExpand> | null>();
+
+  useEffect(() => {
+    if (!user) return;
+
+    pbClient
+      .collection(Collections.Users)
+      .getOne<UsersResponse<PersonExpand>>(user.id, {
+        expand: "person",
+      })
+      .then((userPerson) => {
+        setUserPerson(userPerson);
+      });
+  }, [pbClient, user]);
 
   useEffect(() => {
     setIsValid(pbClient.authStore.isValid);
@@ -101,7 +120,7 @@ export default function AuthContextProvider({
 
   const context = {
     isValid,
-    user,
+    userPerson,
     pbClient,
     signInWithPassword,
     signOut,

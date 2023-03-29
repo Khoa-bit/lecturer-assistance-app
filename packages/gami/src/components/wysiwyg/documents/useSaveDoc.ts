@@ -1,10 +1,11 @@
 import { useRouter } from "next/router";
-import type { RefObject } from "react";
+import type { MutableRefObject, RefObject } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import type { FieldValues, UseFormWatch } from "react-hook-form";
 import { debounce } from "src/lib/input_handling";
 
 interface useDocHelperParams<T extends FieldValues> {
+  hasSaved: MutableRefObject<boolean>;
   formRef: RefObject<HTMLFormElement>;
   submitRef: RefObject<HTMLInputElement>;
   watch: UseFormWatch<T>;
@@ -15,14 +16,13 @@ interface useDocHelperReturns {
 }
 
 export function useSaveDoc<T extends FieldValues>({
+  hasSaved,
   formRef,
   submitRef,
   watch,
 }: useDocHelperParams<T>): useDocHelperReturns {
   const router = useRouter();
-  // const [hasSaved, setHasSaved] = useState(true);
   const initial = useRef(true);
-  const hasSaved = useRef(true);
 
   useEffect(() => {
     const warningText =
@@ -54,7 +54,7 @@ export function useSaveDoc<T extends FieldValues>({
     formRef.current?.requestSubmit(submitRef.current);
 
     hasSaved.current = true;
-  }, [formRef, submitRef]);
+  }, [formRef, hasSaved, submitRef]);
 
   const debouncedSave = debounce(() => {
     submitForm();
@@ -83,10 +83,10 @@ export function useSaveDoc<T extends FieldValues>({
       }
 
       hasSaved.current = false;
-      debouncedSave();
+      // debouncedSave();
     });
     return () => subscription.unsubscribe();
-  }, [watch, debouncedSave]);
+  }, [watch, debouncedSave, hasSaved]);
 
   return { hasSaved: hasSaved.current };
 }

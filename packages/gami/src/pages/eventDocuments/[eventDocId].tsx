@@ -98,7 +98,7 @@ function EventDocument({
             type: "datetime-local",
           } as InputProps<EventDocumentsRecord>)}
         ></Input>
-        <Select
+        {/* <Select
           {...({
             name: "recurring",
             selectOptions: Object.entries(EventDocumentsRecurringOptions).map(
@@ -112,7 +112,7 @@ function EventDocument({
             ),
             options: { required: true },
           } as SelectProps<EventDocumentsRecord>)}
-        ></Select>
+        ></Select> */}
         <Select
           {...({
             name: "toFullDocument",
@@ -123,7 +123,6 @@ function EventDocument({
                 content: toFullDocument.expand.userDocument_name,
               } as SelectOption;
             }),
-            options: { required: true },
             defaultValue: eventDocument.toFullDocument,
           } as SelectProps<EventDocumentsRecord>)}
         >

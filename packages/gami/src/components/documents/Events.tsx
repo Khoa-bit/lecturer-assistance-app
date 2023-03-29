@@ -28,8 +28,6 @@ function EventsList({
   pastEventDocuments,
   isWrite,
 }: EventsListProps) {
-  console.log(fullDocumentId);
-  console.log(upcomingEventDocuments, pastEventDocuments);
   return (
     <>
       {isWrite && (
