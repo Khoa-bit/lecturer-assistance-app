@@ -49,6 +49,7 @@ export enum AcademicMaterialsCategoryOptions {
 	"International journals - Rank 2" = "International journals - Rank 2",
 	"International journals - Other" = "International journals - Other",
 	"National journals" = "National journals",
+	"Conference" = "Conference",
 	"Monographs" = "Monographs",
 	"Curriculums" = "Curriculums",
 	"Reference books" = "Reference books",
@@ -67,6 +68,7 @@ export type AttachmentsRecord = {
 
 export enum ClassesTrainingSystemOptions {
 	"Undergraduate" = "Undergraduate",
+	"Graduate" = "Graduate",
 }
 export type ClassesRecord = {
 	classId?: string
@@ -165,8 +167,8 @@ export type ParticipantsRecord = {
 }
 
 export enum PeopleGenderOptions {
-	"Man" = "Man",
-	"Woman" = "Woman",
+	"Male" = "Male",
+	"Female" = "Female",
 	"Non-Binary" = "Non-Binary",
 	"Not Listed" = "Not Listed",
 }
@@ -183,6 +185,7 @@ export type PeopleRecord = {
 	deleted?: IsoDateString
 	isAdvisor?: boolean
 	isLecturer?: boolean
+	thumbnail?: string
 }
 
 export type PersonalNotesRecord = {

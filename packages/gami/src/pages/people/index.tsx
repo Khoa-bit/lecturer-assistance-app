@@ -26,18 +26,8 @@ function People({
   const dataParse = SuperJSON.parse<PeopleData>(data);
   const people = dataParse.people;
 
-  const peopleList = dataParse.people.items.map((person) => (
-    <li key={person.id}>
-      <Link href={`/people/${encodeURIComponent(person.id)}`}>
-        {`${person.name} - ${JSON.stringify(
-          person.expand?.["users(person)"]?.email
-        )}`}
-      </Link>
-    </li>
-  )) ?? <p>{"Error when fetching full documents :<"}</p>;
-
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
       <Head>
         <title>People</title>
       </Head>
@@ -55,7 +45,7 @@ function People({
       <section className="my-4 rounded-lg bg-white py-5 px-7">
         <PeopleTable people={people}></PeopleTable>
       </section>
-    </>
+    </main>
   );
 }
 

@@ -86,21 +86,24 @@ function ClassDocument({
   };
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
-        <title>Full Document</title>
+        <title>Advise classes</title>
       </Head>
-      <h1>Full Document</h1>
       <FullDocument {...fullDocumentProps}>
         <Input
           {...({
             name: "classId",
+            id: "classId",
+            label: "Class ID",
             options: { required: true },
           } as InputProps<ClassesRecord>)}
         ></Input>
         <Input
           {...({
             name: "cohort",
+            id: "cohort",
+            label: "Cohort",
             options: { required: true },
           } as InputProps<ClassesRecord>)}
         ></Input>
@@ -114,6 +117,8 @@ function ClassDocument({
         <Select
           {...({
             name: "trainingSystem",
+            id: "trainingSystem",
+            label: "Academic program",
             selectOptions: Object.entries(ClassesTrainingSystemOptions).map(
               ([stringValue]) => {
                 return {
@@ -127,7 +132,7 @@ function ClassDocument({
           } as SelectProps<ClassesRecord>)}
         ></Select>
       </FullDocument>
-    </>
+    </main>
   );
 }
 

@@ -1,47 +1,49 @@
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import {
-  Collections,
-  ParticipantsCustomResponse,
+import type {
+  ContactsCustomResponse,
   RelationshipsRecord,
   RelationshipsResponse,
+  StarredContactsCustomResponse,
   UsersResponse,
 } from "raito";
-import { MouseEvent, SetStateAction, useCallback } from "react";
-import { PBCustom } from "src/types/pb-custom";
+import { Collections } from "raito";
+import type { SetStateAction } from "react";
+import { useCallback } from "react";
+import type { PBCustom } from "src/types/pb-custom";
 
 interface ContactsTableProps {
-  participants: ListResult<ParticipantsCustomResponse>;
+  contacts: ListResult<ContactsCustomResponse | StarredContactsCustomResponse>;
   isStarTable: boolean;
   pbClient: PBCustom;
   user: UsersResponse;
-  starredParticipants?: ListResult<ParticipantsCustomResponse>;
-  setStarredParticipants: (
-    value: SetStateAction<ListResult<ParticipantsCustomResponse>>
+  starredContacts?: ListResult<StarredContactsCustomResponse>;
+  setStarredContacts: (
+    value: SetStateAction<ListResult<StarredContactsCustomResponse>>
   ) => void;
 }
 
 function ContactsTable({
-  participants,
+  contacts,
   isStarTable,
   pbClient,
   user,
-  starredParticipants,
-  setStarredParticipants,
+  starredContacts,
+  setStarredContacts,
 }: ContactsTableProps) {
   const createStarButton = useCallback(
-    (participant: ParticipantsCustomResponse) => {
-      // Provide remove star function for Participant table by looping through the starredParticipants.items to find a match
-      // then return <RemoveStar> button for that starredParticipant
-      if (!isStarTable && starredParticipants) {
-        for (const starredParticipant of starredParticipants.items) {
-          if (participant.id != starredParticipant.id) continue;
+    (contact: ContactsCustomResponse | StarredContactsCustomResponse) => {
+      // Provide remove star function for ContactsTable by looping through the starredContacts.items to find a match
+      // then return <RemoveStar> button for that starredContacts
+      if (!isStarTable && starredContacts) {
+        for (const starredContact of starredContacts.items) {
+          if (contact.id != starredContact.id) continue;
 
           return (
             <RemoveStar
               pbClient={pbClient}
-              participant={starredParticipant}
-              setStarredParticipants={setStarredParticipants}
+              contact={starredContact}
+              setStarredContacts={setStarredContacts}
             ></RemoveStar>
           );
         }
@@ -49,12 +51,12 @@ function ContactsTable({
 
       let StarButton: JSX.Element;
 
-      if (isStarTable) {
+      if (isStarTable && isStarredContacts(contact)) {
         StarButton = (
           <RemoveStar
             pbClient={pbClient}
-            participant={participant}
-            setStarredParticipants={setStarredParticipants}
+            contact={contact}
+            setStarredContacts={setStarredContacts}
           ></RemoveStar>
         );
       } else {
@@ -62,25 +64,25 @@ function ContactsTable({
           <AddStar
             pbClient={pbClient}
             user={user}
-            participant={participant}
-            setStarredParticipants={setStarredParticipants}
+            contact={contact}
+            setStarredContacts={setStarredContacts}
           ></AddStar>
         );
       }
 
       return StarButton;
     },
-    [isStarTable, pbClient, setStarredParticipants, starredParticipants, user]
+    [isStarTable, pbClient, setStarredContacts, starredContacts, user]
   );
 
-  const contactsList = participants.items.map((person, index) => (
+  const contactsList = contacts.items.map((person, index) => (
     <tr
       key={person.id}
-      className="grid grid-cols-[3rem_2rem_2fr_1fr_1fr_1fr_2rem] rounded px-3 py-2 odd:bg-white even:bg-slate-100 hover:bg-slate-200"
+      className="odd:bg-white even:bg-slate-100 hover:bg-slate-200"
     >
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-6 truncate p-2 text-right"
           href={`/people/${encodeURIComponent(person.id)}`}
         >
           {index + 1}
@@ -89,7 +91,7 @@ function ContactsTable({
       <td>{createStarButton(person)}</td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-full max-w-xs truncate p-2"
           href={`/people/${encodeURIComponent(person.id)}`}
         >
           {person.name}
@@ -97,7 +99,7 @@ function ContactsTable({
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-full max-w-xs truncate p-2"
           href={`/people/${encodeURIComponent(person.id)}`}
         >
           {person.personId}
@@ -105,7 +107,7 @@ function ContactsTable({
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-44 truncate p-2"
           href={`/people/${encodeURIComponent(person.id)}`}
         >
           {person.title}
@@ -113,17 +115,17 @@ function ContactsTable({
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-44 truncate p-2"
           href={`/people/${encodeURIComponent(person.id)}`}
         >
-          {[person.personalEmail, person.expand.user_email_list[0]]
+          {[person.personalEmail, person.expand.user_email]
             .filter((email) => email != undefined && email != "")
             .join(", ")}
         </Link>
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-10 truncate py-1 px-2"
           href={`/people/${encodeURIComponent(person.id)}`}
         >
           <span className="material-symbols-rounded">chevron_right</span>
@@ -136,14 +138,14 @@ function ContactsTable({
     <div className="overflow-x-auto">
       <table className="table w-full whitespace-nowrap">
         <thead className="border-b text-left">
-          <tr className="grid grid-cols-[3rem_2rem_2fr_1fr_1fr_1fr_2rem] p-3">
-            <th className="!static">No.</th>
-            <th></th>
-            <th>Name</th>
-            <th>ID</th>
-            <th>Position</th>
-            <th>Email</th>
-            <th></th>
+          <tr>
+            <th className="!static w-6 p-2">No.</th>
+            <th className="w-7 truncate pl-1"></th>
+            <th className="max-w-xs truncate p-2">Name</th>
+            <th className="max-w-xs truncate p-2">ID</th>
+            <th className="w-44 truncate p-2">Position</th>
+            <th className="w-44 truncate p-2">Email</th>
+            <th className="w-10 truncate p-2"></th>
           </tr>
         </thead>
         <tbody>{contactsList}</tbody>
@@ -154,23 +156,21 @@ function ContactsTable({
 
 interface RemoveStarProps {
   pbClient: PBCustom;
-  participant: ParticipantsCustomResponse;
-  setStarredParticipants: (
-    value: SetStateAction<ListResult<ParticipantsCustomResponse>>
+  contact: StarredContactsCustomResponse;
+  setStarredContacts: (
+    value: SetStateAction<ListResult<StarredContactsCustomResponse>>
   ) => void;
 }
 
 export function RemoveStar({
   pbClient,
-  participant,
-  setStarredParticipants,
+  contact,
+  setStarredContacts,
 }: RemoveStarProps) {
   return (
     <button
       onClick={() => {
-        console.log(`Un-star ${participant.expand.relationship_id_list}`);
-
-        const relationshipId = participant.expand.relationship_id_list.at(0);
+        const relationshipId = contact.expand.relationship_id;
 
         if (!relationshipId) return;
 
@@ -178,17 +178,16 @@ export function RemoveStar({
           .collection(Collections.Relationships)
           .delete(relationshipId)
           .then(async () => {
-            const newStarredParticipants =
-              await pbClient.apiGetList<ParticipantsCustomResponse>(
-                "/api/user/getStarredParticipants?fullList=true"
+            const newStarredContacts =
+              await pbClient.apiGetList<StarredContactsCustomResponse>(
+                "/api/user/getStarredContacts?fullList=true"
               );
 
-            setStarredParticipants(newStarredParticipants);
+            setStarredContacts(newStarredContacts);
           });
       }}
     >
-      <style></style>
-      <span className="material-symbols-rounded align-top text-yellow-500 [font-variation-settings:'FILL'_1] hover:text-yellow-400">
+      <span className="material-symbols-rounded text-yellow-500 [font-variation-settings:'FILL'_1] hover:text-yellow-400">
         star
       </span>
     </button>
@@ -198,43 +197,50 @@ export function RemoveStar({
 interface AddStarProps {
   pbClient: PBCustom;
   user: UsersResponse;
-  participant: ParticipantsCustomResponse;
-  setStarredParticipants: (
-    value: SetStateAction<ListResult<ParticipantsCustomResponse>>
+  contact: ContactsCustomResponse;
+  setStarredContacts: (
+    value: SetStateAction<ListResult<StarredContactsCustomResponse>>
   ) => void;
 }
 
 export function AddStar({
   pbClient,
   user,
-  participant,
-  setStarredParticipants,
+  contact,
+  setStarredContacts,
 }: AddStarProps) {
   return (
     <button
       onClick={() => {
-        console.log(`Star ${participant.expand.relationship_id_list}`);
-
         pbClient
           .collection(Collections.Relationships)
           .create<RelationshipsResponse>({
             fromPerson: user.person,
-            toPerson: participant.id,
+            toPerson: contact.id,
           } as RelationshipsRecord)
           .then(async () => {
-            const newStarredParticipants =
-              await pbClient.apiGetList<ParticipantsCustomResponse>(
-                "/api/user/getStarredParticipants?fullList=true"
+            const newStarredContacts =
+              await pbClient.apiGetList<StarredContactsCustomResponse>(
+                "/api/user/getStarredContacts?fullList=true"
               );
 
-            setStarredParticipants(newStarredParticipants);
+            setStarredContacts(newStarredContacts);
           });
       }}
     >
-      <span className="material-symbols-rounded align-top text-yellow-500 hover:text-yellow-400">
+      <span className="material-symbols-rounded text-yellow-500 hover:text-yellow-400">
         star
       </span>
     </button>
+  );
+}
+
+function isStarredContacts(
+  contact: ContactsCustomResponse | StarredContactsCustomResponse
+): contact is StarredContactsCustomResponse {
+  return (
+    (contact as StarredContactsCustomResponse).expand.relationship_id !==
+    undefined
   );
 }
 

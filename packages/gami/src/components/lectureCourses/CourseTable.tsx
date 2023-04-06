@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { ClassesCustomResponse, CoursesCustomResponse } from "raito";
+import type { CoursesCustomResponse } from "raito";
 
 interface CoursesTableProps {
   lectureCourses: ListResult<CoursesCustomResponse>;
@@ -11,11 +11,11 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
     (lectureCourse, index) => (
       <tr
         key={lectureCourse.id}
-        className="grid grid-cols-[3rem_2fr_1fr_1fr_2rem] rounded px-3 py-2 odd:bg-white even:bg-slate-100 hover:bg-slate-200"
+        className="odd:bg-white even:bg-slate-100 hover:bg-slate-200"
       >
         <td>
           <Link
-            className="group inline-block h-full w-full"
+            className="block w-6 truncate p-2 text-right"
             href={`/lectureCourses/${encodeURIComponent(lectureCourse.id)}`}
           >
             {index + 1}
@@ -23,7 +23,7 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
         </td>
         <td>
           <Link
-            className="group inline-block h-full w-full"
+            className="block w-full max-w-xs truncate p-2"
             href={`/lectureCourses/${encodeURIComponent(lectureCourse.id)}`}
           >
             {lectureCourse.expand.courseTemplate_name}
@@ -31,7 +31,7 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
         </td>
         <td>
           <Link
-            className="group inline-block h-full w-full"
+            className="block w-full max-w-xs truncate p-2"
             href={`/lectureCourses/${encodeURIComponent(lectureCourse.id)}`}
           >
             {lectureCourse.semester}
@@ -39,7 +39,7 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
         </td>
         <td>
           <Link
-            className="group inline-block h-full w-full"
+            className="block w-full max-w-xs truncate p-2"
             href={`/lectureCourses/${encodeURIComponent(lectureCourse.id)}`}
           >
             {lectureCourse.expand.courseTemplate_periodsCount}
@@ -47,7 +47,7 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
         </td>
         <td>
           <Link
-            className="group inline-block h-full w-full"
+            className="block w-10 truncate py-1 px-2"
             href={`/lectureCourses/${encodeURIComponent(lectureCourse.id)}`}
           >
             <span className="material-symbols-rounded">chevron_right</span>
@@ -61,12 +61,12 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
     <div className="overflow-x-auto">
       <table className="table w-full whitespace-nowrap">
         <thead className="border-b text-left">
-          <tr className="grid grid-cols-[3rem_2fr_1fr_1fr_2rem] p-3">
-            <th className="!static">No.</th>
-            <th>Course name</th>
-            <th>Semester</th>
-            <th>No. periods</th>
-            <th></th>
+          <tr>
+            <th className="!static w-6 p-2">No.</th>
+            <th className="max-w-xs truncate p-2">Course name</th>
+            <th className="max-w-xs truncate p-2">Semester</th>
+            <th className="max-w-xs truncate p-2">No. periods</th>
+            <th className="w-10 truncate p-2"></th>
           </tr>
         </thead>
         <tbody>{lectureCoursesList}</tbody>

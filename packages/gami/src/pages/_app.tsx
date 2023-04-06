@@ -29,9 +29,11 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
   const getLayout = Component.getLayout ?? ((page) => page);
   const layout = getLayout(<Component {...pageProps} />);
 
+  // #next-body: to add modal to
   return (
     <AuthContextProvider>
       <div
+        id="next-body"
         className={`${inter.variable} font-sans ${materialSymbolsRounded.variable} min-h-screen bg-gray-100`}
       >
         {layout}

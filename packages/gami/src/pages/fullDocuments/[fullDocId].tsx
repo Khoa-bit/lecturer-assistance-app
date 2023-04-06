@@ -4,6 +4,7 @@ import type {
   BaseSystemFields,
   ClassesResponse,
   CoursesResponse,
+  EventDocumentsResponse,
   FullDocumentsResponse,
   PersonalNotesResponse,
 } from "raito";
@@ -14,6 +15,7 @@ const expandRedirect = [
   "academicMaterials(fullDocument)",
   "classes(fullDocument)",
   "courses(fullDocument)",
+  "eventDocuments(fullDocument)",
   "personalNotes(fullDocument)",
 ];
 
@@ -21,6 +23,7 @@ interface RedirectExpand {
   "academicMaterials(fullDocument)"?: AcademicMaterialsResponse;
   "classes(fullDocument)"?: ClassesResponse;
   "courses(fullDocument)"?: CoursesResponse;
+  "eventDocuments(fullDocument)"?: EventDocumentsResponse;
   "personalNotes(fullDocument)"?: PersonalNotesResponse;
 }
 
@@ -65,6 +68,9 @@ export const getServerSideProps = async ({
       break;
     case Collections.Courses:
       uri = "lectureCourses";
+      break;
+    case Collections.EventDocuments:
+      uri = "eventDocuments";
       break;
     case Collections.PersonalNotes:
       uri = "personalNotes";

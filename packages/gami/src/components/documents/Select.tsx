@@ -10,19 +10,25 @@ export interface SelectOption {
 
 export interface SelectProps<TFieldValues extends FieldValues = FieldValues>
   extends FullDocumentChildProps<TFieldValues> {
+  id: string;
+  label: string;
   name: Path<TFieldValues>;
   selectOptions: SelectOption[];
   children?: ReactNode | ReactNode[];
+  element?: JSX.Element;
   onChange?: ChangeEventHandler<HTMLSelectElement> | undefined;
   defaultValue?: string;
 }
 
 function Select<TFieldValues extends FieldValues = FieldValues>({
+  id,
+  label,
   name,
   selectOptions,
   register,
   options,
   children,
+  element,
   onChange,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setValue, // FullDocument injects setValue => must be available
@@ -34,22 +40,57 @@ function Select<TFieldValues extends FieldValues = FieldValues>({
   const registerOptions = register(name, options);
 
   return (
-    <select
-      {...registerOptions}
-      onChange={(e) => {
-        registerOptions.onChange(e);
-        if (onChange) onChange(e);
-      }}
-      defaultValue={defaultValue}
-      {...rest}
-    >
-      {children}
-      {selectOptions.map((selectOption) => (
-        <option key={selectOption.key} value={selectOption.value}>
-          {selectOption.content}
-        </option>
-      ))}
-    </select>
+    <>
+      <label className="py-2" htmlFor={id}>
+        {label}
+      </label>
+      {!element ? (
+        <select
+          id={id}
+          {...registerOptions}
+          onChange={(e) => {
+            registerOptions.onChange(e);
+            if (onChange) onChange(e);
+          }}
+          defaultValue={defaultValue}
+          {...rest}
+          className={`rounded border border-gray-300 hover:bg-gray-50 ${
+            options?.disabled && "bg-gray-50 text-gray-500"
+          }`}
+        >
+          {children}
+          {selectOptions.map((selectOption) => (
+            <option key={selectOption.key} value={selectOption.value}>
+              {selectOption.content}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <div className="relative flex items-center">
+          <select
+            id={id}
+            {...registerOptions}
+            onChange={(e) => {
+              registerOptions.onChange(e);
+              if (onChange) onChange(e);
+            }}
+            defaultValue={defaultValue}
+            {...rest}
+            className={`flex-grow rounded border border-gray-300 hover:bg-gray-50 ${
+              options?.disabled && "bg-gray-50 text-gray-500"
+            }`}
+          >
+            {children}
+            {selectOptions.map((selectOption) => (
+              <option key={selectOption.key} value={selectOption.value}>
+                {selectOption.content}
+              </option>
+            ))}
+          </select>
+          {element}
+        </div>
+      )}
+    </>
   );
 }
 

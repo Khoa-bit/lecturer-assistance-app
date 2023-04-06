@@ -66,15 +66,16 @@ function AcademicMaterial({
   };
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
         <title>Personal notes</title>
       </Head>
-      <h1>Personal notes</h1>
       <FullDocument {...fullDocumentProps}>
         <Select
           {...({
             name: "category",
+            id: "category",
+            label: "Category",
             selectOptions: Object.entries(AcademicMaterialsCategoryOptions).map(
               ([stringValue]) => {
                 return {
@@ -88,7 +89,7 @@ function AcademicMaterial({
           } as SelectProps<AcademicMaterialsRecord>)}
         ></Select>
       </FullDocument>
-    </>
+    </main>
   );
 }
 

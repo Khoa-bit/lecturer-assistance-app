@@ -103,29 +103,29 @@ func main() {
 			return handlers.GetParticipatedCourses(app, c)
 		})
 
-		// Get all starred relationships with the current user
-		subGroup.GET("/relationships", func(c echo.Context) error {
-			return handlers.GetRelationships(app, c)
-		})
-
 		// Get all participants from the current user's documents
-		subGroup.GET("/allAcrossParticipants", func(c echo.Context) error {
-			return handlers.GetAllAcrossParticipants(app, c)
+		subGroup.GET("/getContacts", func(c echo.Context) error {
+			return handlers.GetContacts(app, c)
 		})
 
 		// Get all starred participants from the current user's documents
-		subGroup.GET("/getStarredParticipants", func(c echo.Context) error {
-			return handlers.GetStarredParticipants(app, c)
+		subGroup.GET("/getStarredContacts", func(c echo.Context) error {
+			return handlers.GetStarredContacts(app, c)
 		})
 
 		// Get all documents that the query person participate in the current user's document
-		subGroup.GET("/getAllDocParticipation/:toPerson", func(c echo.Context) error {
-			return handlers.GetAllDocParticipation(app, c)
+		subGroup.GET("/getSharedDocuments/:toPerson", func(c echo.Context) error {
+			return handlers.GetSharedDocuments(app, c)
 		})
 
 		// Get all participants for the current user's particular doc
 		subGroup.GET("/getAllDocParticipants/:docId", func(c echo.Context) error {
 			return handlers.GetAllDocParticipants(app, c)
+		})
+
+		// Get all starred relationships with the current user
+		subGroup.GET("/relationships", func(c echo.Context) error {
+			return handlers.GetRelationships(app, c)
 		})
 
 		// Get all possible new relationships options for the current user.

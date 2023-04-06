@@ -3,6 +3,7 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
   DocumentsResponse,
@@ -11,7 +12,8 @@ import type {
   FullDocumentsCustomResponse,
   FullDocumentsResponse,
 } from "raito";
-import { Collections, EventDocumentsRecurringOptions } from "raito";
+import { Collections } from "raito";
+import { useState } from "react";
 import type {
   FullDocumentData,
   FullDocumentProps,
@@ -56,6 +58,10 @@ function EventDocument({
   const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
   const eventDocument = dataParse.eventDocument;
   const toFullDocuments = dataParse.toFullDocuments;
+  const [toFullDocument, setToFullDocument] = useState(
+    eventDocument.toFullDocument
+  );
+  const [startTime, setStartTime] = useState(eventDocument.startTime);
   const fullDocumentData = dataParse.fullDocumentData;
 
   const childCollectionName = Collections.EventDocuments;
@@ -69,33 +75,53 @@ function EventDocument({
     user,
     childrenDefaultValue: {
       fullDocument: eventDocument.fullDocument,
-      startTime: dateToISOLikeButLocalOrUndefined(eventDocument.startTime),
+      startTime: dateToISOLikeButLocalOrUndefined(startTime),
       endTime: dateToISOLikeButLocalOrUndefined(eventDocument.endTime),
       recurring: eventDocument.recurring,
-      toFullDocument: eventDocument.toFullDocument,
+      toFullDocument: toFullDocument,
     },
     hasEvents: false,
   };
 
+  const docLink = toFullDocument ? (
+    <Link
+      className="absolute right-10 h-6"
+      href={`/fullDocuments/${toFullDocument}`}
+    >
+      <span className="material-symbols-rounded text-gray-500 [font-variation-settings:'FILL'_1] hover:text-blue-500">
+        link
+      </span>
+    </Link>
+  ) : (
+    <></>
+  );
+
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
-        <title>Full Document</title>
+        <title>Event Document</title>
       </Head>
-      <h1>Full Document</h1>
       <FullDocument {...fullDocumentProps}>
         <Input
           {...({
+            id: "startTime",
+            label: "Start Time",
             name: "startTime",
             options: { required: true },
             type: "datetime-local",
+            onChange: (e) => {
+              setStartTime(e.currentTarget.value);
+            },
           } as InputProps<EventDocumentsRecord>)}
         ></Input>
         <Input
           {...({
+            id: "endTime",
+            label: "End Time",
             name: "endTime",
             options: { required: true },
             type: "datetime-local",
+            min: startTime,
           } as InputProps<EventDocumentsRecord>)}
         ></Input>
         {/* <Select
@@ -115,6 +141,8 @@ function EventDocument({
         ></Select> */}
         <Select
           {...({
+            id: "toFullDocument",
+            label: "Parent document",
             name: "toFullDocument",
             selectOptions: toFullDocuments.items.map((toFullDocument) => {
               return {
@@ -123,7 +151,11 @@ function EventDocument({
                 content: toFullDocument.expand.userDocument_name,
               } as SelectOption;
             }),
-            defaultValue: eventDocument.toFullDocument,
+            onChange: (e) => {
+              setToFullDocument(e.currentTarget.value);
+            },
+            element: docLink,
+            defaultValue: toFullDocument,
           } as SelectProps<EventDocumentsRecord>)}
         >
           <option value="" disabled hidden>
@@ -131,7 +163,7 @@ function EventDocument({
           </option>
         </Select>
       </FullDocument>
-    </>
+    </main>
   );
 }
 

@@ -39,7 +39,7 @@ function EventDocuments({
   const pastEventDocuments = dataParse.pastEventDocuments;
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
       <Head>
         <title>Events</title>
       </Head>
@@ -66,7 +66,7 @@ function EventDocuments({
         </h2>
         <EventsTable eventDocuments={pastEventDocuments}></EventsTable>
       </section>
-    </>
+    </main>
   );
 }
 
@@ -81,7 +81,7 @@ export const getServerSideProps = async ({
   const upcomingEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
     .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `startTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}"`,
+      filter: `fullDocument.document.deleted = "" && (endTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
       expand: "fullDocument.document",
       sort: "startTime",
     });
@@ -89,7 +89,7 @@ export const getServerSideProps = async ({
   const pastEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
     .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `startTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}"`,
+      filter: `fullDocument.document.deleted = "" && (endTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
       expand: "fullDocument.document",
       sort: "-startTime",
     });

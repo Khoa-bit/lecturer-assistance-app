@@ -24,7 +24,7 @@ function AdviseClasses({
   const participatedAdviseClasses = dataParse.participatedAdviseClasses;
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
       <Head>
         <title>Advise Classes</title>
       </Head>
@@ -53,7 +53,7 @@ function AdviseClasses({
           adviseClasses={participatedAdviseClasses}
         ></AdviseClassesTable>
       </section>
-    </>
+    </main>
   );
 }
 

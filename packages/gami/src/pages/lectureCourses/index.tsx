@@ -24,7 +24,7 @@ function LectureCourses({
   const participatedLectureCourses = dataParse.participatedLectureCourses;
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
       <Head>
         <title>LectureCourses</title>
       </Head>
@@ -53,7 +53,7 @@ function LectureCourses({
           lectureCourses={participatedLectureCourses}
         ></CoursesTable>
       </section>
-    </>
+    </main>
   );
 }
 
@@ -71,11 +71,6 @@ export const getServerSideProps = async ({
     await pbServer.apiGetList<CoursesCustomResponse>(
       "/api/user/participatedCourses?fullList=true"
     );
-
-  console.log(
-    JSON.stringify(lectureCourses, null, 2),
-    JSON.stringify(participatedLectureCourses, null, 2)
-  );
 
   return {
     props: {

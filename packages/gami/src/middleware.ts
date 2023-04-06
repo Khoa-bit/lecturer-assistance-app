@@ -11,8 +11,6 @@ export async function middleware(request: NextRequest) {
     url.pathname
   );
 
-  console.log("hello", request.nextUrl.pathname);
-
   if (!user && !request.nextUrl.pathname.startsWith("/auth")) {
     url.pathname = `/auth/login/`;
     console.log(`Being redirect to ${url}`);

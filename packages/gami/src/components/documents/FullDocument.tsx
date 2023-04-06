@@ -4,12 +4,12 @@ import { useRouter } from "next/router";
 import type { ListResult } from "pocketbase";
 import type {
   AttachmentsResponse,
+  ParticipantsCustomResponse,
   DocumentsRecord,
   DocumentsResponse,
   EventDocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
-  ParticipantsCustomResponse,
   PeopleResponse,
   UsersResponse,
 } from "raito";
@@ -50,8 +50,8 @@ import {
 } from "src/lib/input_handling";
 import type { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
-import NewParticipantForm from "../../components/documents/NewParticipant";
-import EventsList from "./Events";
+import ParticipantsList from "./ParticipantsList";
+import EventsList from "./EventsList";
 
 export interface FullDocumentData {
   fullDocument: FullDocumentsResponse<DocumentsExpand>;
@@ -117,12 +117,11 @@ function FullDocument<TRecord>({
   const baseDocument = fullDocument.expand?.document;
   const fullDocumentId = fullDocument.id;
   const documentId = fullDocument.document;
-  const isWrite =
-    permission == ParticipantsPermissionOptions.write && !baseDocument?.deleted;
+  const isWrite = permission == ParticipantsPermissionOptions.write;
   const router = useRouter();
   hasEvents ??= true;
 
-  const { register, control, handleSubmit, watch, setValue, reset } =
+  const { register, control, handleSubmit, watch, setValue, reset, getValues } =
     useForm<FullDocumentInput>({
       defaultValues: {
         name: baseDocument?.name,
@@ -137,16 +136,27 @@ function FullDocument<TRecord>({
       },
     });
 
+  // Custom input field that is outside of the form
+  const registerThumbnail = register("thumbnail", { disabled: !isWrite });
+  const registerAttachments = register("attachments", { disabled: !isWrite });
+
   const [thumbnail, setThumbnail] = useState<string | undefined>(
     baseDocument?.thumbnail
   );
   const [attachments, setAttachments] =
     useState<AttachmentsResponse[]>(initAttachments);
 
-  // Custom input field that is outside of the form
-  const registerThumbnail = register("thumbnail", { disabled: !isWrite });
-  const registerAttachments = register("attachments", { disabled: !isWrite });
-  const hasSaved = useRef(true);
+  const handleThumbnail = createHandleThumbnail(
+    pbClient,
+    documentId,
+    setThumbnail
+  );
+
+  const handleAttachment = createHandleAttachment(
+    pbClient,
+    documentId,
+    setAttachments
+  );
 
   const onSubmit: SubmitHandler<FullDocumentInput> = useCallback(
     (inputData) => {
@@ -178,15 +188,10 @@ function FullDocument<TRecord>({
         ).reduce((prev, [key, value]) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let inputValue: string = (inputData as any)[key] ?? (value as string);
-          console.log("childBodyParams to update send to PB", inputValue);
 
           // Matches the datetime format "2023-03-08T01:01" for input type "datetime-local"
           // To convert it into PocketBase local date time format
           if (inputValue.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/)) {
-            console.log(
-              "Matched!! childBodyParams to update send to PB",
-              inputValue
-            );
             inputValue = dateToISOOrUndefined(inputValue) ?? "";
           }
           return { ...prev, [key]: inputValue };
@@ -211,7 +216,6 @@ function FullDocument<TRecord>({
             attachmentsHash: newAttachmentsHash,
           } as DocumentsRecord);
 
-        hasSaved.current = true;
         if (env.NEXT_PUBLIC_DEBUG_MODE)
           console.log("Sending UPDATE requests...");
       }
@@ -230,30 +234,39 @@ function FullDocument<TRecord>({
   const formRef = useRef<HTMLFormElement>(null);
   const submitRef = useRef<HTMLInputElement>(null);
 
-  useSaveDoc({
-    hasSaved,
+  const hasSaved = useSaveDoc({
     formRef,
     submitRef,
     watch,
   });
-
-  const handleThumbnail = createHandleThumbnail(
-    pbClient,
-    documentId,
-    setThumbnail
-  );
-
-  const handleAttachment = createHandleAttachment(
-    pbClient,
-    documentId,
-    setAttachments
-  );
 
   // Realtime collaboration
   useEffect(() => {
     const unsubscribeFunc = pbClient
       .collection(Collections.Documents)
       .subscribe<DocumentsResponse>(documentId, async (data) => {
+        // Send child submit update dynamically based on childrenDefaultValue
+        const childRecord = await pbClient
+          .collection(childCollectionName)
+          .getOne(childId);
+
+        const childBodyParams = Object.entries(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          childrenDefaultValue as any
+        ).reduce((prev, [key, value]) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let inputValue = (childRecord as any)[key] ?? (value as any);
+
+          // Matches the datetime format "2023-03-29 09:06:00.000Z" for input type "datetime-local"
+          // To convert it into PocketBase local date time format
+          if (
+            inputValue.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3}Z$/)
+          ) {
+            inputValue = dateToISOLikeButLocalOrUndefined(inputValue) ?? "";
+          }
+          return { ...prev, [key]: inputValue };
+        }, {});
+
         reset({
           name: data.record.name,
           thumbnail: data.record.thumbnail,
@@ -262,6 +275,7 @@ function FullDocument<TRecord>({
           richText: data.record.richText,
           diffHash: data.record.diffHash,
           attachmentsHash: data.record.attachmentsHash,
+          ...childBodyParams,
         });
 
         setThumbnail(data.record.thumbnail);
@@ -275,44 +289,10 @@ function FullDocument<TRecord>({
         setAttachments(attachments);
       });
 
-    // Send child submit update dynamically based on childrenDefaultValue
-    const childUnsubscribeFunc = pbClient
-      .collection(childCollectionName)
-      .subscribe(childId, (data) => {
-        const childBodyParams = Object.entries(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          childrenDefaultValue as any
-        ).reduce((prev, [key, value]) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let inputValue = (data as any).record[key] ?? value;
-          console.log("subscribe reduce send to input", inputValue);
-
-          // Matches the datetime format "2023-03-29 09:06:00.000Z" for input type "datetime-local"
-          // To convert it into PocketBase local date time format
-          if (
-            inputValue.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3}Z$/)
-          ) {
-            console.log("Matched!! subscribe reduce send to input", inputValue);
-            inputValue = dateToISOLikeButLocalOrUndefined(inputValue) ?? "";
-          }
-          return { ...prev, [key]: inputValue };
-        }, {});
-
-        reset(childBodyParams);
-      });
-
     return () => {
-      setTimeout(async () => {
-        await unsubscribeFunc.then((func) => func());
-        if (env.NEXT_PUBLIC_DEBUG_MODE)
-          console.log("Successfully unsubscribe to documents collection");
-
-        await childUnsubscribeFunc.then((func) => func());
-        if (env.NEXT_PUBLIC_DEBUG_MODE)
-          console.log(
-            `Successfully unsubscribe to ${childCollectionName} collection`
-          );
-      }, 0);
+      unsubscribeFunc.then((func) => func());
+      if (env.NEXT_PUBLIC_DEBUG_MODE)
+        console.log("Successfully unsubscribe to documents collection");
     };
   }, [
     childCollectionName,
@@ -320,137 +300,236 @@ function FullDocument<TRecord>({
     childrenDefaultValue,
     documentId,
     fullDocument.document,
+    getValues,
     pbClient,
     reset,
   ]);
 
+  // This css is currently duplicated with [personId].tsx page
   return (
     <>
+      <div className="w-screen pb-6">
+        {thumbnail && (
+          <Image
+            className="h-36 w-full xl:h-48"
+            src={pbClient.buildUrl(
+              `api/files/documents/${documentId}/${thumbnail}`
+            )}
+            alt="Uploaded image thumbnail"
+            width={1700}
+            height={192}
+            style={{ objectFit: "cover" }}
+          />
+        )}
+      </div>
       {baseDocument?.deleted && (
-        <h2>Document have been deleted on {baseDocument?.deleted}</h2>
+        <h2 className="w-full rounded bg-red-200 p-2 font-bold">
+          Document have been deleted on {baseDocument?.deleted}
+        </h2>
       )}
-      <h2>Participants</h2>
-      {isWrite && (
-        <button
-          onClick={() => {
-            router.replace(router.pathname.replace(/\/[^\/]+$/, ""));
-            pbClient
-              .collection(Collections.Documents)
-              .update<DocumentsResponse>(documentId, {
-                deleted: dateToISOLikeButLocal(new Date()),
-              } as DocumentsRecord);
-          }}
-        >
-          Delete
-        </button>
-      )}
-      <NewParticipantForm
-        defaultValue={allDocParticipants}
-        docId={documentId}
-        people={people}
-        user={user}
-        pbClient={pbClient}
-        disabled={!isWrite}
-      ></NewParticipantForm>
-      {hasEvents && (
-        <EventsList
-          fullDocumentId={fullDocumentId}
-          upcomingEventDocuments={upcomingEventDocuments}
-          pastEventDocuments={pastEventDocuments}
-          isWrite={isWrite}
-        ></EventsList>
-      )}
-      <form ref={formRef} onSubmit={handleSubmit(onSubmit)}>
-        <input {...register("name", { required: true, disabled: !isWrite })} />
-        <label htmlFor="thumbnail">Choose file to upload</label>
-        <input
-          id="thumbnail"
-          type="file"
-          {...registerThumbnail}
-          onChange={(e) => {
-            registerThumbnail.onChange(e);
-            handleThumbnail(e);
-          }}
-        />
-        <select
-          {...register("priority", { required: true, disabled: !isWrite })}
-        >
-          {Object.entries(DocumentsPriorityOptions).map(([stringValue]) => (
-            <option key={stringValue} value={stringValue}>
-              {stringValue}
-            </option>
-          ))}
-        </select>
-        <select {...register("status", { required: true, disabled: !isWrite })}>
-          {Object.entries(DocumentsStatusOptions).map(([stringValue]) => (
-            <option key={stringValue} value={stringValue}>
-              {stringValue}
-            </option>
-          ))}
-        </select>
-        <label htmlFor="attachments">Choose attachments</label>
-        <input
-          {...registerAttachments}
-          id="attachments"
-          type="file"
-          multiple={true}
-          onChange={(e) => {
-            registerAttachments.onChange(e);
-            handleAttachment(e);
-          }}
-          disabled={!isWrite}
-        />
-        {children &&
-          Children.map(children, (child) => {
-            return child?.props.name
-              ? createElement(child.type, {
-                  ...{
-                    ...child.props,
-                    options: { ...child?.props.options, disabled: !isWrite },
-                    register,
-                    setValue,
-                    key: child.props.name,
-                  },
-                })
-              : child;
-          })}
-        <Controller
-          name="richText"
-          control={control}
-          render={({ field: { onChange, value } }) => (
-            <TipTapByPermission
-              richText={value ?? "{}"}
+      <header className="flex w-full items-start gap-x-4">
+        <h1 className="flex-grow">
+          <input
+            className={`h-10 w-full rounded bg-transparent text-2xl font-bold focus:bg-white`}
+            {...register("name", { required: true, disabled: !isWrite })}
+            placeholder="Title"
+          />
+        </h1>
+
+        {isWrite && (
+          <>
+            <label
+              htmlFor="thumbnail"
+              className={`flex h-10 cursor-pointer items-center gap-1 rounded bg-gray-200 p-2 font-semibold hover:bg-gray-300`}
+            >
+              <span className="material-symbols-rounded text-gray-500 [font-variation-settings:'FILL'_1]">
+                image
+              </span>
+              <span>Change thumbnail</span>
+            </label>
+            <input
+              id="thumbnail"
+              className={`hidden`}
+              type="file"
+              {...registerThumbnail}
+              onChange={(e) => {
+                registerThumbnail.onChange(e);
+                handleThumbnail(e);
+              }}
+              accept="image/*"
+            />
+          </>
+        )}
+
+        {isWrite && (
+          <button
+            className="flex h-10 items-center"
+            onClick={() => {
+              router.back();
+              pbClient
+                .collection(Collections.Documents)
+                .update<DocumentsResponse>(documentId, {
+                  deleted: dateToISOLikeButLocal(new Date()),
+                } as DocumentsRecord);
+            }}
+          >
+            <span className="material-symbols-rounded text-gray-500 [font-variation-settings:'FILL'_1] hover:text-red-400">
+              delete
+            </span>
+          </button>
+        )}
+      </header>
+      <section className="w-full xl:grid xl:grid-cols-[1fr_2fr] xl:gap-4">
+        <div className="my-4 flex h-fit flex-col gap-4 rounded-lg bg-white py-5 px-6">
+          {hasEvents && (
+            <section>
+              <EventsList
+                fullDocumentId={fullDocumentId}
+                upcomingEventDocuments={upcomingEventDocuments}
+                pastEventDocuments={pastEventDocuments}
+                disabled={!isWrite}
+              ></EventsList>
+            </section>
+          )}
+
+          <section>
+            <h2 className="pb-3 text-xl font-semibold text-gray-700">
+              Participants
+            </h2>
+            <ParticipantsList
+              defaultValue={allDocParticipants}
+              docId={documentId}
+              people={people}
               user={user}
-              permission={permission}
-              documentId={documentId}
               pbClient={pbClient}
-              onChange={onChange}
-              setAttachments={setAttachments}
-            ></TipTapByPermission>
-          )}
-        />
-        <input
-          ref={submitRef}
-          type="submit"
-          disabled={permission == ParticipantsPermissionOptions.read}
-        />
-      </form>
-      <Attachments
-        attachments={attachments}
-        setAttachments={setAttachments}
-        pbClient={pbClient}
-      ></Attachments>
-      {thumbnail && (
-        <Image
-          id={thumbnail}
-          src={pbClient.buildUrl(
-            `api/files/documents/${documentId}/${thumbnail}`
-          )}
-          alt="Uploaded image thumbnail"
-          width={500}
-          height={500}
-        />
-      )}
+              disabled={!isWrite}
+            ></ParticipantsList>
+          </section>
+        </div>
+
+        <form
+          className="my-4 grid h-fit w-full grid-cols-[minmax(15rem,1fr)_minmax(0,2fr)] gap-4 rounded-lg bg-white py-5 px-6"
+          ref={formRef}
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <label className="py-2" htmlFor="priority">
+            Priority
+          </label>
+          <select
+            id="priority"
+            className={`rounded border border-gray-300 hover:bg-gray-50 ${
+              !isWrite && "bg-gray-50 text-gray-500"
+            }`}
+            {...register("priority", { required: true, disabled: !isWrite })}
+          >
+            {Object.entries(DocumentsPriorityOptions).map(([stringValue]) => (
+              <option key={stringValue} value={stringValue}>
+                {stringValue}
+              </option>
+            ))}
+          </select>
+          <label className="py-2" htmlFor="status">
+            Status
+          </label>
+          <select
+            id="status"
+            className={`rounded border border-gray-300 hover:bg-gray-50 ${
+              !isWrite && "bg-gray-50 text-gray-500"
+            }`}
+            {...register("status", { required: true, disabled: !isWrite })}
+          >
+            {Object.entries(DocumentsStatusOptions).map(([stringValue]) => (
+              <option key={stringValue} value={stringValue}>
+                {stringValue}
+              </option>
+            ))}
+          </select>
+          <label className="py-2" htmlFor="attachments">
+            Attachments
+          </label>
+          <label
+            htmlFor="attachments"
+            className={`flex items-center gap-1 rounded border border-gray-300 p-2 font-semibold hover:bg-gray-50 ${
+              isWrite ? "cursor-pointer" : "bg-gray-50 text-gray-500"
+            }`}
+          >
+            <span className="material-symbols-rounded">attach_file_add</span>
+            <span>Add attachments</span>
+          </label>
+          <input
+            {...registerAttachments}
+            id="attachments"
+            className={`hidden`}
+            type="file"
+            multiple={true}
+            onChange={(e) => {
+              registerAttachments.onChange(e);
+              handleAttachment(e);
+            }}
+            disabled={!isWrite}
+          />
+          <Attachments
+            attachments={attachments}
+            setAttachments={setAttachments}
+            pbClient={pbClient}
+            disabled={!isWrite}
+          ></Attachments>
+          {children &&
+            Children.map(children, (child) => {
+              return child?.props.name
+                ? createElement(child.type, {
+                    ...{
+                      ...child.props,
+                      options: { disabled: !isWrite, ...child?.props.options },
+                      register,
+                      setValue,
+                      key: child.props.name,
+                    },
+                  })
+                : child;
+            })}
+          <label className="py-2" htmlFor="richText">
+            Note
+          </label>
+          <div className="h-fit resize-y overflow-auto rounded border-2 px-2 py-1 focus-within:border-blue-500">
+            <Controller
+              name="richText"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <TipTapByPermission
+                  id="richText"
+                  richText={value ?? "{}"}
+                  user={user}
+                  permission={permission}
+                  documentId={documentId}
+                  pbClient={pbClient}
+                  onChange={onChange}
+                  setAttachments={setAttachments}
+                ></TipTapByPermission>
+              )}
+            />
+          </div>
+          <button
+            className={`flex justify-center gap-2 rounded bg-gray-400 py-2 font-semibold text-white transition-colors hover:bg-blue-400`}
+            onClick={(e) => {
+              e.preventDefault();
+              router.back();
+            }}
+          >
+            <span className="material-symbols-rounded">arrow_back</span>
+            Back
+          </button>
+          <input
+            ref={submitRef}
+            className={`rounded bg-blue-500 py-2 font-semibold text-white transition-colors hover:bg-blue-400 ${
+              hasSaved && "bg-gray-300 hover:bg-gray-300"
+            }`}
+            type="submit"
+            disabled={permission == ParticipantsPermissionOptions.read}
+            value="Save"
+          />
+        </form>
+      </section>
     </>
   );
 }
@@ -485,7 +564,7 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
   const upcomingEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
     .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument = "${fullDocId}" && (startTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
+      filter: `fullDocument.document.deleted = "" && toFullDocument = "${fullDocId}" && (endTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
       expand: "fullDocument.document",
       sort: "startTime",
     });
@@ -493,7 +572,7 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
   const pastEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
     .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument = "${fullDocId}" && (startTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
+      filter: `fullDocument.document.deleted = "" && toFullDocument = "${fullDocId}" && (endTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
       expand: "fullDocument.document",
       sort: "-startTime",
     });
@@ -504,28 +583,19 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
     );
 
   let permission: ParticipantsPermissionOptions | undefined;
-  if (document?.owner == user.person) {
+  if (document?.deleted) {
+    permission = ParticipantsPermissionOptions.read;
+  } else if (document?.owner == user.person) {
     permission = ParticipantsPermissionOptions.write;
   } else {
     const participant = allDocParticipants.items.find(
       (allDocParticipant) => allDocParticipant.id == user.person
     );
 
-    const documentsWithPermission =
-      participant?.expand.userDocument_id_list.map((documentId, index) => {
-        return {
-          documentId,
-          permission: participant?.expand.participant_permission_list.at(
-            index
-          ) as ParticipantsPermissionOptions | undefined,
-        };
-      });
-
     permission =
-      documentsWithPermission?.find(
-        (documentWithPermission) =>
-          documentWithPermission.documentId == document?.id
-      )?.permission ?? ParticipantsPermissionOptions.read;
+      (participant?.expand.participant_permission as
+        | ParticipantsPermissionOptions
+        | undefined) ?? ParticipantsPermissionOptions.read;
   }
 
   const people = await pbServer

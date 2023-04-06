@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
-  AcademicMaterialsCustomResponse,
   DocumentsPriorityOptions,
   DocumentsStatusOptions,
   PersonalNotesCustomResponse,
@@ -17,11 +16,11 @@ function PersonalNotesTable({ personalNotes }: PersonalNotesTableProps) {
   const personalNotesList = personalNotes.items.map((personalNote, index) => (
     <tr
       key={personalNote.id}
-      className="grid grid-cols-[3rem_2fr_1fr_1fr_2rem] gap-2 rounded px-3 py-2 odd:bg-white even:bg-slate-100 hover:bg-slate-200"
+      className="odd:bg-white even:bg-slate-100 hover:bg-slate-200"
     >
-      <td className="">
+      <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-6 truncate p-2 text-right"
           href={`/personalNotes/${encodeURIComponent(personalNote.id)}`}
         >
           {index + 1}
@@ -29,7 +28,7 @@ function PersonalNotesTable({ personalNotes }: PersonalNotesTableProps) {
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-full max-w-xs truncate p-2"
           href={`/personalNotes/${encodeURIComponent(personalNote.id)}`}
         >
           {personalNote.expand?.userDocument_name}
@@ -37,7 +36,7 @@ function PersonalNotesTable({ personalNotes }: PersonalNotesTableProps) {
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-32 truncate p-2"
           href={`/personalNotes/${encodeURIComponent(personalNote.id)}`}
         >
           <Priority
@@ -52,7 +51,7 @@ function PersonalNotesTable({ personalNotes }: PersonalNotesTableProps) {
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-32 truncate p-2"
           href={`/personalNotes/${encodeURIComponent(personalNote.id)}`}
         >
           <Status
@@ -64,7 +63,7 @@ function PersonalNotesTable({ personalNotes }: PersonalNotesTableProps) {
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-10 truncate py-1 px-2"
           href={`/personalNotes/${encodeURIComponent(personalNote.id)}`}
         >
           <span className="material-symbols-rounded">chevron_right</span>
@@ -77,12 +76,12 @@ function PersonalNotesTable({ personalNotes }: PersonalNotesTableProps) {
     <div className="overflow-x-auto">
       <table className="table w-full whitespace-nowrap">
         <thead className="border-b text-left">
-          <tr className="grid grid-cols-[3rem_2fr_1fr_1fr_2rem] gap-2 p-3">
-            <th className="!static">No.</th>
-            <th>Material title</th>
-            <th>Priority</th>
-            <th>Status</th>
-            <th></th>
+          <tr>
+            <th className="!static w-6 p-2">No.</th>
+            <th className="max-w-xs truncate p-2">Note name</th>
+            <th className="w-32 truncate p-2">Priority</th>
+            <th className="w-32 truncate p-2">Status</th>
+            <th className="w-10 truncate p-2"></th>
           </tr>
         </thead>
         <tbody>{personalNotesList}</tbody>

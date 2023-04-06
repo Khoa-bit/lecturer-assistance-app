@@ -12,9 +12,6 @@ import type {
   FullDocumentsResponse,
 } from "raito";
 import { Collections } from "raito";
-import { useCallback, useState } from "react";
-import type { SubmitHandler } from "react-hook-form";
-import { useForm } from "react-hook-form";
 import type {
   FullDocumentData,
   FullDocumentProps,
@@ -33,6 +30,14 @@ import MainLayout from "src/components/layouts/MainLayout";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
+import dynamic from "next/dynamic";
+import { useCourseTemplate } from "src/components/lectureCourses/NewCourseTemplate";
+const NewCourseTemplate = dynamic(
+  () => import("src/components/lectureCourses/NewCourseTemplate"),
+  {
+    ssr: false,
+  }
+);
 
 interface DocumentData {
   fullDocumentData: FullDocumentData;
@@ -49,10 +54,6 @@ interface DocumentsExpand {
   document: DocumentsResponse;
 }
 
-interface CourseTemplateInput extends CourseTemplatesRecord {
-  id: string;
-}
-
 function CourseDocument({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
@@ -63,19 +64,14 @@ function CourseDocument({
   const fullDocumentData = dataParse.fullDocumentData;
   const courseTemplateId = course.courseTemplate;
   const initCourseTemplatesOptions = dataParse.courseTemplatesOptions;
-  const [courseTemplatesOptions, setCourseTemplatesOptions] = useState<
-    CourseTemplatesResponse[]
-  >(initCourseTemplatesOptions);
 
-  const courseTemplatesOption = courseTemplatesOptions.find(
-    (courseTemplatesOption) => courseTemplatesOption.id == courseTemplateId
-  );
-  const [templateCourseId, setTemplateCourseId] = useState<string>(
-    courseTemplatesOption?.courseId ?? ""
-  );
-  const [templatePeriodsCount, setTemplatePeriodsCount] = useState<number>(
-    courseTemplatesOption?.periodsCount ?? 0
-  );
+  const {
+    courseTemplateOnChange,
+    courseTemplatesOptions,
+    setCourseTemplatesOptions,
+    templateCourseId,
+    templatePeriodsCount,
+  } = useCourseTemplate(initCourseTemplatesOptions, courseTemplateId);
 
   const childCollectionName = Collections.Courses;
   const childId = course.id;
@@ -93,57 +89,32 @@ function CourseDocument({
     },
   };
 
-  const { register, handleSubmit } = useForm<CourseTemplateInput>();
-  const onSubmitTemplate: SubmitHandler<CourseTemplateInput> = useCallback(
-    (inputData) => {
-      pbClient
-        .collection(Collections.CourseTemplates)
-        .create<CourseTemplatesResponse>({
-          name: inputData.name,
-          courseId: inputData.courseId,
-          periodsCount: inputData.periodsCount,
-        } as CourseTemplatesRecord)
-        .then((newCourseTemplatesOption) => {
-          console.log(newCourseTemplatesOption);
-          setCourseTemplatesOptions((courseTemplatesOptions) => [
-            ...courseTemplatesOptions,
-            newCourseTemplatesOption,
-          ]);
-        });
-    },
-    [pbClient]
+  const modal = (
+    <NewCourseTemplate
+      pbClient={pbClient}
+      setCourseTemplatesOptions={setCourseTemplatesOptions}
+    ></NewCourseTemplate>
   );
 
-  const courseTemplateOnChange = (courseTemplateId: string) => {
-    const courseTemplatesOption = courseTemplatesOptions.find(
-      (courseTemplatesOption) => courseTemplatesOption.id == courseTemplateId
-    );
-
-    setTemplateCourseId(
-      (templateCourseId) => courseTemplatesOption?.courseId ?? templateCourseId
-    );
-    setTemplatePeriodsCount(
-      (templatePeriodsCount) =>
-        courseTemplatesOption?.periodsCount ?? templatePeriodsCount
-    );
-  };
-
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
-        <title>Full Document</title>
+        <title>Lecture course</title>
       </Head>
-      <h1>Full Document</h1>
       <FullDocument {...fullDocumentProps}>
         <Input
           {...({
             name: "semester",
+            id: "semester",
+            label: "Semester",
             options: { required: true },
           } as InputProps<CoursesRecord>)}
         ></Input>
         <Select
           {...({
             name: "courseTemplate",
+            id: "courseTemplate",
+            label: "Course template",
             selectOptions: courseTemplatesOptions.map(
               (courseTemplatesOption) => {
                 return {
@@ -154,6 +125,7 @@ function CourseDocument({
               }
             ),
             options: { required: true },
+            element: modal,
             defaultValue: templateCourseId,
             onChange: (e) => {
               courseTemplateOnChange(e.currentTarget.value);
@@ -164,17 +136,26 @@ function CourseDocument({
             Select Course Template
           </option>
         </Select>
-        <input id="courseId" disabled value={templateCourseId} />
-        <input id="periodsCount" disabled value={templatePeriodsCount} />
+        <Input
+          {...({
+            name: "courseId",
+            id: "courseId",
+            label: "Course ID",
+            options: { disabled: true },
+            value: templateCourseId,
+          } as InputProps)}
+        ></Input>
+        <Input
+          {...({
+            name: "periodsCount",
+            id: "periodsCount",
+            label: "Periods count",
+            options: { disabled: true },
+            value: templatePeriodsCount,
+          } as InputProps)}
+        ></Input>
       </FullDocument>
-      <h2>New course template modal</h2>
-      <form onSubmit={handleSubmit(onSubmitTemplate)}>
-        <input {...register("name")} />
-        <input {...register("courseId")} />
-        <input {...register("periodsCount")} />
-        <input type="submit" value="Create new course template" />
-      </form>
-    </>
+    </main>
   );
 }
 

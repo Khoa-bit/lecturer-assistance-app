@@ -38,9 +38,9 @@ function FullDocuments({
     )) ?? <p>{"Error when fetching full documents :<"}</p>;
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
       <Head>
-        <title>FullDocuments</title>
+        <title>Full documents</title>
       </Head>
       <h1>FullDocuments</h1>
       <Link className="text-blue-700 underline" href="/fullDocuments/new">
@@ -49,7 +49,7 @@ function FullDocuments({
       <ol>{fullDocumentsList}</ol>
       <h1>Participated FullDocuments</h1>
       <ol>{participatedFullDocumentsList}</ol>
-    </>
+    </main>
   );
 }
 

@@ -24,7 +24,7 @@ function AcademicMaterials({
   const participatedAcademicMaterials = dataParse.participatedAcademicMaterials;
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
       <Head>
         <title>Academic materials</title>
       </Head>
@@ -55,7 +55,7 @@ function AcademicMaterials({
           academicMaterials={participatedAcademicMaterials}
         ></AcademicMaterialsTable>
       </section>
-    </>
+    </main>
   );
 }
 

@@ -24,7 +24,7 @@ function PersonalNotes({
   const participatedPersonalNotes = dataParse.participatedPersonalNotes;
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
       <Head>
         <title>Personal Notes</title>
       </Head>
@@ -53,7 +53,7 @@ function PersonalNotes({
           personalNotes={participatedPersonalNotes}
         ></PersonalNotesTable>
       </section>
-    </>
+    </main>
   );
 }
 

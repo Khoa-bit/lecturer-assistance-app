@@ -57,6 +57,8 @@ function MajorDepartment({
       <Select
         {...({
           name: "department",
+          id: "department",
+          label: "Department",
           register,
           selectOptions: departments.map((department) => {
             return {
@@ -80,6 +82,8 @@ function MajorDepartment({
       <Select
         {...({
           name: "major",
+          id: "major",
+          label: "Major",
           register,
           selectOptions: majorOptions.map((major) => {
             return {

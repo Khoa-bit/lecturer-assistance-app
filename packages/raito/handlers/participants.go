@@ -194,40 +194,20 @@ func GetParticipatedClasses(app *pocketbase.PocketBase, c echo.Context) error {
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
 }
 
-func GetAllAcrossParticipants(app *pocketbase.PocketBase, c echo.Context) error {
+func GetContacts(app *pocketbase.PocketBase, c echo.Context) error {
 	authRecord, err := auth.GetUser(app, c)
 	if err != nil {
 		return err
 	}
 
 	mainCollectionName := "people"
-	hasGroupBy := true
+	hasGroupBy := false
 	fieldMetadataList := model.FieldMetaDataList{}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("relationships", "relationship", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("fullDocuments", "fullDocument", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("eventDocuments", "eventDocument", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("documents", "userDocument", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("participants", "participant", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
 	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("users", "user", hasGroupBy, app)
 	if err != nil {
 		return err
 	}
-	fieldMetadataList, err = fieldMetadataList.AppendColumnAliases([]string{"user_email_list"}, []string{"string"})
+	fieldMetadataList, err = fieldMetadataList.AppendColumnAliases([]string{"user_email"}, []string{"string"})
 	if err != nil {
 		return err
 	}
@@ -235,47 +215,48 @@ func GetAllAcrossParticipants(app *pocketbase.PocketBase, c echo.Context) error 
 	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
 	userPersonId := authRecord.GetString("person")
 
+	// 1st SELECT owner - participant, 2nd SELECT participant - participant of a document
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
-		`SELECT ppl.*, GROUP_CONCAT(IIF(emailVisibility == 1, email, ''), ', ') as user_email_list %s
-      FROM participants participant
-          INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.owner = '%s'
-          INNER JOIN people ppl ON participant.person == ppl.id
-          LEFT JOIN relationships relationship ON FALSE
-          LEFT JOIN fullDocuments fullDocument ON participant.document == fullDocument.document
-          LEFT JOIN eventDocuments eventDocument ON fullDocument.document == eventDocument.fullDocument
-          LEFT JOIN users user ON user.person = ppl.id
-      GROUP BY ppl.id`,
-		selectArgs, userPersonId))
+		`SELECT ppl.*, user.email AS user_email %s
+      FROM (
+        SELECT IIF(
+            userDocument.owner <> {:fromPerson},
+            userDocument.owner,
+            participant.person
+          ) AS person
+        FROM participants participant
+          INNER JOIN documents userDocument ON userDocument.id = participant.document
+          AND userDocument.deleted == ''
+        WHERE participant.person = {:fromPerson}
+          OR userDocument.owner == {:fromPerson}
+        UNION
+        SELECT participant.person AS person
+        FROM participants me
+          INNER JOIN participants participant ON participant.document == me.document
+          AND participant.person <> me.person
+          INNER JOIN documents userDocument ON userDocument.id = me.document
+          AND userDocument.deleted == ''
+        WHERE me.person = {:fromPerson}
+      ) as contact
+      INNER JOIN people ppl ON ppl.id = contact.person
+      LEFT JOIN users user ON user.person = contact.person`,
+		selectArgs))
+
+	query.Bind(dbx.Params{"fromPerson": userPersonId})
 
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
 }
 
-func GetStarredParticipants(app *pocketbase.PocketBase, c echo.Context) error {
+func GetStarredContacts(app *pocketbase.PocketBase, c echo.Context) error {
 	authRecord, err := auth.GetUser(app, c)
 	if err != nil {
 		return err
 	}
 
 	mainCollectionName := "people"
-	hasGroupBy := true
+	hasGroupBy := false
 	fieldMetadataList := model.FieldMetaDataList{}
 	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("relationships", "relationship", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("fullDocuments", "fullDocument", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("eventDocuments", "eventDocument", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("documents", "userDocument", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("participants", "participant", hasGroupBy, app)
 	if err != nil {
 		return err
 	}
@@ -283,65 +264,7 @@ func GetStarredParticipants(app *pocketbase.PocketBase, c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	fieldMetadataList, err = fieldMetadataList.AppendColumnAliases([]string{"user_email_list"}, []string{"string"})
-	if err != nil {
-		return err
-	}
-
-	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
-	userPersonId := authRecord.GetString("person")
-
-	query := app.Dao().DB().NewQuery(fmt.Sprintf(
-		`SELECT ppl.*, GROUP_CONCAT(IIF(emailVisibility == 1, email, ''), ', ') as user_email_list %s
-      FROM relationships relationship
-        INNER JOIN people ppl ON relationship.toPerson = ppl.id
-        LEFT JOIN participants participant ON relationship.toPerson = participant.person
-        LEFT JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == ''
-        LEFT JOIN fullDocuments fullDocument ON participant.document == fullDocument.document
-        LEFT JOIN eventDocuments eventDocument ON fullDocument.document == eventDocument.fullDocument
-        LEFT JOIN users user ON user.person = ppl.id
-      WHERE fromPerson = '%s'
-      GROUP BY ppl.id`,
-		selectArgs, userPersonId))
-
-	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
-}
-
-func GetAllDocParticipation(app *pocketbase.PocketBase, c echo.Context) error {
-	authRecord, err := auth.GetUser(app, c)
-	if err != nil {
-		return err
-	}
-
-	toPerson := c.PathParam("toPerson")
-	if err != nil {
-		return err
-	}
-
-	mainCollectionName := "people"
-	hasGroupBy := true
-	fieldMetadataList := model.FieldMetaDataList{}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("relationships", "relationship", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("fullDocuments", "fullDocument", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("eventDocuments", "eventDocument", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("documents", "userDocument", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("documents", "userDocument", hasGroupBy, app)
-	if err != nil {
-		return err
-	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("participants", "participant", hasGroupBy, app)
+	fieldMetadataList, err = fieldMetadataList.AppendColumnAliases([]string{"user_email"}, []string{"string"})
 	if err != nil {
 		return err
 	}
@@ -351,17 +274,11 @@ func GetAllDocParticipation(app *pocketbase.PocketBase, c echo.Context) error {
 
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
 		`SELECT ppl.* %s
-      FROM participants participant
-          INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.owner = '%s'
-          INNER JOIN people ppl ON participant.person == ppl.id
-          LEFT JOIN relationships relationship ON FALSE
-          LEFT JOIN fullDocuments fullDocument ON participant.document == fullDocument.document
-          LEFT JOIN eventDocuments eventDocument ON fullDocument.document == eventDocument.fullDocument
-      WHERE participant.person = {:toPerson}
-      GROUP BY ppl.id`,
+      FROM relationships relationship
+        INNER JOIN people ppl ON relationship.toPerson = ppl.id
+        LEFT JOIN users user ON user.person = ppl.id
+      WHERE fromPerson = '%s'`,
 		selectArgs, userPersonId))
-
-	query.Bind(dbx.Params{"toPerson": toPerson})
 
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
 }
@@ -378,24 +295,51 @@ func GetAllDocParticipants(app *pocketbase.PocketBase, c echo.Context) error {
 	}
 
 	mainCollectionName := "people"
-	hasGroupBy := true
+	hasGroupBy := false
 	fieldMetadataList := model.FieldMetaDataList{}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("relationships", "relationship", hasGroupBy, app)
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("participants", "participant", hasGroupBy, app)
 	if err != nil {
 		return err
 	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("fullDocuments", "fullDocument", hasGroupBy, app)
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("users", "user", hasGroupBy, app)
 	if err != nil {
 		return err
 	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("eventDocuments", "eventDocument", hasGroupBy, app)
+	fieldMetadataList, err = fieldMetadataList.AppendColumnAliases([]string{"user_email"}, []string{"string"})
 	if err != nil {
 		return err
 	}
-	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("documents", "userDocument", hasGroupBy, app)
+
+	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
+
+	query := app.Dao().DB().NewQuery(fmt.Sprintf(
+		`SELECT ppl.* %s
+      FROM participants participant
+        INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.id == {:docId}
+        INNER JOIN people ppl ON participant.person == ppl.id
+        LEFT JOIN users user ON user.person = ppl.id
+      GROUP BY ppl.id`,
+		selectArgs))
+
+	query.Bind(dbx.Params{"docId": docId})
+
+	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
+}
+
+func GetSharedDocuments(app *pocketbase.PocketBase, c echo.Context) error {
+	authRecord, err := auth.GetUser(app, c)
 	if err != nil {
 		return err
 	}
+
+	toPerson := c.PathParam("toPerson")
+	if err != nil {
+		return err
+	}
+
+	mainCollectionName := "fullDocuments"
+	hasGroupBy := false
+	fieldMetadataList := model.FieldMetaDataList{}
 	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("documents", "userDocument", hasGroupBy, app)
 	if err != nil {
 		return err
@@ -406,19 +350,31 @@ func GetAllDocParticipants(app *pocketbase.PocketBase, c echo.Context) error {
 	}
 
 	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
+	userPersonId := authRecord.GetString("person")
 
+	// 1st SELECT owner - participant, 2nd SELECT participant - participant of a document
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
-		`SELECT ppl.* %s
+		`SELECT fullDocument.* %s
       FROM participants participant
-          INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.id == {:docId}
-          INNER JOIN people ppl ON participant.person == ppl.id
-          LEFT JOIN relationships relationship ON FALSE
-          LEFT JOIN fullDocuments fullDocument ON participant.document == fullDocument.document
-          LEFT JOIN eventDocuments eventDocument ON fullDocument.document == eventDocument.fullDocument
-      GROUP BY ppl.id`,
-		selectArgs))
+        INNER JOIN fullDocuments fullDocument ON fullDocument.document = participant.document
+        INNER JOIN documents userDocument ON userDocument.id = fullDocument.document
+        AND userDocument.deleted == ''
+        AND userDocument.owner IN ({:fromPerson}, {:toPerson})
+      WHERE participant.person = {:fromPerson}
+        OR participant.person = {:toPerson}
+      UNION
+      SELECT fullDocument.* %s
+      FROM participants me
+        INNER JOIN participants participant ON participant.document == me.document
+        INNER JOIN fullDocuments fullDocument ON fullDocument.document = participant.document
+        INNER JOIN documents userDocument ON userDocument.id = me.document
+        AND userDocument.deleted == ''
+      WHERE me.person = {:fromPerson}
+        AND participant.person = {:toPerson}`,
+		selectArgs, selectArgs))
 
-	query.Bind(dbx.Params{"docId": docId})
+	query.Bind(dbx.Params{"fromPerson": userPersonId})
+	query.Bind(dbx.Params{"toPerson": toPerson})
 
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
 }

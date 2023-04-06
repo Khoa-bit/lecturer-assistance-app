@@ -75,6 +75,19 @@ export function formatDate(
   return d ? format(new Date(d), dateTimeFormat) : null;
 }
 
+// Sort date time from past to future (ascending)
+export function sortDate(a: Date, b: Date, desc?: boolean) {
+  let result;
+  if (a == b) {
+    result = 0;
+  } else if (a > b) {
+    result = 1;
+  } else {
+    result = -1;
+  }
+  return desc ? -result : result;
+}
+
 export const getCurrentSemester = (): string => {
   const now = new Date(Date.now());
   const fullYear = now.getFullYear();
@@ -98,3 +111,73 @@ export const getCurrentCohort = (): string => {
     return `${fullYear} - ${fullYear + 1}`;
   }
 };
+
+// Extensions category map to Material symbol
+export enum FileExtensions {
+  Image = "image",
+  Video = "movie",
+  Document = "article",
+  Unknown = "attach_file",
+}
+
+export function categorizeFile(filename: string): {
+  fileExtension: FileExtensions;
+  color: string;
+} {
+  const ext: string = filename
+    .substring(filename.lastIndexOf(".") + 1)
+    .toLowerCase();
+
+  const imageExtensions: string[] = [
+    "bmp",
+    "gif",
+    "heic",
+    "ico",
+    "jpeg",
+    "jpg",
+    "png",
+    "svg",
+    "tif",
+    "webp",
+  ];
+  const videoExtensions: string[] = [
+    "3gp",
+    "avi",
+    "flv",
+    "m4v",
+    "mkv",
+    "mov",
+    "mp4",
+    "mpeg",
+    "mpg",
+    "ogg",
+    "vob",
+    "webm",
+    "wmv",
+  ];
+  const documentExtensions: string[] = [
+    "csv",
+    "doc",
+    "docx",
+    "odp",
+    "ods",
+    "odt",
+    "pdf",
+    "ppt",
+    "pptx",
+    "rtf",
+    "txt",
+    "xls",
+    "xlsx",
+  ];
+
+  if (imageExtensions.includes(ext)) {
+    return { fileExtension: FileExtensions.Image, color: "text-rose-500" };
+  } else if (videoExtensions.includes(ext)) {
+    return { fileExtension: FileExtensions.Video, color: "text-red-500 " };
+  } else if (documentExtensions.includes(ext)) {
+    return { fileExtension: FileExtensions.Document, color: "text-blue-500 " };
+  } else {
+    return { fileExtension: FileExtensions.Unknown, color: "text-gray-500" };
+  }
+}

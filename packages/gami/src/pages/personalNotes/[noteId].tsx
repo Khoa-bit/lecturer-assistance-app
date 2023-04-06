@@ -60,13 +60,12 @@ function PersonalNotes({
   };
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
         <title>Personal notes</title>
       </Head>
-      <h1>Personal notes</h1>
       <FullDocument {...fullDocumentProps}></FullDocument>
-    </>
+    </main>
   );
 }
 

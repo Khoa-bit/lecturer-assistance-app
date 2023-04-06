@@ -1,12 +1,13 @@
 import type { UsersResponse, AttachmentsResponse } from "raito";
 import { ParticipantsPermissionOptions } from "raito";
-import type { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useMemo } from "react";
 import type { PBCustom } from "src/types/pb-custom";
 import TipTap from "./TipTap";
 import TipTapComment from "./TipTapComment";
 import TipTapView from "./TipTapView";
 
 type TipTapByPermissionProps = {
+  id?: string;
   richText: string;
   user: UsersResponse;
   permission: ParticipantsPermissionOptions;
@@ -20,6 +21,7 @@ type TipTapByPermissionProps = {
 // Require correct permission and arguments to get the wanted TipTap component
 // Or else It will fallback to Read-Only
 const TipTapByPermission = ({
+  id,
   richText,
   user,
   permission,
@@ -28,8 +30,6 @@ const TipTapByPermission = ({
   onChange,
   setAttachments,
 }: TipTapByPermissionProps) => {
-  let tipTapEditor: JSX.Element;
-
   if (
     permission == ParticipantsPermissionOptions.write &&
     documentId &&
@@ -37,8 +37,9 @@ const TipTapByPermission = ({
     onChange &&
     setAttachments
   ) {
-    tipTapEditor = (
+    return (
       <TipTap
+        id={id}
         key="TipTapComponent"
         onChange={onChange}
         richText={richText}
@@ -49,8 +50,9 @@ const TipTapByPermission = ({
       ></TipTap>
     );
   } else if (permission == ParticipantsPermissionOptions.comment && onChange) {
-    tipTapEditor = (
+    return (
       <TipTapComment
+        id={id}
         key="TipTapComponent"
         onChange={onChange}
         richText={richText}
@@ -58,12 +60,14 @@ const TipTapByPermission = ({
       ></TipTapComment>
     );
   } else {
-    tipTapEditor = (
-      <TipTapView key="TipTapComponent" richText={richText}></TipTapView>
+    return (
+      <TipTapView
+        id={id}
+        key="TipTapComponent"
+        richText={richText}
+      ></TipTapView>
     );
   }
-
-  return tipTapEditor;
 };
 
 export default TipTapByPermission;

@@ -6,6 +6,7 @@ import type {
   FullDocumentsResponse,
 } from "raito";
 import { formatDate } from "src/lib/input_handling";
+import StatusEvent, { eventStatus } from "../documents/StatusEvent";
 
 interface FullDocumentExpand {
   fullDocument: FullDocumentsResponse<DocumentsExpand>;
@@ -23,11 +24,11 @@ function EventsTable({ eventDocuments }: EventsTableProps) {
   const pastEventsList = eventDocuments.items.map((eventDoc, index) => (
     <tr
       key={eventDoc.id}
-      className="grid grid-cols-[3rem_2fr_1fr_1fr_2rem] rounded px-3 py-2 odd:bg-white even:bg-slate-100 hover:bg-slate-200"
+      className="odd:bg-white even:bg-slate-100 hover:bg-slate-200"
     >
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-6 truncate p-2 text-right"
           href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}
         >
           {index + 1}
@@ -35,7 +36,7 @@ function EventsTable({ eventDocuments }: EventsTableProps) {
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-full max-w-xs truncate p-2"
           href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}
         >
           {eventDoc.expand?.fullDocument.expand?.document.name}
@@ -43,7 +44,21 @@ function EventsTable({ eventDocuments }: EventsTableProps) {
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="flex w-28 justify-center truncate p-2"
+          href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}
+        >
+          <StatusEvent
+            status={eventStatus(
+              eventDoc.expand?.fullDocument.expand?.document?.status,
+              eventDoc.startTime,
+              eventDoc.endTime
+            )}
+          ></StatusEvent>
+        </Link>
+      </td>
+      <td>
+        <Link
+          className="block w-44 truncate p-2"
           href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}
         >
           {formatDate(eventDoc.startTime, "HH:mm - dd/LL/yy")}
@@ -51,7 +66,7 @@ function EventsTable({ eventDocuments }: EventsTableProps) {
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-44 truncate p-2"
           href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}
         >
           {formatDate(eventDoc.endTime, "HH:mm - dd/LL/yy")}
@@ -59,7 +74,7 @@ function EventsTable({ eventDocuments }: EventsTableProps) {
       </td>
       <td>
         <Link
-          className="group inline-block h-full w-full"
+          className="block w-10 truncate py-1 px-2"
           href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}
         >
           <span className="material-symbols-rounded">chevron_right</span>
@@ -72,12 +87,13 @@ function EventsTable({ eventDocuments }: EventsTableProps) {
     <div className="overflow-x-auto">
       <table className="table w-full whitespace-nowrap">
         <thead className="border-b text-left">
-          <tr className="grid grid-cols-[3rem_2fr_1fr_1fr_2rem] p-3">
-            <th className="!static">No.</th>
-            <th>Event title</th>
-            <th>Start time</th>
-            <th>End time</th>
-            <th></th>
+          <tr>
+            <th className="!static w-6 p-2">No.</th>
+            <th className="max-w-xs truncate p-2">Event title</th>
+            <th className="w-28 truncate p-2"></th>
+            <th className="w-44 truncate p-2">Start time</th>
+            <th className="w-44 truncate p-2">End time</th>
+            <th className="w-10 truncate p-2"></th>
           </tr>
         </thead>
         <tbody>{pastEventsList}</tbody>

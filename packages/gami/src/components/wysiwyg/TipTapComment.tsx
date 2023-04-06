@@ -39,6 +39,7 @@ interface AddMarkStep extends Step {
 }
 
 interface TipTapProps {
+  id?: string;
   onChange: (...event: unknown[]) => void;
   richText: string;
   user: UsersResponse;
@@ -46,10 +47,12 @@ interface TipTapProps {
 
 const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
 
-const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
+const TipTapComment = ({ id, onChange, richText, user }: TipTapProps) => {
   const username = user?.username ?? "Anonymous";
   const content: object = SuperJSON.parse(
-    richText.length >= 2 ? richText : "{}"
+    richText.length >= 2
+      ? richText
+      : `{"json":{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":"left"}},{"type":"paragraph","attrs":{"textAlign":"left"}},{"type":"paragraph","attrs":{"textAlign":"left"}},{"type":"paragraph","attrs":{"textAlign":"left"}}]}}`
   );
 
   const [prevContent, setPrevContent] = useState(content);
@@ -115,7 +118,7 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
 
     editorProps: {
       attributes: {
-        class: "prose",
+        class: "prose mx-auto focus:outline-none",
       },
     },
 
@@ -150,12 +153,29 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
   });
 
   useEffect(() => {
-    if (SuperJSON.stringify(prevContent) == SuperJSON.stringify(content))
+    if (
+      SuperJSON.stringify(prevContent) == SuperJSON.stringify(content) ||
+      !editor
+    ) {
       return;
+    }
 
-    editor?.commands.setContent(content);
+    // Save cursor position
+    const { tr } = editor.view.state;
+
+    // Reload cursor position
+    editor
+      ?.chain()
+      .setContent(content)
+      .setTextSelection({
+        from: tr.selection.$from.pos,
+        to: tr.selection.$to.pos,
+      })
+      .focus()
+      .run();
+
     setPrevContent(content);
-  }, [editor?.commands, content, prevContent]);
+  }, [content, prevContent, editor]);
 
   useInitComments(editor, setAllCommentSpans);
 
@@ -244,7 +264,7 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
         </BubbleMenu>
       )}
 
-      <EditorContent key="editor" className="prose" editor={editor} />
+      <EditorContent id={id} key="editor" className="prose" editor={editor} />
 
       <section className="flex flex-col">
         {allUniqueComments.map((comment, i) => {
@@ -331,7 +351,7 @@ const TipTapComment = ({ onChange, richText, user }: TipTapProps) => {
                         setCommentText("");
                       }}
                     >
-                      Add (<kbd className="">Enter</kbd>)
+                      Add (<kbd>Enter</kbd>)
                     </button>
                   </section>
                 </section>

@@ -22,14 +22,17 @@ import {
 } from "./tiptapCommentExtension/commentHooks";
 
 interface TipTapProps {
+  id?: string;
   richText: string;
 }
 
 const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
 
-const TipTapView = ({ richText }: TipTapProps) => {
+const TipTapView = ({ id, richText }: TipTapProps) => {
   const content: object = SuperJSON.parse(
-    richText.length >= 2 ? richText : "{}"
+    richText.length >= 2
+      ? richText
+      : `{"json":{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":"left"}},{"type":"paragraph","attrs":{"textAlign":"left"}},{"type":"paragraph","attrs":{"textAlign":"left"}},{"type":"paragraph","attrs":{"textAlign":"left"}}]}}`
   );
 
   const [prevContent, setPrevContent] = useState(content);
@@ -66,7 +69,7 @@ const TipTapView = ({ richText }: TipTapProps) => {
 
     editorProps: {
       attributes: {
-        class: "prose",
+        class: "prose w-full mx-auto focus:outline-none",
       },
     },
 
@@ -101,12 +104,29 @@ const TipTapView = ({ richText }: TipTapProps) => {
   });
 
   useEffect(() => {
-    if (SuperJSON.stringify(prevContent) == SuperJSON.stringify(content))
+    if (
+      SuperJSON.stringify(prevContent) == SuperJSON.stringify(content) ||
+      !editor
+    ) {
       return;
+    }
 
-    editor?.commands.setContent(content);
+    // Save cursor position
+    const { tr } = editor.view.state;
+
+    // Reload cursor position
+    editor
+      ?.chain()
+      .setContent(content)
+      .setTextSelection({
+        from: tr.selection.$from.pos,
+        to: tr.selection.$to.pos,
+      })
+      .focus()
+      .run();
+
     setPrevContent(content);
-  }, [editor?.commands, content, prevContent]);
+  }, [content, prevContent, editor]);
 
   useInitComments(editor, setAllCommentSpans);
 
@@ -131,7 +151,7 @@ const TipTapView = ({ richText }: TipTapProps) => {
 
   return (
     <div>
-      <EditorContent key="editor" className="prose" editor={editor} />
+      <EditorContent id={id} key="editor" className="prose" editor={editor} />
 
       <section className="flex flex-col">
         {allUniqueComments.map((comment, i) => {

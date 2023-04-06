@@ -1,39 +1,34 @@
 import { useRouter } from "next/router";
-import type { MutableRefObject, RefObject } from "react";
-import { useCallback, useEffect, useRef } from "react";
+import type { RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { FieldValues, UseFormWatch } from "react-hook-form";
 import { debounce } from "src/lib/input_handling";
 
 interface useDocHelperParams<T extends FieldValues> {
-  hasSaved: MutableRefObject<boolean>;
   formRef: RefObject<HTMLFormElement>;
   submitRef: RefObject<HTMLInputElement>;
   watch: UseFormWatch<T>;
 }
 
-interface useDocHelperReturns {
-  hasSaved: boolean;
-}
-
 export function useSaveDoc<T extends FieldValues>({
-  hasSaved,
   formRef,
   submitRef,
   watch,
-}: useDocHelperParams<T>): useDocHelperReturns {
+}: useDocHelperParams<T>): boolean {
   const router = useRouter();
   const initial = useRef(true);
+  const [hasSaved, setHasSaved] = useState(true);
 
   useEffect(() => {
     const warningText =
       "Do you want to leave the site? Changes you made is being saved...";
     const handleWindowClose = (e: BeforeUnloadEvent) => {
-      if (hasSaved.current) return;
+      if (hasSaved) return;
       e.preventDefault();
       return warningText;
     };
     const handleBrowseAway = () => {
-      if (hasSaved.current) return;
+      if (hasSaved) return;
       if (window.confirm(warningText)) return;
       router.events.emit("routeChangeError");
       throw "routeChange aborted.";
@@ -47,33 +42,31 @@ export function useSaveDoc<T extends FieldValues>({
   }, [hasSaved, router.events]);
 
   const submitForm = useCallback(() => {
-    hasSaved.current = false;
-
-    console.log("Saving");
+    setHasSaved(false);
 
     formRef.current?.requestSubmit(submitRef.current);
 
-    hasSaved.current = true;
-  }, [formRef, hasSaved, submitRef]);
-
-  const debouncedSave = debounce(() => {
-    submitForm();
-  }, 1000);
+    setHasSaved(true);
+  }, [formRef, setHasSaved, submitRef]);
 
   useEffect(() => {
     const keyDownEvent = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === "s") {
+      if (e.ctrlKey && e.key === "s" && !hasSaved) {
         // Prevent the Save dialog to open
         e.preventDefault();
-        debouncedSave();
+        submitForm();
       }
     };
     document.addEventListener("keydown", keyDownEvent);
 
     return () => document.removeEventListener("keydown", keyDownEvent);
-  }, [debouncedSave]);
+  }, [hasSaved, submitForm]);
 
   useEffect(() => {
+    const debouncedSave = debounce(() => {
+      submitForm();
+    }, 1000);
+
     const subscription = watch((data, { name }) => {
       // name == undefined to disregard form reset() that updates the whole form
       if (name == undefined || name == "diffHash") return;
@@ -82,11 +75,22 @@ export function useSaveDoc<T extends FieldValues>({
         return;
       }
 
-      hasSaved.current = false;
-      // debouncedSave();
+      setHasSaved(false);
+      debouncedSave();
     });
     return () => subscription.unsubscribe();
-  }, [watch, debouncedSave, hasSaved]);
+  }, [watch, setHasSaved, submitForm]);
 
-  return { hasSaved: hasSaved.current };
+  const onSubmitClick = () => {
+    setHasSaved(true);
+  };
+
+  useEffect(() => {
+    const submitHtml = submitRef.current;
+    submitHtml?.addEventListener("click", onSubmitClick);
+
+    return () => submitHtml?.removeEventListener("click", onSubmitClick);
+  }, [submitRef]);
+
+  return hasSaved;
 }
