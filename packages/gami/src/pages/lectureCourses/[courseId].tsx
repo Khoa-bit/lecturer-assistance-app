@@ -2,16 +2,16 @@ import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import type {
+  CourseTemplatesResponse,
   CoursesRecord,
   CoursesResponse,
-  CourseTemplatesRecord,
-  CourseTemplatesResponse,
   DocumentsResponse,
   FullDocumentsResponse,
 } from "raito";
-import { Collections } from "raito";
+import { Collections, CourseTemplatesAcademicProgramOptions } from "raito";
 import type {
   FullDocumentData,
   FullDocumentProps,
@@ -27,11 +27,10 @@ import type {
 } from "src/components/documents/Select";
 import Select from "src/components/documents/Select";
 import MainLayout from "src/components/layouts/MainLayout";
+import { useCourseTemplate } from "src/components/lectureCourses/NewCourseTemplate";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
-import dynamic from "next/dynamic";
-import { useCourseTemplate } from "src/components/lectureCourses/NewCourseTemplate";
 const NewCourseTemplate = dynamic(
   () => import("src/components/lectureCourses/NewCourseTemplate"),
   {
@@ -69,6 +68,7 @@ function CourseDocument({
     courseTemplateOnChange,
     courseTemplatesOptions,
     setCourseTemplatesOptions,
+    templateAcademicProgram,
     templateCourseId,
     templatePeriodsCount,
   } = useCourseTemplate(initCourseTemplatesOptions, courseTemplateId);
@@ -135,6 +135,24 @@ function CourseDocument({
             Select Course Template
           </option>
         </Select>
+        <Select
+          {...({
+            name: "academicProgram",
+            id: "academicProgram",
+            label: "Academic program",
+            selectOptions: Object.entries(
+              CourseTemplatesAcademicProgramOptions
+            ).map(([stringValue]) => {
+              return {
+                key: stringValue,
+                value: stringValue,
+                content: stringValue,
+              } as SelectOption;
+            }),
+            options: { disabled: true },
+            value: templateAcademicProgram,
+          } as SelectProps)}
+        ></Select>
         <Input
           {...({
             name: "courseId",

@@ -31,7 +31,15 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
         </td>
         <td>
           <Link
-            className="block w-full max-w-xs truncate p-2"
+            className="block w-44 truncate p-2"
+            href={`/lectureCourses/${encodeURIComponent(lectureCourse.id)}`}
+          >
+            {lectureCourse.expand.courseTemplate_academicProgram}
+          </Link>
+        </td>
+        <td>
+          <Link
+            className="block w-56 truncate p-2"
             href={`/lectureCourses/${encodeURIComponent(lectureCourse.id)}`}
           >
             {lectureCourse.semester}
@@ -39,7 +47,7 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
         </td>
         <td>
           <Link
-            className="block w-full max-w-xs truncate p-2"
+            className="block w-20 truncate p-2"
             href={`/lectureCourses/${encodeURIComponent(lectureCourse.id)}`}
           >
             {lectureCourse.expand.courseTemplate_periodsCount}
@@ -64,8 +72,9 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
           <tr>
             <th className="!static w-6 p-2">No.</th>
             <th className="max-w-xs truncate p-2">Course name</th>
-            <th className="max-w-xs truncate p-2">Semester</th>
-            <th className="max-w-xs truncate p-2">No. periods</th>
+            <th className="w-44 truncate p-2">Academic program</th>
+            <th className="w-56 truncate p-2">Semester</th>
+            <th className="w-20 truncate p-2">Periods</th>
             <th className="w-10 truncate p-2"></th>
           </tr>
         </thead>

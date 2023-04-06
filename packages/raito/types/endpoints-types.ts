@@ -134,6 +134,7 @@ export interface ClassesCustomResponse extends ClassesResponse {
 // GetCourses, GetParticipatedCourses
 export interface CoursesCustomResponse extends CoursesResponse {
   expand: {
+    courseTemplate_academicProgram: string;
     courseTemplate_courseId: string;
     courseTemplate_created: string;
     courseTemplate_id: string;

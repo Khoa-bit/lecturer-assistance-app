@@ -78,10 +78,15 @@ export type ClassesRecord = {
 	fullDocument: RecordIdString
 }
 
+export enum CourseTemplatesAcademicProgramOptions {
+	"Undergradute" = "Undergradute",
+	"Graduate" = "Graduate",
+}
 export type CourseTemplatesRecord = {
 	courseId?: string
 	name: string
 	periodsCount: number
+	academicProgram: CourseTemplatesAcademicProgramOptions
 }
 
 export type CoursesRecord = {

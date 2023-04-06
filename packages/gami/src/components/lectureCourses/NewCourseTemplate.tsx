@@ -1,12 +1,15 @@
-import type { CourseTemplatesResponse, CourseTemplatesRecord } from "raito";
-import { Collections } from "raito";
-import { useState, useCallback, Dispatch, SetStateAction } from "react";
+import type { CourseTemplatesRecord, CourseTemplatesResponse } from "raito";
+import { Collections, CourseTemplatesAcademicProgramOptions } from "raito";
+import type { Dispatch, SetStateAction } from "react";
+import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import type { PBCustom } from "src/types/pb-custom";
 import type { InputProps } from "../documents/Input";
 import Input from "../documents/Input";
+import type { SelectOption, SelectProps } from "../documents/Select";
+import Select from "../documents/Select";
 
 interface CourseTemplateInput extends CourseTemplatesRecord {
   id: string;
@@ -32,6 +35,7 @@ function NewCourseTemplate({
         .collection(Collections.CourseTemplates)
         .create<CourseTemplatesResponse>({
           name: inputData.name,
+          academicProgram: inputData.academicProgram,
           courseId: inputData.courseId,
           periodsCount: inputData.periodsCount,
         } as CourseTemplatesRecord)
@@ -107,6 +111,24 @@ function NewCourseTemplate({
                     options: { required: true },
                   } as InputProps<CourseTemplateInput>)}
                 ></Input>
+                <Select
+                  {...({
+                    name: "academicProgram",
+                    id: "academicProgram",
+                    label: "Academic program",
+                    register,
+                    selectOptions: Object.entries(
+                      CourseTemplatesAcademicProgramOptions
+                    ).map(([stringValue]) => {
+                      return {
+                        key: stringValue,
+                        value: stringValue,
+                        content: stringValue,
+                      } as SelectOption;
+                    }),
+                    options: { required: true },
+                  } as SelectProps<CourseTemplateInput>)}
+                ></Select>
                 <Input
                   {...({
                     name: "courseId",
@@ -140,10 +162,21 @@ function NewCourseTemplate({
   );
 }
 
+interface UseCourseTemplateReturns {
+  courseTemplatesOptions: CourseTemplatesResponse[];
+  courseTemplateOnChange: (courseTemplateId: string) => void;
+  setCourseTemplatesOptions: Dispatch<
+    SetStateAction<CourseTemplatesResponse[]>
+  >;
+  templateAcademicProgram: string;
+  templateCourseId: string;
+  templatePeriodsCount: number;
+}
+
 export function useCourseTemplate(
   initCourseTemplatesOptions: CourseTemplatesResponse[],
   courseTemplateId: string | undefined
-) {
+): UseCourseTemplateReturns {
   const [courseTemplatesOptions, setCourseTemplatesOptions] = useState<
     CourseTemplatesResponse[]
   >(initCourseTemplatesOptions);
@@ -151,6 +184,8 @@ export function useCourseTemplate(
   const courseTemplatesOption = courseTemplatesOptions.find(
     (courseTemplatesOption) => courseTemplatesOption.id == courseTemplateId
   );
+  const [templateAcademicProgram, setTemplateAcademicProgram] =
+    useState<string>(courseTemplatesOption?.academicProgram ?? "");
   const [templateCourseId, setTemplateCourseId] = useState<string>(
     courseTemplatesOption?.courseId ?? ""
   );
@@ -163,6 +198,10 @@ export function useCourseTemplate(
       (courseTemplatesOption) => courseTemplatesOption.id == courseTemplateId
     );
 
+    setTemplateAcademicProgram(
+      (templateAcademicProgram) =>
+        courseTemplatesOption?.academicProgram ?? templateAcademicProgram
+    );
     setTemplateCourseId(
       (templateCourseId) => courseTemplatesOption?.courseId ?? templateCourseId
     );
@@ -176,6 +215,7 @@ export function useCourseTemplate(
     courseTemplatesOptions,
     courseTemplateOnChange,
     setCourseTemplatesOptions,
+    templateAcademicProgram,
     templateCourseId,
     templatePeriodsCount,
   };
