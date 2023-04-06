@@ -131,7 +131,8 @@
         "options": {
           "maxSelect": 1,
           "values": [
-            "Undergraduate"
+            "Undergraduate",
+            "Graduate"
           ]
         }
       },
@@ -441,7 +442,7 @@
         "type": "relation",
         "system": false,
         "required": true,
-        "unique": false,
+        "unique": true,
         "options": {
           "maxSelect": 1,
           "collectionId": "gcqfd846lugrlnj",
@@ -792,8 +793,8 @@
         "options": {
           "maxSelect": 1,
           "values": [
-            "Man",
-            "Woman",
+            "Male",
+            "Female",
             "Non-Binary",
             "Not Listed"
           ]
@@ -841,6 +842,27 @@
         "required": false,
         "unique": false,
         "options": {}
+      },
+      {
+        "id": "5q3g4zcy",
+        "name": "thumbnail",
+        "type": "file",
+        "system": false,
+        "required": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [
+            "image/jpg",
+            "image/jpeg",
+            "image/png",
+            "image/svg+xml",
+            "image/gif",
+            "image/webp"
+          ],
+          "thumbs": []
+        }
       }
     ],
     "listRule": "@request.auth.id != \"\"",
@@ -937,6 +959,7 @@
             "International journals - Rank 2",
             "International journals - Other",
             "National journals",
+            "Conference",
             "Monographs",
             "Curriculums",
             "Reference books",

@@ -69,7 +69,7 @@ CREATE TABLE `majors` (`created` TEXT DEFAULT '' NOT NULL, `id` TEXT PRIMARY KEY
 CREATE INDEX `_8qzwbi8qig96dy3_created_idx` ON `majors` (`created`);
 CREATE TABLE `participants` (`created` TEXT DEFAULT '' NOT NULL, `document` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `note` TEXT DEFAULT '', `permission` TEXT DEFAULT '', `person` TEXT DEFAULT '', `role` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL);
 CREATE INDEX `_d1gfoputrdow7mx_created_idx` ON `participants` (`created`);
-CREATE TABLE `people` (`avatar` TEXT DEFAULT '', `created` TEXT DEFAULT '' NOT NULL, `deleted` TEXT DEFAULT '', "major" TEXT DEFAULT '', `gender` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `name` TEXT DEFAULT '', `personId` TEXT DEFAULT '', `personalEmail` TEXT DEFAULT '', `phone` TEXT DEFAULT '', `placeOfBirth` TEXT DEFAULT '', `title` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL, "isAdvisor" BOOLEAN DEFAULT FALSE, "isLecturer" BOOLEAN DEFAULT FALSE);
+CREATE TABLE `people` (`avatar` TEXT DEFAULT '', `created` TEXT DEFAULT '' NOT NULL, `deleted` TEXT DEFAULT '', "major" TEXT DEFAULT '', `gender` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `name` TEXT DEFAULT '', `personId` TEXT DEFAULT '', `personalEmail` TEXT DEFAULT '', `phone` TEXT DEFAULT '', `placeOfBirth` TEXT DEFAULT '', `title` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL, "isAdvisor" BOOLEAN DEFAULT FALSE, "isLecturer" BOOLEAN DEFAULT FALSE, "thumbnail" TEXT DEFAULT '');
 CREATE INDEX `_vks6ezu0clb3qja_created_idx` ON `people` (`created`);
 CREATE TABLE IF NOT EXISTS "relationships" (`created` TEXT DEFAULT '' NOT NULL, `fromPerson` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `toPerson` TEXT DEFAULT '', `updated` TEXT DEFAULT '' NOT NULL);
 CREATE INDEX `_q22h280gruk59ry_created_idx` ON "relationships" (`created`);
@@ -77,3 +77,4 @@ CREATE TABLE `personalNotes` (`created` TEXT DEFAULT '' NOT NULL, `fullDocument`
 CREATE INDEX `_fewbiz09m7bi4kg_created_idx` ON `personalNotes` (`created`);
 CREATE TABLE `academicMaterials` (`category` TEXT DEFAULT '', `created` TEXT DEFAULT '' NOT NULL, `fullDocument` TEXT DEFAULT '', `id` TEXT PRIMARY KEY NOT NULL, `updated` TEXT DEFAULT '' NOT NULL);
 CREATE INDEX `_ykaefycx2ie9dtn_created_idx` ON `academicMaterials` (`created`);
+CREATE TABLE sqlite_stat1(tbl,idx,stat);
