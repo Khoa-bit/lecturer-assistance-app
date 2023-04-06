@@ -55,7 +55,7 @@ function EventDocument({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
+  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
   const eventDocument = dataParse.eventDocument;
   const toFullDocuments = dataParse.toFullDocuments;
   const [toFullDocument, setToFullDocument] = useState(
@@ -72,7 +72,6 @@ function EventDocument({
     childId,
     ...fullDocumentData,
     pbClient,
-    user,
     childrenDefaultValue: {
       fullDocument: eventDocument.fullDocument,
       startTime: dateToISOLikeButLocalOrUndefined(startTime),

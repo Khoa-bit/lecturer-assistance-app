@@ -63,13 +63,13 @@ export interface FullDocumentData {
   allDocParticipants: ListResult<ParticipantsCustomResponse>;
   permission: ParticipantsPermissionOptions;
   people: PeopleResponse<unknown>[];
+  user: UsersResponse<PeopleExpand>;
 }
 
 export interface FullDocumentProps<TRecord> extends FullDocumentData {
   childCollectionName: Collections;
   childId: string;
   pbClient: PBCustom;
-  user: UsersResponse<unknown>;
   childrenDefaultValue?: TRecord;
   children?: ReactElement | ReactElement[];
   hasEvents?: boolean;
@@ -80,7 +80,15 @@ interface FullDocumentExpand {
 }
 
 interface DocumentsExpand {
-  document: DocumentsResponse;
+  document: DocumentsResponse<OwnerExpand>;
+}
+
+interface PeopleExpand {
+  person: PeopleResponse;
+}
+
+interface OwnerExpand {
+  owner: PeopleResponse;
 }
 
 export interface FullDocumentInput
@@ -400,6 +408,7 @@ function FullDocument<TRecord>({
               defaultValue={allDocParticipants}
               docId={documentId}
               people={people}
+              owner={baseDocument?.expand?.owner as PeopleResponse}
               user={user}
               pbClient={pbClient}
               disabled={!isWrite}
@@ -545,10 +554,14 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
   user,
   fullDocId
 ) => {
+  const userPerson = await pbServer
+    .collection(Collections.Users)
+    .getOne<UsersResponse<PeopleExpand>>(user.id, { expand: "person" });
+
   const fullDocument = await pbServer
     .collection(Collections.FullDocuments)
     .getOne<FullDocumentsResponse<DocumentsExpand>>(fullDocId, {
-      expand: "document",
+      expand: "document.owner",
     });
 
   const document = fullDocument.expand?.document;
@@ -610,6 +623,7 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
     allDocParticipants,
     permission,
     people,
+    user: userPerson,
   };
 };
 

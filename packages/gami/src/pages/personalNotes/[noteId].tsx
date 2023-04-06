@@ -41,7 +41,8 @@ function PersonalNotes({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
+  const user = dataParse.user;
+  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
   const fullDocumentData = dataParse.fullDocumentData;
   const personalNote = dataParse.personalNote;
 
@@ -53,7 +54,6 @@ function PersonalNotes({
     childId,
     ...fullDocumentData,
     pbClient,
-    user,
     childrenDefaultValue: {
       fullDocument: personalNote.fullDocument,
     },

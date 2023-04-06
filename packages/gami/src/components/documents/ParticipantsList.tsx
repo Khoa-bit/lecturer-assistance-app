@@ -13,10 +13,15 @@ import type { PBCustom } from "src/types/pb-custom";
 import account_circle_black from "../../../public/account_circle_black.png";
 import ImageFallback from "../ImageFallback";
 
+interface PeopleExpand {
+  person: PeopleResponse;
+}
+
 interface NewParticipantFormProps {
   docId: string;
   people: PeopleResponse<unknown>[];
-  user: UsersResponse<unknown>;
+  owner: PeopleResponse;
+  user: UsersResponse<PeopleExpand>;
   defaultValue: ListResult<ParticipantsCustomResponse>;
   pbClient: PBCustom;
   disabled: boolean;
@@ -25,6 +30,7 @@ interface NewParticipantFormProps {
 function ParticipantsList({
   docId,
   people,
+  owner,
   user,
   defaultValue,
   pbClient,
@@ -58,7 +64,7 @@ function ParticipantsList({
               <ImageFallback
                 className="mr-2 h-9 w-9 rounded-full"
                 src={pbClient.buildUrl(
-                  `api/files/people/${allDocParticipant?.id}/${allDocParticipant?.avatar}?thumb=36x36`
+                  `api/files/people/${allDocParticipant.id}/${allDocParticipant.avatar}?thumb=36x36`
                 )}
                 fallbackSrc={account_circle_black}
                 alt="Uploaded avatar"
@@ -157,7 +163,33 @@ function ParticipantsList({
           ))}
         </select>
       )}
-      <ol>{participantsList}</ol>
+      <ol>
+        <li
+          key={owner.id}
+          className="flex w-full items-center justify-center gap-2 rounded p-2 hover:bg-gray-50"
+        >
+          <Link
+            className="flex grow items-center"
+            href={`/people/${encodeURIComponent(owner.id ?? "")}`}
+          >
+            <ImageFallback
+              className="mr-2 h-9 w-9 rounded-full"
+              src={pbClient.buildUrl(
+                `api/files/people/${owner.id}/${owner.avatar}?thumb=36x36`
+              )}
+              fallbackSrc={account_circle_black}
+              alt="Uploaded avatar"
+              width={36}
+              height={36}
+            />
+            <p className="flex grow">{owner.name}</p>
+            <p className="w-fit rounded bg-amber-100 px-2 py-1 font-semibold text-amber-700">
+              Owner
+            </p>
+          </Link>
+        </li>
+        {participantsList}
+      </ol>
     </>
   );
 }

@@ -46,7 +46,7 @@ function AcademicMaterial({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
+  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
   const academicMaterial = dataParse.academicMaterial;
   const fullDocumentData = dataParse.fullDocumentData;
 
@@ -58,7 +58,6 @@ function AcademicMaterial({
     childId,
     ...fullDocumentData,
     pbClient,
-    user,
     childrenDefaultValue: {
       fullDocument: academicMaterial.fullDocument,
       category: academicMaterial.category,

@@ -61,7 +61,7 @@ function ClassDocument({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
+  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
   const adviseClass = dataParse.adviseClass;
   const fullDocumentData = dataParse.fullDocumentData;
   const departments = dataParse.departments;
@@ -75,7 +75,6 @@ function ClassDocument({
     childId,
     ...fullDocumentData,
     pbClient,
-    user,
     childrenDefaultValue: {
       fullDocument: adviseClass.fullDocument,
       cohort: adviseClass.cohort,

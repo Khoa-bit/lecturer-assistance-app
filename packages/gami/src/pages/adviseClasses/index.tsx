@@ -64,7 +64,7 @@ export const getServerSideProps = async ({
   const { pbServer } = await getPBServer(req, resolvedUrl);
 
   const adviseClasses = await pbServer.apiGetList<ClassesCustomResponse>(
-    "/api/user/classes"
+    "/api/user/getClasses"
   );
 
   const participatedAdviseClasses =

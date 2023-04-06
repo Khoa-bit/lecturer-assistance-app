@@ -54,6 +54,7 @@ interface UsersExpand {
 }
 
 interface PersonInput extends PeopleRecord {
+  email?: string; // show user email
   department?: never; // only to hook into error handling of Reach-Hook-Form
   diffHash?: string;
 }
@@ -70,12 +71,15 @@ function Person({
   const sharedDocuments = dataParse.sharedDocuments;
   const isWrite = true;
 
+  console.log(person);
+
   const { register, handleSubmit, setValue, watch } = useForm<PersonInput>({
     defaultValues: {
       personId: person.personId,
       name: person.name,
       avatar: person.avatar,
       phone: person.phone,
+      email: person.expand?.["users(person)"]?.email,
       personalEmail: person.personalEmail,
       title: person.title,
       placeOfBirth: person.placeOfBirth,
@@ -244,6 +248,15 @@ function Person({
           ref={formRef}
           onSubmit={handleSubmit(onSubmit)}
         >
+          <Input
+            {...({
+              name: "email",
+              id: "email",
+              label: "University email",
+              register,
+              options: { disabled: true },
+            } as InputProps)}
+          ></Input>
           <Input
             {...({
               name: "personId",

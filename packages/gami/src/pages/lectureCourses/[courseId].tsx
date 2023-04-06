@@ -59,7 +59,7 @@ function CourseDocument({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
+  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
   const course = dataParse.course;
   const fullDocumentData = dataParse.fullDocumentData;
   const courseTemplateId = course.courseTemplate;
@@ -81,7 +81,6 @@ function CourseDocument({
     childId,
     ...fullDocumentData,
     pbClient,
-    user,
     childrenDefaultValue: {
       fullDocument: course.fullDocument,
       semester: course.semester,
