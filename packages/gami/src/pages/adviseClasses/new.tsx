@@ -17,7 +17,7 @@ import type {
   PeopleResponse,
 } from "raito";
 import { FullDocumentsInternalOptions } from "raito";
-import { ClassesTrainingSystemOptions, Collections } from "raito";
+import { ClassesAcademicProgramOptions, Collections } from "raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getCurrentCohort } from "src/lib/input_handling";
@@ -88,7 +88,7 @@ export const getServerSideProps = async ({
       fullDocument: baseFullDocument.id,
       cohort: getCurrentCohort(),
       major: person.major,
-      trainingSystem: ClassesTrainingSystemOptions.Undergraduate,
+      academicProgram: ClassesAcademicProgramOptions.Undergraduate,
     } as ClassesRecord);
 
   if (!person.isLecturer) {

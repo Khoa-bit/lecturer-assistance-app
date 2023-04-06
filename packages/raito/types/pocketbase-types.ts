@@ -66,7 +66,7 @@ export type AttachmentsRecord = {
 	document: RecordIdString
 }
 
-export enum ClassesTrainingSystemOptions {
+export enum ClassesAcademicProgramOptions {
 	"Undergraduate" = "Undergraduate",
 	"Graduate" = "Graduate",
 }
@@ -74,7 +74,7 @@ export type ClassesRecord = {
 	classId?: string
 	cohort: string
 	major: RecordIdString
-	trainingSystem: ClassesTrainingSystemOptions
+	academicProgram: ClassesAcademicProgramOptions
 	fullDocument: RecordIdString
 }
 

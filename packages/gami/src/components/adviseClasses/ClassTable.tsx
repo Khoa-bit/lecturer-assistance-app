@@ -41,7 +41,7 @@ function AdviseClassesTable({ adviseClasses }: EventsTableProps) {
           className="block w-44 truncate p-2"
           href={`/adviseClasses/${encodeURIComponent(adviseClass.id)}`}
         >
-          {adviseClass.trainingSystem}
+          {adviseClass.academicProgram}
         </Link>
       </td>
       <td>

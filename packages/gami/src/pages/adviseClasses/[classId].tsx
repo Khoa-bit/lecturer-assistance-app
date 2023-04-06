@@ -11,7 +11,7 @@ import type {
   FullDocumentsResponse,
   MajorsResponse,
 } from "raito";
-import { ClassesTrainingSystemOptions, Collections } from "raito";
+import { ClassesAcademicProgramOptions, Collections } from "raito";
 import type {
   FullDocumentData,
   FullDocumentProps,
@@ -79,7 +79,7 @@ function ClassDocument({
       fullDocument: adviseClass.fullDocument,
       cohort: adviseClass.cohort,
       major: adviseClass.major,
-      trainingSystem: adviseClass.trainingSystem,
+      academicProgram: adviseClass.academicProgram,
       classId: adviseClass.classId,
     },
   };
@@ -115,10 +115,10 @@ function ClassDocument({
         ></MajorDepartment>
         <Select
           {...({
-            name: "trainingSystem",
-            id: "trainingSystem",
+            name: "academicProgram",
+            id: "academicProgram",
             label: "Academic program",
-            selectOptions: Object.entries(ClassesTrainingSystemOptions).map(
+            selectOptions: Object.entries(ClassesAcademicProgramOptions).map(
               ([stringValue]) => {
                 return {
                   key: stringValue,
