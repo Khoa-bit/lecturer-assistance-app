@@ -67,12 +67,12 @@ export const getServerSideProps = async ({
 
   const academicMaterials =
     await pbServer.apiGetList<AcademicMaterialsCustomResponse>(
-      "/api/user/academicMaterials"
+      "/api/user/getAcademicMaterials"
     );
 
   const participatedAcademicMaterials =
     await pbServer.apiGetList<AcademicMaterialsCustomResponse>(
-      "/api/user/participatedAcademicMaterials?fullList=true"
+      "/api/user/getParticipatedAcademicMaterials?fullList=true"
     );
 
   return {

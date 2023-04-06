@@ -64,12 +64,12 @@ export const getServerSideProps = async ({
   const { pbServer } = await getPBServer(req, resolvedUrl);
 
   const lectureCourses = await pbServer.apiGetList<CoursesCustomResponse>(
-    "/api/user/courses"
+    "/api/user/getCourses"
   );
 
   const participatedLectureCourses =
     await pbServer.apiGetList<CoursesCustomResponse>(
-      "/api/user/participatedCourses?fullList=true"
+      "/api/user/getParticipatedCourses?fullList=true"
     );
 
   return {

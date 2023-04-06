@@ -42,12 +42,14 @@ func main() {
 		)
 
 		// Get all event documents
-		subGroup.GET("/eventDocuments", func(c echo.Context) error {
+		// Deprecated since events page now show upcoming and part events
+		subGroup.GET("/getEventDocuments", func(c echo.Context) error {
 			return handlers.GetEventDocuments(app, c)
 		})
 
 		// Get all event documents that the current user participate in
-		subGroup.GET("/participatedEventDocuments", func(c echo.Context) error {
+		// Deprecated since events page now show upcoming and part events
+		subGroup.GET("/getParticipatedEventDocuments", func(c echo.Context) error {
 			return handlers.GetParticipatedEventDocuments(app, c)
 		})
 
@@ -64,42 +66,42 @@ func main() {
 		})
 
 		// Get all academic materials
-		subGroup.GET("/academicMaterials", func(c echo.Context) error {
+		subGroup.GET("/getAcademicMaterials", func(c echo.Context) error {
 			return handlers.GetAcademicMaterials(app, c)
 		})
 
 		// Get all academic materials that the current user participate in
-		subGroup.GET("/participatedAcademicMaterials", func(c echo.Context) error {
+		subGroup.GET("/getParticipatedAcademicMaterials", func(c echo.Context) error {
 			return handlers.GetParticipatedAcademicMaterials(app, c)
 		})
 
 		// Get all personalNotes of the current user
-		subGroup.GET("/personalNotes", func(c echo.Context) error {
+		subGroup.GET("/getPersonalNotes", func(c echo.Context) error {
 			return handlers.GetPersonalNotes(app, c)
 		})
 
 		// Get all personalNotes that the current user participate in
-		subGroup.GET("/participatedPersonalNotes", func(c echo.Context) error {
+		subGroup.GET("/getParticipatedPersonalNotes", func(c echo.Context) error {
 			return handlers.GetParticipatedPersonalNotes(app, c)
 		})
 
 		// Get all classes of the current user
-		subGroup.GET("/classes", func(c echo.Context) error {
+		subGroup.GET("/getClasses", func(c echo.Context) error {
 			return handlers.GetClasses(app, c)
 		})
 
 		// Get all event documents that the current user participate in
-		subGroup.GET("/participatedClasses", func(c echo.Context) error {
+		subGroup.GET("/getParticipatedClasses", func(c echo.Context) error {
 			return handlers.GetParticipatedClasses(app, c)
 		})
 
 		// Get all courses of the current user
-		subGroup.GET("/courses", func(c echo.Context) error {
+		subGroup.GET("/getCourses", func(c echo.Context) error {
 			return handlers.GetCourses(app, c)
 		})
 
 		// Get all event documents that the current user participate in
-		subGroup.GET("/participatedCourses", func(c echo.Context) error {
+		subGroup.GET("/getParticipatedCourses", func(c echo.Context) error {
 			return handlers.GetParticipatedCourses(app, c)
 		})
 
@@ -124,13 +126,14 @@ func main() {
 		})
 
 		// Get all starred relationships with the current user
-		subGroup.GET("/relationships", func(c echo.Context) error {
+		// Deprecated since We don't need to add contact manually anymore - add star will automatically add new relationships
+		subGroup.GET("/getRelationships", func(c echo.Context) error {
 			return handlers.GetRelationships(app, c)
 		})
 
 		// Get all possible new relationships options for the current user.
 		// Deprecated since We don't need to add contact manually anymore - add star will automatically add new relationships
-		subGroup.GET("/newRelationshipsOptions", func(c echo.Context) error {
+		subGroup.GET("/getNewRelationshipsOptions", func(c echo.Context) error {
 			return handlers.GetNewRelationshipsOptions(app, c)
 		})
 

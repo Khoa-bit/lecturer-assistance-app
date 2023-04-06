@@ -64,12 +64,12 @@ export const getServerSideProps = async ({
   const { pbServer } = await getPBServer(req, resolvedUrl);
 
   const personalNotes = await pbServer.apiGetList<PersonalNotesCustomResponse>(
-    "/api/user/personalNotes"
+    "/api/user/getPersonalNotes"
   );
 
   const participatedPersonalNotes =
     await pbServer.apiGetList<PersonalNotesCustomResponse>(
-      "/api/user/participatedPersonalNotes?fullList=true"
+      "/api/user/getParticipatedPersonalNotes?fullList=true"
     );
 
   return {
