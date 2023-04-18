@@ -46,7 +46,7 @@ const ForgetPassword: NextPage = () => {
             <h1>Forget Password</h1>
             <form onSubmit={handleSubmit(onSubmit)}>
               <input
-                className="border"
+                className="input-bordered input border"
                 type="email"
                 {...register("email", { required: true })}
               />

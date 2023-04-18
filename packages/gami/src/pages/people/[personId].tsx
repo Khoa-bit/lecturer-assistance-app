@@ -206,7 +206,7 @@ function Person({
 
         <h1 className="flex-grow">
           <input
-            className={`h-10 w-full rounded bg-transparent text-2xl font-bold focus:bg-white`}
+            className={`input-bordered input h-10 w-full rounded bg-transparent text-2xl font-bold focus:bg-white`}
             {...register("name", { required: true, disabled: !isWrite })}
             placeholder="Person name"
           />
@@ -244,7 +244,7 @@ function Person({
         )}
 
         <form
-          className="my-4 grid h-fit w-full grid-cols-[minmax(15rem,1fr)_minmax(0,2fr)] gap-4 rounded-lg bg-white py-5 px-6"
+          className="my-4 grid h-fit w-full grid-cols-[minmax(15rem,1fr)_minmax(0,2fr)] gap-4 rounded-lg bg-white px-6 py-5"
           ref={formRef}
           onSubmit={handleSubmit(onSubmit)}
         >
@@ -320,7 +320,7 @@ function Person({
               options: { required: true },
             } as SelectProps<PersonInput>)}
           >
-            <option value="" disabled hidden>
+            <option value="" disabled>
               Select gender
             </option>
           </Select>

@@ -55,19 +55,19 @@ const NewPassword: NextPage = () => {
             <h1>Forget Password</h1>
             <form onSubmit={handleSubmit(onSubmit)}>
               <input
-                className="border"
+                className="input-bordered input border"
                 type="text"
                 {...register("token", { required: true })}
               />
               {errors.token && <span>Token is required</span>}
               <input
-                className="border"
+                className="input-bordered input border"
                 type="password"
                 {...register("newPassword", { required: true })}
               />
               {errors.newPassword && <span>New Password is required</span>}
               <input
-                className="border"
+                className="input-bordered input border"
                 type="password"
                 {...register("newPasswordConfirm", { required: true })}
               />

@@ -149,7 +149,7 @@ function NewCourseTemplate({
                 ></Input>
                 <input
                   type="submit"
-                  className={`col-span-2 cursor-pointer rounded bg-blue-500 py-2 font-semibold text-white transition-colors hover:bg-blue-400`}
+                  className={`input col-span-2 cursor-pointer rounded bg-blue-500 py-2 font-semibold text-white transition-colors hover:bg-blue-400`}
                   value="Create new course template"
                 />
               </form>

@@ -36,14 +36,14 @@ const Login: NextPage = () => {
             <h1>App Sign In</h1>
             <form onSubmit={handleSubmit(onSubmit)}>
               <input
-                className="border"
+                className="input-bordered input border"
                 type="email"
                 {...register("email", { required: true })}
               />
               {errors.email && <span>Email is required</span>}
 
               <input
-                className="border"
+                className="input-bordered input border"
                 type="password"
                 {...register("password", { required: true })}
               />

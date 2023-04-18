@@ -113,6 +113,8 @@ func GetRequestHandler(app *pocketbase.PocketBase, c echo.Context, query *dbx.Qu
 		item.SetExpand(expand)
 	}
 
+	fmt.Println(isFullList, startPage, endPage, page, perPage, totalPages, totalCount)
+
 	result := &Result{
 		Page:       page,
 		PerPage:    perPage,

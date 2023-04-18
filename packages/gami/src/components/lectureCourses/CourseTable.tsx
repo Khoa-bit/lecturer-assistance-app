@@ -55,7 +55,7 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
         </td>
         <td>
           <Link
-            className="block w-10 truncate py-1 px-2"
+            className="block w-10 truncate px-2 py-1"
             href={`/lectureCourses/${encodeURIComponent(lectureCourse.id)}`}
           >
             <span className="material-symbols-rounded">chevron_right</span>
@@ -67,7 +67,7 @@ function CoursesTable({ lectureCourses }: CoursesTableProps) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="table w-full whitespace-nowrap">
+      <table className="w-full whitespace-nowrap">
         <thead className="border-b text-left">
           <tr>
             <th className="!static w-6 p-2">No.</th>

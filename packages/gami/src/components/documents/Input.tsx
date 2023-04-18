@@ -34,9 +34,7 @@ function Input<TFieldValues extends FieldValues = FieldValues>({
         {label}
       </label>
       <input
-        className={`flex items-center gap-1 rounded border border-gray-300 p-2 hover:bg-gray-50 ${
-          options?.disabled && "bg-gray-50 text-gray-500"
-        }`}
+        className={`input-bordered input`}
         id={id}
         {...registerOptions}
         {...rest}

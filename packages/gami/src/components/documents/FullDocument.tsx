@@ -338,7 +338,7 @@ function FullDocument<TRecord>({
       <header className="flex w-full items-start gap-x-4">
         <h1 className="flex-grow">
           <input
-            className={`h-10 w-full rounded bg-transparent text-2xl font-bold focus:bg-white`}
+            className={`input-ghost input w-full text-2xl font-bold`}
             {...register("name", { required: true, disabled: !isWrite })}
             placeholder="Title"
           />
@@ -348,7 +348,7 @@ function FullDocument<TRecord>({
           <>
             <label
               htmlFor="thumbnail"
-              className={`flex h-10 cursor-pointer items-center gap-1 rounded bg-gray-200 p-2 font-semibold hover:bg-gray-300`}
+              className={`rounded-btn flex h-10 cursor-pointer items-center gap-1 bg-gray-200 p-2 font-semibold hover:bg-gray-300`}
             >
               <span className="material-symbols-rounded text-gray-500 [font-variation-settings:'FILL'_1]">
                 image
@@ -388,7 +388,7 @@ function FullDocument<TRecord>({
         )}
       </header>
       <section className="w-full xl:grid xl:grid-cols-[1fr_2fr] xl:gap-4">
-        <div className="my-4 flex h-fit flex-col gap-4 rounded-lg bg-white py-5 px-6">
+        <div className="my-4 flex h-fit flex-col gap-4 rounded-lg bg-white px-6 py-5">
           {hasEvents && (
             <section>
               <EventsList
@@ -417,7 +417,7 @@ function FullDocument<TRecord>({
         </div>
 
         <form
-          className="my-4 grid h-fit w-full grid-cols-[minmax(15rem,1fr)_minmax(0,2fr)] gap-4 rounded-lg bg-white py-5 px-6"
+          className="my-4 grid h-fit w-full grid-cols-[minmax(15rem,1fr)_minmax(0,2fr)] gap-4 rounded-lg bg-white px-6 py-5"
           ref={formRef}
           onSubmit={handleSubmit(onSubmit)}
         >
@@ -426,9 +426,7 @@ function FullDocument<TRecord>({
           </label>
           <select
             id="priority"
-            className={`rounded border border-gray-300 hover:bg-gray-50 ${
-              !isWrite && "bg-gray-50 text-gray-500"
-            }`}
+            className={`select-bordered select`}
             {...register("priority", { required: true, disabled: !isWrite })}
           >
             {Object.entries(DocumentsPriorityOptions).map(([stringValue]) => (
@@ -442,9 +440,7 @@ function FullDocument<TRecord>({
           </label>
           <select
             id="status"
-            className={`rounded border border-gray-300 hover:bg-gray-50 ${
-              !isWrite && "bg-gray-50 text-gray-500"
-            }`}
+            className={`select-bordered select`}
             {...register("status", { required: true, disabled: !isWrite })}
           >
             {Object.entries(DocumentsStatusOptions).map(([stringValue]) => (
@@ -458,7 +454,7 @@ function FullDocument<TRecord>({
           </label>
           <label
             htmlFor="attachments"
-            className={`flex items-center gap-1 rounded border border-gray-300 p-2 font-semibold hover:bg-gray-50 ${
+            className={`rounded-btn flex h-12 items-center gap-1 border border-gray-300 px-2 font-semibold hover:bg-gray-50 ${
               isWrite ? "cursor-pointer" : "bg-gray-50 text-gray-500"
             }`}
           >
@@ -500,7 +496,7 @@ function FullDocument<TRecord>({
           <label className="py-2" htmlFor="richText">
             Note
           </label>
-          <div className="h-fit resize-y overflow-auto rounded border-2 px-2 py-1 focus-within:border-blue-500">
+          <div className="rounded-btn h-fit resize-y overflow-auto border-2 px-2 py-2 focus-within:ring-2 focus-within:ring-gray-300 focus-within:ring-offset-2">
             <Controller
               name="richText"
               control={control}

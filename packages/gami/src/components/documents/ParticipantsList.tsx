@@ -74,9 +74,7 @@ function ParticipantsList({
               {allDocParticipant.name}
             </Link>
             <select
-              className={`rounded border border-gray-300 hover:bg-gray-50 ${
-                disabled && "bg-gray-50 text-gray-500"
-              }`}
+              className={`select-bordered select`}
               disabled={disabled}
               defaultValue={allDocParticipant.expand.participant_permission}
               onChange={async (e) => {
@@ -134,7 +132,7 @@ function ParticipantsList({
     <>
       {!disabled && (
         <select
-          className="mb-3 w-full rounded border border-gray-300 hover:bg-gray-50"
+          className="select-bordered select w-full"
           onChange={async (e) => {
             await pbClient
               ?.collection(Collections.Participants)
@@ -153,7 +151,7 @@ function ParticipantsList({
           disabled={newPeopleOptions.length == 0}
           value=""
         >
-          <option value="" disabled hidden>
+          <option value="" disabled>
             Add new participant
           </option>
           {newPeopleOptions.map((person) => (

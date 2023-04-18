@@ -5,6 +5,17 @@ import type { ReactElement, ReactNode } from "react";
 import AuthContextProvider from "src/contexts/AuthContextProvider";
 import localFont from "next/font/local";
 import "../styles/globals.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // default: true
+      staleTime: 1 * 60 * 1000, // default: 0ms
+    },
+  },
+});
 
 const inter = localFont({
   src: "../../public/fonts/Inter-VariableFont_slnt,wght.ttf",
@@ -31,14 +42,17 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
 
   // #next-body: to add modal to
   return (
-    <AuthContextProvider>
-      <div
-        id="next-body"
-        className={`${inter.variable} font-sans ${materialSymbolsRounded.variable} min-h-screen bg-gray-100`}
-      >
-        {layout}
-      </div>
-    </AuthContextProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthContextProvider>
+        <div
+          id="next-body"
+          className={`${inter.variable} font-sans ${materialSymbolsRounded.variable} min-h-screen bg-gray-100`}
+        >
+          {layout}
+        </div>
+      </AuthContextProvider>
+      <ReactQueryDevtools initialIsOpen={false}></ReactQueryDevtools>
+    </QueryClientProvider>
   );
 };
 

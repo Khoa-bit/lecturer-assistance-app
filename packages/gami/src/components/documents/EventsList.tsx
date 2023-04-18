@@ -41,7 +41,7 @@ function EventsList({
         </strong>
         {!disabled && (
           <Link
-            className="false flex w-fit cursor-pointer items-center gap-1 rounded border border-gray-300 p-1 text-sm font-semibold hover:bg-gray-50"
+            className="false rounded-btn flex w-fit cursor-pointer items-center gap-1 border border-gray-300 p-1 text-sm font-semibold hover:bg-gray-50"
             href={`/eventDocuments/new?toFullDocId=${fullDocumentId}`}
           >
             <span className="material-symbols-rounded !text-sm text-gray-500 [font-variation-settings:'FILL'_1,'opsz'_24]">
@@ -89,7 +89,7 @@ function EventsList({
             return (
               <li key={eventDocument.id}>
                 <Link
-                  className="flex items-center gap-2 py-1 px-2 hover:bg-gray-50"
+                  className="flex items-center gap-2 px-2 py-1 hover:bg-gray-50"
                   href={`/eventDocuments/${encodeURIComponent(
                     eventDocument.id
                   )}`}
@@ -165,7 +165,7 @@ function EventsList({
             return (
               <li key={eventDocument.id}>
                 <Link
-                  className="flex items-center gap-2 py-1 px-2 hover:bg-gray-50"
+                  className="flex items-center gap-2 px-2 py-1 hover:bg-gray-50"
                   href={`/eventDocuments/${encodeURIComponent(
                     eventDocument.id
                   )}`}

@@ -131,7 +131,7 @@ function CourseDocument({
             },
           } as SelectProps<CoursesRecord>)}
         >
-          <option value="" disabled hidden>
+          <option value="" disabled>
             Select Course Template
           </option>
         </Select>

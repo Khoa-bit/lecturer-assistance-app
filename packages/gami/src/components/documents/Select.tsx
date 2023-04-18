@@ -54,9 +54,7 @@ function Select<TFieldValues extends FieldValues = FieldValues>({
           }}
           defaultValue={defaultValue}
           {...rest}
-          className={`rounded border border-gray-300 hover:bg-gray-50 ${
-            options?.disabled && "bg-gray-50 text-gray-500"
-          }`}
+          className={`select-bordered select`}
         >
           {children}
           {selectOptions.map((selectOption) => (
@@ -76,9 +74,7 @@ function Select<TFieldValues extends FieldValues = FieldValues>({
             }}
             defaultValue={defaultValue}
             {...rest}
-            className={`flex-grow rounded border border-gray-300 hover:bg-gray-50 ${
-              options?.disabled && "bg-gray-50 text-gray-500"
-            }`}
+            className={`select-bordered select flex-grow`}
           >
             {children}
             {selectOptions.map((selectOption) => (

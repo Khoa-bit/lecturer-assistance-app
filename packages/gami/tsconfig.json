@@ -25,8 +25,7 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.mjs",
-    "tailwind.config.cjss",
-    "tailwind.config.cjss"
+    "tailwind.config.cjs"
   ],
   "exclude": ["node_modules"]
 }

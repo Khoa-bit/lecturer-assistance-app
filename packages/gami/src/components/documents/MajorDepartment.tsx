@@ -75,7 +75,7 @@ function MajorDepartment({
           defaultValue: departmentId,
         } as SelectProps<MajorDepartmentInput>)}
       >
-        <option value="" disabled hidden>
+        <option value="" disabled>
           Select department
         </option>
       </Select>
@@ -95,7 +95,7 @@ function MajorDepartment({
           options: { ...options, required: true },
         } as SelectProps<MajorDepartmentInput>)}
       >
-        <option value="" disabled hidden>
+        <option value="" disabled>
           Select major
         </option>
       </Select>

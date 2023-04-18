@@ -40,7 +40,7 @@ func GetCourses(app *pocketbase.PocketBase, c echo.Context) error {
       ) as userDocument
       INNER JOIN fullDocuments AS fullDocument ON userDocument.id = fullDocument.document
       INNER JOIN courses AS course ON fullDocument.id = course.fullDocument
-      INNER JOIN courseTemplates AS courseTemplate ON courseTemplate.id = course.courseTemplate`,
+      LEFT JOIN courseTemplates AS courseTemplate ON courseTemplate.id = course.courseTemplate`,
 		selectArgs, authRecord.Id))
 
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)

@@ -157,7 +157,7 @@ function EventDocument({
             defaultValue: toFullDocument,
           } as SelectProps<EventDocumentsRecord>)}
         >
-          <option value="" disabled hidden>
+          <option value="" disabled>
             Link event to a document
           </option>
         </Select>
