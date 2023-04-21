@@ -6,11 +6,13 @@ import type {
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { BaseSystemFields, CoursesCustomResponse } from "raito";
+import type { CoursesCustomResponse, DocumentsStatusOptions } from "raito";
+import Status from "src/components/documents/Status";
 import MainLayout from "src/components/layouts/MainLayout";
-import CoursesTable from "src/components/lectureCourses/CourseTable";
+import IndexCell from "src/components/tanstackTable/IndexCell";
+import IndexFooterCell from "src/components/tanstackTable/IndexFooterCell";
+import IndexHeaderCell from "src/components/tanstackTable/IndexHeaderCell";
 import IndexTable from "src/components/tanstackTable/IndexTable";
-import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
@@ -26,73 +28,6 @@ function LectureCourses({
   const dataParse = SuperJSON.parse<LectureCoursesData>(data);
   const lectureCourses = dataParse.lectureCourses;
   const participatedLectureCourses = dataParse.participatedLectureCourses;
-
-  const getHref = (lectureCourseId: string) =>
-    `/lectureCourses/${encodeURIComponent(lectureCourseId)}`;
-
-  const columns: ColumnDef<CoursesCustomResponse>[] = [
-    {
-      accessorFn: (item) => item.expand.courseTemplate_name,
-      id: "courseTemplate_name",
-      cell: (info) => (
-        <Link
-          className="block w-64 truncate px-2 py-1"
-          href={getHref(info.row.original.id)}
-        >
-          {info.getValue() as string}
-        </Link>
-      ),
-      header: () => <p className="w-64">Course name</p>,
-      footer: () => null,
-    },
-    {
-      accessorFn: (item) => item.expand.courseTemplate_academicProgram,
-      id: "courseTemplate_academicProgram",
-      cell: (info) => (
-        <Link
-          className="block w-40 truncate px-2 py-1"
-          href={getHref(info.row.original.id)}
-        >
-          {info.getValue() as string}
-        </Link>
-      ),
-      header: () => <p className="w-40">Academic program</p>,
-      footer: () => null,
-    },
-    {
-      accessorFn: (item) => item.semester,
-      id: "semester",
-      cell: (info) => (
-        <Link
-          className="block w-52 truncate px-2 py-1"
-          href={getHref(info.row.original.id)}
-        >
-          {info.getValue() as string}
-        </Link>
-      ),
-      header: () => <p className="w-52">Semester</p>,
-      footer: () => null,
-    },
-    {
-      accessorFn: (item) => item.expand.courseTemplate_periodsCount,
-      id: "courseTemplate_periodsCount",
-      cell: (info) => (
-        <Link
-          className="block w-52 truncate px-2 py-1"
-          href={getHref(info.row.original.id)}
-        >
-          {info.getValue() as string}
-        </Link>
-      ),
-      header: () => <p className="w-52">Periods</p>,
-      footer: () =>
-        `Sum: ${lectureCourses?.items.reduce(
-          (prev, curr) =>
-            prev + parseInt(curr.expand.courseTemplate_periodsCount),
-          0
-        )}`,
-    },
-  ];
 
   return (
     <main className="mx-auto flex max-w-screen-lg flex-col px-4 py-8">
@@ -111,22 +46,18 @@ function LectureCourses({
         </Link>
       </header>
       <section className="my-4 rounded-lg bg-white px-7 py-5">
-        <IndexTable initData={lectureCourses} columns={columns}></IndexTable>
-      </section>
-
-      <section className="my-4 rounded-lg bg-white px-7 py-5">
-        <h2 className="pb-5 text-xl font-semibold text-gray-700">
-          My lecture courses
-        </h2>
-        <CoursesTable lectureCourses={lectureCourses}></CoursesTable>
+        <IndexTable
+          heading="My lecture courses"
+          initData={lectureCourses}
+          columns={initCourseColumns(lectureCourses)}
+        ></IndexTable>
       </section>
       <section className="my-4 rounded-lg bg-white px-7 py-5">
-        <h2 className="pb-5 text-xl font-semibold text-gray-700">
-          Participate lecture courses
-        </h2>
-        <CoursesTable
-          lectureCourses={participatedLectureCourses}
-        ></CoursesTable>
+        <IndexTable
+          heading="Participate lecture courses"
+          initData={participatedLectureCourses}
+          columns={initCourseColumns(participatedLectureCourses)}
+        ></IndexTable>
       </section>
     </main>
   );
@@ -157,6 +88,104 @@ export const getServerSideProps = async ({
     },
   };
 };
+
+function initCourseColumns(
+  lectureCourses: ListResult<CoursesCustomResponse>
+): ColumnDef<CoursesCustomResponse>[] {
+  const getHref = (lectureCourseId: string) =>
+    `/lectureCourses/${encodeURIComponent(lectureCourseId)}`;
+
+  return [
+    {
+      accessorFn: (item) => item.expand.courseTemplate_name,
+      id: "courseTemplate_name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[20rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[20rem]">Course name</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand.courseTemplate_academicProgram,
+      id: "courseTemplate_academicProgram",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[11rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[11rem]">
+          Academic program
+        </IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.semester,
+      id: "semester",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[13rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[13rem]">Semester</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand.courseTemplate_periodsCount,
+      id: "courseTemplate_periodsCount",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[13rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[13rem]">Periods</IndexHeaderCell>
+      ),
+      footer: () => (
+        <IndexFooterCell className="min-w-[13rem]">{`Sum: ${lectureCourses?.items.reduce(
+          (prev, curr) =>
+            prev + parseInt(curr.expand.courseTemplate_periodsCount),
+          0
+        )}`}</IndexFooterCell>
+      ),
+    },
+    {
+      accessorFn: (item) => item.expand.userDocument_status,
+      id: "userDocument_status",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[8rem]"
+          href={getHref(info.row.original.id)}
+        >
+          <Status status={info.getValue() as DocumentsStatusOptions}></Status>
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[8rem]">Status</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+  ];
+}
 
 LectureCourses.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;

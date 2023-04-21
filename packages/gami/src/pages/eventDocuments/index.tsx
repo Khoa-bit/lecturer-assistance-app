@@ -1,3 +1,4 @@
+import type { ColumnDef } from "@tanstack/react-table";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
@@ -11,8 +12,13 @@ import type {
   FullDocumentsResponse,
 } from "raito";
 import { Collections, EventDocumentsRecurringOptions } from "raito";
-import EventsTable from "src/components/eventDocuments/EventsTable";
+import type { StatusEventOptions } from "src/components/documents/StatusEvent";
+import StatusEvent, { eventStatus } from "src/components/documents/StatusEvent";
 import MainLayout from "src/components/layouts/MainLayout";
+import IndexCell from "src/components/tanstackTable/IndexCell";
+import IndexHeaderCell from "src/components/tanstackTable/IndexHeaderCell";
+import IndexTable from "src/components/tanstackTable/IndexTable";
+import { formatDate } from "src/lib/input_handling";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
@@ -39,7 +45,7 @@ function EventDocuments({
   const pastEventDocuments = dataParse.pastEventDocuments;
 
   return (
-    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
+    <main className="mx-auto flex max-w-screen-lg flex-col px-4 py-8">
       <Head>
         <title>Events</title>
       </Head>
@@ -54,17 +60,19 @@ function EventDocuments({
           event document
         </Link>
       </header>
-      <section className="my-4 rounded-lg bg-white py-5 px-7">
-        <h2 className="pb-5 text-xl font-semibold text-gray-700">
-          Upcoming events list
-        </h2>
-        <EventsTable eventDocuments={upcomingEventDocuments}></EventsTable>
+      <section className="my-4 w-full rounded-lg bg-white px-7 py-5">
+        <IndexTable
+          heading="Upcoming events list"
+          initData={upcomingEventDocuments}
+          columns={initEventDocumentColumns()}
+        ></IndexTable>
       </section>
-      <section className="my-4 rounded-lg bg-white py-5 px-7">
-        <h2 className="pb-5 text-xl font-semibold text-gray-700">
-          Past events list
-        </h2>
-        <EventsTable eventDocuments={pastEventDocuments}></EventsTable>
+      <section className="my-4 w-full rounded-lg bg-white px-7 py-5">
+        <IndexTable
+          heading="Past events list"
+          initData={pastEventDocuments}
+          columns={initEventDocumentColumns()}
+        ></IndexTable>
       </section>
     </main>
   );
@@ -103,6 +111,87 @@ export const getServerSideProps = async ({
     },
   };
 };
+
+function initEventDocumentColumns(): ColumnDef<
+  EventDocumentsResponse<FullDocumentExpand>
+>[] {
+  const getHref = (lectureCourseId: string) =>
+    `/eventDocuments/${encodeURIComponent(lectureCourseId)}`;
+
+  return [
+    {
+      accessorFn: (item) => item.expand?.fullDocument.expand?.document.name,
+      id: "name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[20rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[20rem]">Event name</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => formatDate(item.startTime, "HH:mm - dd/LL/yy"),
+      id: "startTime",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Start time</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => formatDate(item.endTime, "HH:mm - dd/LL/yy"),
+      id: "endTime",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">End time</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) =>
+        eventStatus(
+          item.expand?.fullDocument.expand?.document?.status,
+          item.startTime,
+          item.endTime
+        ),
+      id: "statusEvent",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[8rem]"
+          href={getHref(info.row.original.id)}
+        >
+          <StatusEvent
+            status={info.getValue() as StatusEventOptions}
+          ></StatusEvent>
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[8rem]">Status</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+  ];
+}
 
 EventDocuments.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;

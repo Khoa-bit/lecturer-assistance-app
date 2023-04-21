@@ -1,3 +1,4 @@
+import type { ColumnDef } from "@tanstack/react-table";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
@@ -5,9 +6,17 @@ import type {
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { PersonalNotesCustomResponse } from "raito";
+import type {
+  DocumentsPriorityOptions,
+  DocumentsStatusOptions,
+  PersonalNotesCustomResponse,
+} from "raito";
+import Priority from "src/components/documents/Priority";
+import Status from "src/components/documents/Status";
 import MainLayout from "src/components/layouts/MainLayout";
-import PersonalNotesTable from "src/components/personalNotes/NotesTable";
+import IndexCell from "src/components/tanstackTable/IndexCell";
+import IndexHeaderCell from "src/components/tanstackTable/IndexHeaderCell";
+import IndexTable from "src/components/tanstackTable/IndexTable";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
@@ -24,7 +33,7 @@ function PersonalNotes({
   const participatedPersonalNotes = dataParse.participatedPersonalNotes;
 
   return (
-    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
+    <main className="mx-auto flex max-w-screen-lg flex-col px-4 py-8">
       <Head>
         <title>Personal Notes</title>
       </Head>
@@ -39,19 +48,19 @@ function PersonalNotes({
           personal note
         </Link>
       </header>
-      <section className="my-4 rounded-lg bg-white py-5 px-7">
-        <h2 className="pb-5 text-xl font-semibold text-gray-700">
-          My personal notes
-        </h2>
-        <PersonalNotesTable personalNotes={personalNotes}></PersonalNotesTable>
+      <section className="my-4 rounded-lg bg-white px-7 py-5">
+        <IndexTable
+          heading="My personal notes"
+          initData={personalNotes}
+          columns={initPersonalNotesColumns()}
+        ></IndexTable>
       </section>
-      <section className="my-4 rounded-lg bg-white py-5 px-7">
-        <h2 className="pb-5 text-xl font-semibold text-gray-700">
-          Participate personal notes
-        </h2>
-        <PersonalNotesTable
-          personalNotes={participatedPersonalNotes}
-        ></PersonalNotesTable>
+      <section className="my-4 rounded-lg bg-white px-7 py-5">
+        <IndexTable
+          heading="Participate personal notes"
+          initData={participatedPersonalNotes}
+          columns={initPersonalNotesColumns()}
+        ></IndexTable>
       </section>
     </main>
   );
@@ -81,6 +90,68 @@ export const getServerSideProps = async ({
     },
   };
 };
+
+function initPersonalNotesColumns(): ColumnDef<PersonalNotesCustomResponse>[] {
+  const getHref = (lectureCourseId: string) =>
+    `/personalNotes/${encodeURIComponent(lectureCourseId)}`;
+
+  return [
+    {
+      accessorFn: (item) => item.expand?.userDocument_name,
+      id: "userDocument_name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[20rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[20rem]">
+          Material title
+        </IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand.userDocument_priority,
+      id: "userDocument_priority",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[8rem]"
+          href={getHref(info.row.original.id)}
+        >
+          <Priority
+            width={32}
+            height={32}
+            priority={info.getValue() as DocumentsPriorityOptions}
+          ></Priority>
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[8rem]">Priority</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand.userDocument_status,
+      id: "userDocument_status",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[8rem]"
+          href={getHref(info.row.original.id)}
+        >
+          <Status status={info.getValue() as DocumentsStatusOptions}></Status>
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[8rem]">Status</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+  ];
+}
 
 PersonalNotes.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;

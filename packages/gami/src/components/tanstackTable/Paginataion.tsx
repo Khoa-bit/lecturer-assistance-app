@@ -81,15 +81,15 @@ const PaginationButton = ({
     <li>
       <button
         className={`relative block h-8 w-8
-        rounded border-0 outline-none focus:border-sky-300 focus:ring
-        focus:ring-sky-200 focus:ring-offset-2
+        rounded border-0 outline-none focus:border-blue-300 focus:ring
+        focus:ring-blue-200 focus:ring-offset-2
         ${
           !isDisabled && !isActive
-            ? `text-slate-900 transition-all hover:bg-sky-100`
+            ? `text-slate-900 transition-all hover:bg-blue-100`
             : ""
         }
         ${isDisabled ? "text-slate-400" : ""}
-        ${isActive ? `bg-sky-400 text-white hover:bg-sky-400` : ""}`}
+        ${isActive ? `bg-blue-400 text-white hover:bg-blue-400` : ""}`}
         onClick={onClick}
         disabled={isDisabled}
         aria-label={ariaLabel}

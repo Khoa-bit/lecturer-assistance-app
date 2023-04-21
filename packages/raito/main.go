@@ -53,7 +53,7 @@ func main() {
 			return handlers.GetParticipatedEventDocuments(app, c)
 		})
 
-		// Get all full documents for events documents
+		// Get all user's full documents for event documents
 		// Full documents is now shared base for other documents
 		subGroup.GET("/fullDocuments", func(c echo.Context) error {
 			return handlers.GetFullDocuments(app, c)
@@ -63,6 +63,12 @@ func main() {
 		// Full documents is now shared base for other documents
 		subGroup.GET("/participatedFullDocuments", func(c echo.Context) error {
 			return handlers.GetParticipatedFullDocuments(app, c)
+		})
+
+    // Get all user's write-access full documents for event documents
+		// Full documents is now shared base for other documents
+		subGroup.GET("/getHasWriteFullDocuments", func(c echo.Context) error {
+			return handlers.GetHasWriteFullDocuments(app, c)
 		})
 
 		// Get all academic materials

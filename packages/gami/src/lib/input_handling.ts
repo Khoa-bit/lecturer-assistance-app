@@ -106,9 +106,9 @@ export const getCurrentCohort = (): string => {
   const month = now.getMonth();
 
   if (month <= 7) {
-    return `${fullYear - 1} - ${fullYear}`;
+    return `${fullYear - 1} - ${fullYear + 3}`;
   } else {
-    return `${fullYear} - ${fullYear + 1}`;
+    return `${fullYear} - ${fullYear + 4}`;
   }
 };
 

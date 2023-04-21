@@ -38,7 +38,6 @@ interface DocumentData {
   fullDocumentData: FullDocumentData;
   eventDocument: EventDocumentsResponse<FullDocumentsExpand>;
   toFullDocuments: ListResult<FullDocumentsCustomResponse>;
-
   pbAuthCookie: string;
 }
 
@@ -55,8 +54,9 @@ function EventDocument({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
-  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
+  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
   const eventDocument = dataParse.eventDocument;
+  const baseDocument = eventDocument.expand?.fullDocument.expand?.document;
   const toFullDocuments = dataParse.toFullDocuments;
   const [toFullDocument, setToFullDocument] = useState(
     eventDocument.toFullDocument
@@ -64,6 +64,7 @@ function EventDocument({
   const [startTime, setStartTime] = useState(eventDocument.startTime);
   const fullDocumentData = dataParse.fullDocumentData;
 
+  const isEventOwner = baseDocument?.owner === user.person;
   const childCollectionName = Collections.EventDocuments;
   const childId = eventDocument.id;
 
@@ -82,7 +83,9 @@ function EventDocument({
     hasEvents: false,
   };
 
-  const docLink = toFullDocument ? (
+  const docLink = toFullDocuments.items.some(
+    (fullDocument) => fullDocument.id == toFullDocument
+  ) ? (
     <Link
       className="absolute right-10 h-6"
       href={`/fullDocuments/${toFullDocument}`}
@@ -155,6 +158,7 @@ function EventDocument({
             },
             element: docLink,
             defaultValue: toFullDocument,
+            disabled: !isEventOwner,
           } as SelectProps<EventDocumentsRecord>)}
         >
           <option value="" disabled>
@@ -182,7 +186,7 @@ export const getServerSideProps = async ({
 
   const toFullDocuments =
     await pbServer.apiGetList<FullDocumentsCustomResponse>(
-      "/api/user/fullDocuments?fullList=true"
+      "/api/user/getHasWriteFullDocuments?fullList=true"
     );
 
   const fullDocument = eventDocument.expand?.fullDocument;

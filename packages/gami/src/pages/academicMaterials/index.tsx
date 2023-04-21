@@ -1,3 +1,4 @@
+import type { ColumnDef } from "@tanstack/react-table";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
@@ -5,9 +6,18 @@ import type {
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { AcademicMaterialsCustomResponse } from "raito";
-import AcademicMaterialsTable from "src/components/academicMaterials/AcademicMaterialsTable";
+import type {
+  AcademicMaterialsCustomResponse,
+  DocumentsPriorityOptions,
+  DocumentsStatusOptions,
+} from "raito";
+import { useMemo } from "react";
+import Priority from "src/components/documents/Priority";
+import Status from "src/components/documents/Status";
 import MainLayout from "src/components/layouts/MainLayout";
+import IndexCell from "src/components/tanstackTable/IndexCell";
+import IndexHeaderCell from "src/components/tanstackTable/IndexHeaderCell";
+import IndexTable from "src/components/tanstackTable/IndexTable";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
@@ -22,9 +32,14 @@ function AcademicMaterials({
   const dataParse = SuperJSON.parse<AcademicMaterialsData>(data);
   const academicMaterials = dataParse.academicMaterials;
   const participatedAcademicMaterials = dataParse.participatedAcademicMaterials;
+  const academicMaterialColumns = useMemo(
+    () => initAcademicMaterialColumns(),
+    []
+  );
+  console.log("==AcademicMaterials==");
 
   return (
-    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
+    <main className="mx-auto flex max-w-screen-lg flex-col px-4 py-8">
       <Head>
         <title>Academic materials</title>
       </Head>
@@ -39,21 +54,19 @@ function AcademicMaterials({
           academic materials
         </Link>
       </header>
-      <section className="my-4 rounded-lg bg-white py-5 px-7">
-        <h2 className="pb-5 text-xl font-semibold text-gray-700">
-          My academic materials
-        </h2>
-        <AcademicMaterialsTable
-          academicMaterials={academicMaterials}
-        ></AcademicMaterialsTable>
+      <section className="my-4 rounded-lg bg-white px-7 py-5">
+        <IndexTable
+          heading="My academic materials"
+          initData={academicMaterials}
+          columns={academicMaterialColumns}
+        ></IndexTable>
       </section>
-      <section className="my-4 rounded-lg bg-white py-5 px-7">
-        <h2 className="pb-5 text-xl font-semibold text-gray-700">
-          Participate academic materials
-        </h2>
-        <AcademicMaterialsTable
-          academicMaterials={participatedAcademicMaterials}
-        ></AcademicMaterialsTable>
+      <section className="my-4 rounded-lg bg-white px-7 py-5">
+        <IndexTable
+          heading="Participate academic materials"
+          initData={participatedAcademicMaterials}
+          columns={academicMaterialColumns}
+        ></IndexTable>
       </section>
     </main>
   );
@@ -84,6 +97,84 @@ export const getServerSideProps = async ({
     },
   };
 };
+
+function initAcademicMaterialColumns(): ColumnDef<AcademicMaterialsCustomResponse>[] {
+  const getHref = (lectureCourseId: string) =>
+    `/academicMaterials/${encodeURIComponent(lectureCourseId)}`;
+
+  return [
+    {
+      accessorFn: (item) => item.expand?.userDocument_name,
+      id: "userDocument_name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[20rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[20rem]">
+          Material title
+        </IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.category,
+      id: "category",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[9rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[9rem]">Category</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand.userDocument_priority,
+      id: "userDocument_priority",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[8rem]"
+          href={getHref(info.row.original.id)}
+        >
+          <Priority
+            width={32}
+            height={32}
+            priority={info.getValue() as DocumentsPriorityOptions}
+          ></Priority>
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[8rem]">Priority</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand.userDocument_status,
+      id: "userDocument_status",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[8rem]"
+          href={getHref(info.row.original.id)}
+        >
+          <Status status={info.getValue() as DocumentsStatusOptions}></Status>
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[8rem]">Status</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+  ];
+}
 
 AcademicMaterials.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;

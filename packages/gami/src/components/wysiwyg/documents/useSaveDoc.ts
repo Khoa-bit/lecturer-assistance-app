@@ -19,28 +19,6 @@ export function useSaveDoc<T extends FieldValues>({
   const initial = useRef(true);
   const [hasSaved, setHasSaved] = useState(true);
 
-  useEffect(() => {
-    const warningText =
-      "Do you want to leave the site? Changes you made is being saved...";
-    const handleWindowClose = (e: BeforeUnloadEvent) => {
-      if (hasSaved) return;
-      e.preventDefault();
-      return warningText;
-    };
-    const handleBrowseAway = () => {
-      if (hasSaved) return;
-      if (window.confirm(warningText)) return;
-      router.events.emit("routeChangeError");
-      throw "routeChange aborted.";
-    };
-    window.addEventListener("beforeunload", handleWindowClose);
-    router.events.on("routeChangeStart", handleBrowseAway);
-    return () => {
-      window.removeEventListener("beforeunload", handleWindowClose);
-      router.events.off("routeChangeStart", handleBrowseAway);
-    };
-  }, [hasSaved, router.events]);
-
   const submitForm = useCallback(() => {
     setHasSaved(false);
 
@@ -48,6 +26,19 @@ export function useSaveDoc<T extends FieldValues>({
 
     setHasSaved(true);
   }, [formRef, setHasSaved, submitRef]);
+
+  useEffect(() => {
+    const handleBrowseAway = () => {
+      if (hasSaved) return;
+      submitForm();
+      return;
+    };
+
+    router.events.on("routeChangeStart", handleBrowseAway);
+    return () => {
+      router.events.off("routeChangeStart", handleBrowseAway);
+    };
+  }, [hasSaved, router.events, submitForm]);
 
   useEffect(() => {
     const keyDownEvent = (e: KeyboardEvent) => {

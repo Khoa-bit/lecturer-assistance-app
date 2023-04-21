@@ -27,7 +27,7 @@ export interface EventDocumentsCustomResponse extends EventDocumentsResponse {
   };
 }
 
-// GetFullDocuments, GetParticipatedFullDocuments
+// GetFullDocuments, GetParticipatedFullDocuments, GetHasWriteFullDocuments
 export interface FullDocumentsCustomResponse extends FullDocumentsResponse {
   expand: {
     userDocument_attachmentsHash: string;

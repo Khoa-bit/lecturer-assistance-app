@@ -206,9 +206,9 @@ function Person({
 
         <h1 className="flex-grow">
           <input
-            className={`input-bordered input h-10 w-full rounded bg-transparent text-2xl font-bold focus:bg-white`}
+            className={`input-ghost input w-full text-2xl font-bold`}
             {...register("name", { required: true, disabled: !isWrite })}
-            placeholder="Person name"
+            placeholder="Title"
           />
         </h1>
         {isWrite && (

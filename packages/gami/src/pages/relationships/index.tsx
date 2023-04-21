@@ -1,3 +1,4 @@
+import type { ColumnDef } from "@tanstack/react-table";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
@@ -5,14 +6,22 @@ import type {
 import Head from "next/head";
 import type { ListResult } from "pocketbase";
 import type {
-  StarredContactsCustomResponse,
   ContactsCustomResponse,
+  RelationshipsRecord,
+  RelationshipsResponse,
+  StarredContactsCustomResponse,
+  UsersResponse,
 } from "raito";
+import { Collections } from "raito";
+import type { SetStateAction } from "react";
 import { useState } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
-import ContactsTable from "src/components/relationships/ContactsTable";
+import IndexCell from "src/components/tanstackTable/IndexCell";
+import IndexHeaderCell from "src/components/tanstackTable/IndexHeaderCell";
+import IndexTable from "src/components/tanstackTable/IndexTable";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
+import type { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
 
 interface RelationshipsData {
@@ -33,35 +42,36 @@ function Relationships({
   );
 
   return (
-    <main className="mx-auto flex max-w-screen-lg flex-col py-8 px-4">
+    <main className="mx-auto flex max-w-screen-lg flex-col px-4 py-8">
       <Head>
         <title>Contacts</title>
       </Head>
       <header className="flex w-full justify-between">
         <h1 className="text-2xl font-bold">Contacts</h1>
+
+        <div className="invisible p-3" aria-hidden>
+          Filler
+        </div>
       </header>
-      <section className="my-4 rounded-lg bg-white py-5 px-7">
-        <h2 className="pb-5 text-xl font-semibold text-gray-700">
-          Starred Contacts
-        </h2>
-        <ContactsTable
-          isStarTable={true}
-          contacts={starredContacts}
-          pbClient={pbClient}
-          user={user}
-          setStarredContacts={setStarredContacts}
-        ></ContactsTable>
+      <section className="my-4 rounded-lg bg-white px-7 py-5">
+        <IndexTable
+          heading="Starred Contacts"
+          initData={starredContacts}
+          columns={initPeopleColumns(true, pbClient, user, setStarredContacts)}
+        ></IndexTable>
       </section>
-      <section className="my-4 rounded-lg bg-white py-5 px-7">
-        <h2 className="pb-5 text-xl font-semibold text-gray-700">Contacts</h2>
-        <ContactsTable
-          isStarTable={false}
-          contacts={contacts}
-          pbClient={pbClient}
-          user={user}
-          starredContacts={starredContacts}
-          setStarredContacts={setStarredContacts}
-        ></ContactsTable>
+      <section className="my-4 rounded-lg bg-white px-7 py-5">
+        <IndexTable
+          heading="Contacts"
+          initData={contacts}
+          columns={initPeopleColumns(
+            false,
+            pbClient,
+            user,
+            setStarredContacts,
+            starredContacts
+          )}
+        ></IndexTable>
       </section>
     </main>
   );
@@ -92,6 +102,239 @@ export const getServerSideProps = async ({
     },
   };
 };
+
+function initPeopleColumns(
+  isStarTable: boolean,
+  pbClient: PBCustom,
+  user: UsersResponse,
+  setStarredContacts: (
+    value: SetStateAction<ListResult<StarredContactsCustomResponse>>
+  ) => void,
+  starredContacts?: ListResult<StarredContactsCustomResponse>
+): ColumnDef<ContactsCustomResponse | StarredContactsCustomResponse>[] {
+  const getHref = (lectureCourseId: string) =>
+    `/people/${encodeURIComponent(lectureCourseId)}`;
+
+  const starredContactsMap = new Map<string, StarredContactsCustomResponse>();
+  if (starredContacts) {
+    for (const starredContact of starredContacts.items) {
+      starredContactsMap.set(starredContact.id, starredContact);
+    }
+  }
+
+  const createStarButton = (
+    contact: ContactsCustomResponse | StarredContactsCustomResponse
+  ) => {
+    // Provide remove star function for ContactsTable by looping through the starredContacts.items to find a match
+    // then return <RemoveStar> button for that starredContacts
+    const tryGetStarredContact = starredContactsMap.get(contact.id);
+    if (!isStarTable && starredContacts && tryGetStarredContact) {
+      return (
+        <RemoveStar
+          pbClient={pbClient}
+          contact={tryGetStarredContact}
+          setStarredContacts={setStarredContacts}
+        ></RemoveStar>
+      );
+    }
+
+    if (isStarTable && isStarredContacts(contact)) {
+      return (
+        <RemoveStar
+          pbClient={pbClient}
+          contact={contact}
+          setStarredContacts={setStarredContacts}
+        ></RemoveStar>
+      );
+    }
+
+    return (
+      <AddStar
+        pbClient={pbClient}
+        user={user}
+        contact={contact}
+        setStarredContacts={setStarredContacts}
+      ></AddStar>
+    );
+  };
+
+  return [
+    {
+      accessorFn: (item) => item,
+      enableColumnFilter: false,
+      id: "star",
+      cell: (info) =>
+        createStarButton(
+          info.getValue() as
+            | ContactsCustomResponse
+            | StarredContactsCustomResponse
+        ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[1rem]"> </IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.name,
+      id: "name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[20rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[20rem]">Name</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.personId,
+      id: "personId",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">ID</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.title,
+      id: "title",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Position</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) =>
+        [item.personalEmail, item.expand?.user_email]
+          .filter((email) => email != undefined && email != "")
+          .join(", "),
+      id: "email",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Email</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+  ];
+}
+
+interface RemoveStarProps {
+  pbClient: PBCustom;
+  contact: StarredContactsCustomResponse;
+  setStarredContacts: (
+    value: SetStateAction<ListResult<StarredContactsCustomResponse>>
+  ) => void;
+}
+
+export function RemoveStar({
+  pbClient,
+  contact,
+  setStarredContacts,
+}: RemoveStarProps) {
+  return (
+    <button
+      className="w-full"
+      onClick={() => {
+        const relationshipId = contact.expand.relationship_id;
+
+        if (!relationshipId) return;
+
+        pbClient
+          .collection(Collections.Relationships)
+          .delete(relationshipId)
+          .then(async () => {
+            const newStarredContacts =
+              await pbClient.apiGetList<StarredContactsCustomResponse>(
+                "/api/user/getStarredContacts?fullList=true"
+              );
+
+            setStarredContacts(newStarredContacts);
+          });
+      }}
+    >
+      <span className="material-symbols-rounded text-yellow-500 [font-variation-settings:'FILL'_1] hover:text-yellow-400">
+        star
+      </span>
+    </button>
+  );
+}
+
+interface AddStarProps {
+  pbClient: PBCustom;
+  user: UsersResponse;
+  contact: ContactsCustomResponse;
+  setStarredContacts: (
+    value: SetStateAction<ListResult<StarredContactsCustomResponse>>
+  ) => void;
+}
+
+export function AddStar({
+  pbClient,
+  user,
+  contact,
+  setStarredContacts,
+}: AddStarProps) {
+  return (
+    <button
+      className="w-full"
+      onClick={() => {
+        pbClient
+          .collection(Collections.Relationships)
+          .create<RelationshipsResponse>({
+            fromPerson: user.person,
+            toPerson: contact.id,
+          } as RelationshipsRecord)
+          .then(async () => {
+            const newStarredContacts =
+              await pbClient.apiGetList<StarredContactsCustomResponse>(
+                "/api/user/getStarredContacts?fullList=true"
+              );
+
+            setStarredContacts(newStarredContacts);
+          });
+      }}
+    >
+      <span className="material-symbols-rounded text-yellow-500 hover:text-yellow-400">
+        star
+      </span>
+    </button>
+  );
+}
+
+function isStarredContacts(
+  contact: ContactsCustomResponse | StarredContactsCustomResponse
+): contact is StarredContactsCustomResponse {
+  return (
+    (contact as StarredContactsCustomResponse).expand.relationship_id !==
+    undefined
+  );
+}
 
 Relationships.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;

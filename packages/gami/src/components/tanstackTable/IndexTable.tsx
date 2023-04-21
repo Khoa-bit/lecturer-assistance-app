@@ -41,14 +41,19 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
+const dataListCap = 100;
+
 interface IndexTableProps {
+  heading: string;
   initData?: ListResult<any>;
   columns: ColumnDef<any>[];
 }
 
-function IndexTable({ initData, columns }: IndexTableProps) {
+function IndexTable({ heading, initData, columns }: IndexTableProps) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+
+  const tableId = `${initData?.items.length}-${initData?.items.at(0)?.id}`;
 
   const queryClient = useQueryClient();
   useEffect(() => {
@@ -79,6 +84,7 @@ function IndexTable({ initData, columns }: IndexTableProps) {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    sortDescFirst: true,
     debugTable: false,
     debugHeaders: false,
     debugColumns: false,
@@ -86,46 +92,46 @@ function IndexTable({ initData, columns }: IndexTableProps) {
 
   const pageIndex = table.getState().pagination.pageIndex;
   const pageSize = table.getState().pagination.pageSize;
-  const totalItems = initData?.totalItems ?? 0;
+  const totalItems = table.getPrePaginationRowModel().rows.length;
   const counter = `${pageIndex * pageSize} - ${Math.min(
     totalItems,
     (pageIndex + 1) * pageSize
   )} of ${totalItems}`;
-  const fillerRows =
-    table.getState().pagination.pageSize - table.getRowModel().rows.length;
+
+  const fillerRows = pageSize - table.getRowModel().rows.length;
 
   return (
     <section>
-      <header className="flex items-center pb-5">
-        <h2 className="grow text-xl font-semibold text-gray-700">
-          My lecture courses
-        </h2>
+      <header className="flex items-center pb-4">
+        <h2 className="grow text-xl font-semibold text-gray-700">{heading}</h2>
         <DebouncedInput
-          value={globalFilter ?? ""}
+          initialValue={globalFilter ?? ""}
           onChange={(value) => setGlobalFilter(String(value))}
           className="input-bordered input placeholder:font-normal placeholder:text-gray-400"
           placeholder="Search all columns..."
-          debounce={200}
+          wait={200}
         />
       </header>
       <div className="overflow-x-auto p-1">
-        <table>
+        <table className="min-w-full">
           <thead className="border-b text-left">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
-                  const showFilter =
-                    header.column.getCanFilter() &&
-                    header.column.id != "chevron_right";
+                  const showFilter = header.column.getCanFilter();
 
                   return (
-                    <th key={header.id} colSpan={header.colSpan}>
+                    <th
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      className="h-full"
+                    >
                       {header.isPlaceholder ? null : (
-                        <div className="grid grid-cols-[min-content] pb-2">
+                        <div className="flex h-full flex-col gap-1 pb-2">
                           <div
                             {...{
                               className: header.column.getCanSort()
-                                ? "flex cursor-pointer hover:bg-gray-50 px-2 py-1 items-center"
+                                ? "flex cursor-pointer group hover:bg-gray-50 items-center"
                                 : "",
                               onClick: header.column.getToggleSortingHandler(),
                             }}
@@ -141,14 +147,17 @@ function IndexTable({ initData, columns }: IndexTableProps) {
                               desc: (
                                 <IcRoundArrowDownward></IcRoundArrowDownward>
                               ),
-                            }[header.column.getIsSorted() as string] ?? null}
+                            }[header.column.getIsSorted() as string] ?? (
+                              <IcRoundArrowDownward className="invisible text-gray-400 group-hover:visible"></IcRoundArrowDownward>
+                            )}
                           </div>
                           <div className="flex">
                             {showFilter ? (
                               <Filter
                                 column={header.column}
                                 table={table}
-                                debounce={200}
+                                tableId={tableId}
+                                wait={200}
                               />
                             ) : null}
                           </div>
@@ -165,11 +174,11 @@ function IndexTable({ initData, columns }: IndexTableProps) {
               return (
                 <tr
                   key={row.id}
-                  className="odd:bg-white even:bg-slate-100 hover:bg-slate-200"
+                  className="h-11 odd:bg-white even:bg-slate-100 hover:bg-slate-200"
                 >
                   {row.getVisibleCells().map((cell) => {
                     return (
-                      <td key={cell.id}>
+                      <td key={cell.id} className="h-full">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -183,7 +192,7 @@ function IndexTable({ initData, columns }: IndexTableProps) {
             {fillerRows > 0 && (
               <tr
                 style={{
-                  height: `calc(calc(2.5rem + 0.5px) * ${fillerRows})`,
+                  height: `calc(2.75rem * ${fillerRows})`,
                 }}
               >
                 <td colSpan={columns.length}></td>
@@ -192,12 +201,12 @@ function IndexTable({ initData, columns }: IndexTableProps) {
           </tbody>
           <tfoot className="border-t text-left">
             {table.getFooterGroups().map((footerGroup) => (
-              <tr key={footerGroup.id}>
+              <tr key={footerGroup.id} className="h-11">
                 {footerGroup.headers.map((header) => {
                   return (
                     <th
                       key={header.id}
-                      className="p-2"
+                      className="h-full"
                       colSpan={header.colSpan}
                     >
                       {flexRender(
@@ -213,11 +222,11 @@ function IndexTable({ initData, columns }: IndexTableProps) {
         </table>
       </div>
       <footer className="item flex items-center justify-end gap-1">
-        <label className="label" htmlFor="perPage">
+        <label className="label" htmlFor={`perPage-${tableId}`}>
           Rows per page:
         </label>
         <select
-          id="perPage"
+          id={`perPage-${tableId}`}
           className="select-bordered select select-sm"
           value={table.getState().pagination.pageSize}
           onChange={(e) => {
@@ -244,11 +253,13 @@ function IndexTable({ initData, columns }: IndexTableProps) {
 function Filter({
   column,
   table,
-  debounce,
+  tableId,
+  wait,
 }: {
   column: Column<any, unknown>;
   table: Table<any>;
-  debounce?: number;
+  tableId?: string;
+  wait?: number;
 }) {
   const firstValue = table
     .getPreFilteredRowModel()
@@ -270,7 +281,7 @@ function Filter({
         type="number"
         min={Number(column.getFacetedMinMaxValues()?.[0] ?? "")}
         max={Number(column.getFacetedMinMaxValues()?.[1] ?? "")}
-        value={(columnFilterValue as [number, number])?.[0] ?? ""}
+        initialValue={(columnFilterValue as [number, number])?.[0] ?? ""}
         onChange={(value) =>
           column.setFilterValue((old: [number, number]) => [value, old?.[1]])
         }
@@ -280,13 +291,13 @@ function Filter({
             : ""
         }`}
         className="input-bordered input input-sm mr-2 w-full placeholder:font-normal placeholder:text-gray-400"
-        debounce={debounce}
+        wait={wait}
       />
       <DebouncedInput
         type="number"
         min={Number(column.getFacetedMinMaxValues()?.[0] ?? "")}
         max={Number(column.getFacetedMinMaxValues()?.[1] ?? "")}
-        value={(columnFilterValue as [number, number])?.[1] ?? ""}
+        initialValue={(columnFilterValue as [number, number])?.[1] ?? ""}
         onChange={(value) =>
           column.setFilterValue((old: [number, number]) => [old?.[0], value])
         }
@@ -296,24 +307,24 @@ function Filter({
             : ""
         }`}
         className="input-bordered input input-sm mr-2 w-full placeholder:font-normal placeholder:text-gray-400"
-        debounce={debounce}
+        wait={wait}
       />
     </>
   ) : (
     <>
-      <datalist id={column.id + "list"}>
-        {sortedUniqueValues.slice(0, 5000).map((value: any) => (
-          <option value={value} key={value} />
+      <datalist id={`${column.id}-${tableId}-list`}>
+        {sortedUniqueValues.slice(0, dataListCap).map((value: any) => (
+          <option className="bg-blue-500 p-5" value={value} key={value} />
         ))}
       </datalist>
       <DebouncedInput
         type="text"
-        value={(columnFilterValue ?? "") as string}
+        initialValue={(columnFilterValue ?? "") as string}
         onChange={(value) => column.setFilterValue(value)}
         placeholder={`Search... (${column.getFacetedUniqueValues().size})`}
         className="input-bordered input input-sm mr-2 w-full placeholder:font-normal placeholder:text-gray-400"
-        list={column.id + "list"}
-        debounce={debounce}
+        list={`${column.id}-${tableId}-list`}
+        wait={wait}
       />
     </>
   );
@@ -321,24 +332,24 @@ function Filter({
 
 // A debounced input react component
 function DebouncedInput({
-  value: initialValue,
+  initialValue,
   onChange,
-  debounce = 500,
+  wait = 500,
   ...props
 }: {
-  value: string | number;
+  initialValue: string | number;
   onChange: (value: string | number) => void;
-  debounce?: number;
+  wait?: number;
 } & Omit<InputHTMLAttributes<HTMLInputElement>, "onChange">) {
   const [value, setValue] = useState(initialValue);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       onChange(value);
-    }, debounce);
+    }, wait);
 
     return () => clearTimeout(timeout);
-  }, [value, debounce]);
+  }, [value]);
 
   return (
     <input
