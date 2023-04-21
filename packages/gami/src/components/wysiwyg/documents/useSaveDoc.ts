@@ -1,25 +1,32 @@
 import { useRouter } from "next/router";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FieldValues, UseFormWatch } from "react-hook-form";
+import type {
+  FieldValues,
+  UseFormTrigger,
+  UseFormWatch,
+} from "react-hook-form";
 import { debounce } from "src/lib/input_handling";
 
 interface useDocHelperParams<T extends FieldValues> {
   formRef: RefObject<HTMLFormElement>;
   submitRef: RefObject<HTMLInputElement>;
   watch: UseFormWatch<T>;
+  trigger: UseFormTrigger<T>;
 }
 
 export function useSaveDoc<T extends FieldValues>({
   formRef,
   submitRef,
   watch,
+  trigger,
 }: useDocHelperParams<T>): boolean {
   const router = useRouter();
   const initial = useRef(true);
   const [hasSaved, setHasSaved] = useState(true);
 
-  const submitForm = useCallback(() => {
+  const submitForm = useCallback(async () => {
+    if (!(await trigger(undefined, { shouldFocus: false }))) return;
     setHasSaved(false);
 
     formRef.current?.requestSubmit(submitRef.current);

@@ -54,7 +54,7 @@ function Select<TFieldValues extends FieldValues = FieldValues>({
           }}
           defaultValue={defaultValue}
           {...rest}
-          className={`select-bordered select`}
+          className={`select-bordered select required:select-error invalid:select-error`}
         >
           {children}
           {selectOptions.map((selectOption) => (

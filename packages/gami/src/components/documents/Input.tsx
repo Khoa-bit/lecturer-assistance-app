@@ -34,7 +34,7 @@ function Input<TFieldValues extends FieldValues = FieldValues>({
         {label}
       </label>
       <input
-        className={`input-bordered input`}
+        className={`input-bordered input invalid:input-error`}
         id={id}
         {...registerOptions}
         {...rest}
@@ -44,6 +44,7 @@ function Input<TFieldValues extends FieldValues = FieldValues>({
           if (onChange) onChange(e);
         }}
         min={min}
+        required={Boolean(options?.required ?? false)}
       />
     </>
   );

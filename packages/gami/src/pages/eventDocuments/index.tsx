@@ -89,7 +89,7 @@ export const getServerSideProps = async ({
   const upcomingEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
     .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument.document.deleted = "" && (endTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
+      filter: `fullDocument.document.deleted = "" && (endTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}" || endTime = "")`,
       expand: "fullDocument.document",
       sort: "startTime",
     });
@@ -97,7 +97,7 @@ export const getServerSideProps = async ({
   const pastEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
     .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument.document.deleted = "" && (endTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
+      filter: `fullDocument.document.deleted = "" && (endTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}" && endTime != "")`,
       expand: "fullDocument.document",
       sort: "-startTime",
     });

@@ -73,36 +73,37 @@ function Person({
 
   console.log(person);
 
-  const { register, handleSubmit, setValue, watch } = useForm<PersonInput>({
-    defaultValues: {
-      personId: person.personId,
-      name: person.name,
-      avatar: person.avatar,
-      phone: person.phone,
-      email: person.expand?.["users(person)"]?.email,
-      personalEmail: person.personalEmail,
-      title: person.title,
-      placeOfBirth: person.placeOfBirth,
-      gender: person.gender,
-      major: person.major,
-      deleted: person.deleted,
-      diffHash: MD5(
-        SuperJSON.stringify({
-          personId: person.personId,
-          name: person.name,
-          avatar: undefined,
-          phone: person.phone,
-          personalEmail: person.personalEmail,
-          title: person.title,
-          placeOfBirth: person.placeOfBirth,
-          gender: person.gender,
-          major: person.major,
-          deleted: person.deleted,
-          diffHash: undefined,
-        } as PersonInput)
-      ).toString(),
-    },
-  });
+  const { register, handleSubmit, setValue, watch, trigger } =
+    useForm<PersonInput>({
+      defaultValues: {
+        personId: person.personId,
+        name: person.name,
+        avatar: person.avatar,
+        phone: person.phone,
+        email: person.expand?.["users(person)"]?.email,
+        personalEmail: person.personalEmail,
+        title: person.title,
+        placeOfBirth: person.placeOfBirth,
+        gender: person.gender,
+        major: person.major,
+        deleted: person.deleted,
+        diffHash: MD5(
+          SuperJSON.stringify({
+            personId: person.personId,
+            name: person.name,
+            avatar: undefined,
+            phone: person.phone,
+            personalEmail: person.personalEmail,
+            title: person.title,
+            placeOfBirth: person.placeOfBirth,
+            gender: person.gender,
+            major: person.major,
+            deleted: person.deleted,
+            diffHash: undefined,
+          } as PersonInput)
+        ).toString(),
+      },
+    });
 
   const { pbClient } = usePBClient(dataParse.pbAuthCookie);
 
@@ -161,6 +162,7 @@ function Person({
     formRef,
     submitRef,
     watch,
+    trigger,
   });
 
   // This css is currently duplicated with FullDocument.tsx component

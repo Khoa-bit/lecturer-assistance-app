@@ -123,7 +123,7 @@ function EventDocument({
             name: "endTime",
             options: { required: true },
             type: "datetime-local",
-            min: startTime,
+            min: dateToISOLikeButLocalOrUndefined(startTime),
           } as InputProps<EventDocumentsRecord>)}
         ></Input>
         {/* <Select

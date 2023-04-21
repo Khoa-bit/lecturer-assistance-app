@@ -129,20 +129,28 @@ function FullDocument<TRecord>({
   const router = useRouter();
   hasEvents ??= true;
 
-  const { register, control, handleSubmit, watch, setValue, reset, getValues } =
-    useForm<FullDocumentInput>({
-      defaultValues: {
-        name: baseDocument?.name,
-        thumbnail: undefined,
-        priority: baseDocument?.priority,
-        status: baseDocument?.status,
-        richText: baseDocument?.richText,
-        document: fullDocument.document,
-        diffHash: baseDocument?.diffHash,
-        attachmentsHash: baseDocument?.attachmentsHash,
-        ...childrenDefaultValue,
-      },
-    });
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    getValues,
+    trigger,
+  } = useForm<FullDocumentInput>({
+    defaultValues: {
+      name: baseDocument?.name,
+      thumbnail: undefined,
+      priority: baseDocument?.priority,
+      status: baseDocument?.status,
+      richText: baseDocument?.richText,
+      document: fullDocument.document,
+      diffHash: baseDocument?.diffHash,
+      attachmentsHash: baseDocument?.attachmentsHash,
+      ...childrenDefaultValue,
+    },
+  });
 
   // Custom input field that is outside of the form
   const registerThumbnail = register("thumbnail", { disabled: !isWrite });
@@ -246,6 +254,7 @@ function FullDocument<TRecord>({
     formRef,
     submitRef,
     watch,
+    trigger,
   });
 
   // Realtime collaboration
