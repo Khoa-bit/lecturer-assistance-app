@@ -26,8 +26,8 @@ export function useSaveDoc<T extends FieldValues>({
   const [hasSaved, setHasSaved] = useState(true);
 
   const submitForm = useCallback(async () => {
-    if (!(await trigger(undefined, { shouldFocus: false }))) return;
     setHasSaved(false);
+    if (!(await trigger(undefined, { shouldFocus: false }))) return;
 
     formRef.current?.requestSubmit(submitRef.current);
 
@@ -78,17 +78,6 @@ export function useSaveDoc<T extends FieldValues>({
     });
     return () => subscription.unsubscribe();
   }, [watch, setHasSaved, submitForm]);
-
-  const onSubmitClick = () => {
-    setHasSaved(true);
-  };
-
-  useEffect(() => {
-    const submitHtml = submitRef.current;
-    submitHtml?.addEventListener("click", onSubmitClick);
-
-    return () => submitHtml?.removeEventListener("click", onSubmitClick);
-  }, [submitRef]);
 
   return hasSaved;
 }

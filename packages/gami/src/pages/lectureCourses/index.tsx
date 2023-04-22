@@ -160,12 +160,15 @@ function initCourseColumns(
       header: () => (
         <IndexHeaderCell className="min-w-[13rem]">Periods</IndexHeaderCell>
       ),
-      footer: () => (
-        <IndexFooterCell className="min-w-[13rem]">{`Sum: ${lectureCourses?.items.reduce(
-          (prev, curr) =>
-            prev + parseInt(curr.expand.courseTemplate_periodsCount),
-          0
-        )}`}</IndexFooterCell>
+      footer: (info) => (
+        <IndexFooterCell className="min-w-[13rem]">{`Sum: ${info.table
+          .getPrePaginationRowModel()
+          .rows.reduce(
+            (prev, curr) =>
+              prev +
+              parseInt(curr.getValue("courseTemplate_periodsCount") as string),
+            0
+          )}`}</IndexFooterCell>
       ),
     },
     {
