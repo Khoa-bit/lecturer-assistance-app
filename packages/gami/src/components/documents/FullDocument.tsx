@@ -310,7 +310,7 @@ function FullDocument<TRecord>({
         const attachments = await pbClient
           .collection(Collections.Attachments)
           .getFullList<AttachmentsResponse>(200, {
-            filter: `document = "${fullDocument.document}"`,
+            filter: `document.id = "${fullDocument.document}"`,
           });
 
         setAttachments(attachments);
@@ -584,7 +584,7 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
   const attachments = await pbServer
     .collection(Collections.Attachments)
     .getFullList<AttachmentsResponse>(200, {
-      filter: `document = "${fullDocument.document}"`,
+      filter: `document.id = "${fullDocument.document}"`,
     });
 
   const nowISO = new Date().toISOString().replace("T", " ");

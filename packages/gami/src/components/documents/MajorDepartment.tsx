@@ -48,7 +48,7 @@ function MajorDepartment({
       const majorOptions = await pbClient
         .collection(Collections.Majors)
         .getFullList<MajorsResponse>({
-          filter: `department="${departmentId}"`,
+          filter: `department.id = "${departmentId}"`,
         })
         .catch(() => undefined);
 
@@ -126,7 +126,7 @@ export const fetchMajorDepartment: FetchMajorDepartmentFunc = async (
   const majorOptions = await pbServer
     .collection(Collections.Majors)
     .getFullList<MajorsResponse>({
-      filter: `department="${departmentId}"`,
+      filter: `department.id = "${departmentId}"`,
     });
 
   return { departments, majorOptions };
