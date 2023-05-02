@@ -65,7 +65,7 @@ func main() {
 			return handlers.GetParticipatedFullDocuments(app, c)
 		})
 
-    // Get all user's write-access full documents for event documents
+		// Get all user's write-access full documents for event documents
 		// Full documents is now shared base for other documents
 		subGroup.GET("/getHasWriteFullDocuments", func(c echo.Context) error {
 			return handlers.GetHasWriteFullDocuments(app, c)
@@ -79,6 +79,11 @@ func main() {
 		// Get all academic materials that the current user participate in
 		subGroup.GET("/getParticipatedAcademicMaterials", func(c echo.Context) error {
 			return handlers.GetParticipatedAcademicMaterials(app, c)
+		})
+
+		// Get all academic materials and all participants
+		subGroup.GET("/getAcademicMaterialsWithParticipants", func(c echo.Context) error {
+			return handlers.GetAcademicMaterialsWithParticipants(app, c)
 		})
 
 		// Get all personalNotes of the current user

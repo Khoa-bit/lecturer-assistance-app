@@ -1,20 +1,9 @@
-import { Color } from "@tiptap/extension-color";
-import Highlight from "@tiptap/extension-highlight";
-import Link from "@tiptap/extension-link";
-import Mention from "@tiptap/extension-mention";
-import TaskItem from "@tiptap/extension-task-item";
-import TaskList from "@tiptap/extension-task-list";
-import TextAlign from "@tiptap/extension-text-align";
-import TextStyle from "@tiptap/extension-text-style";
-import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useMemo, useState } from "react";
 import { formatDate } from "src/lib/input_handling";
 import SuperJSON from "superjson";
+import { customExtensionsFull } from "./TipTap";
 import CustomImage from "./customImageExtension/image";
-import suggestion from "./suggestion";
-import { Comment } from "./tiptapCommentExtension/comment";
 import {
   getCommentFunctions,
   useCommentState,
@@ -73,33 +62,7 @@ const TipTapView = ({ id, richText }: TipTapProps) => {
       },
     },
 
-    extensions: [
-      StarterKit,
-      TextAlign.configure({
-        types: ["heading", "paragraph"],
-      }),
-      Highlight,
-      Link,
-      TextStyle,
-      Color,
-      Typography,
-      CustomImage,
-      TaskList.configure({
-        HTMLAttributes: {
-          class: "pl-0",
-        },
-      }),
-      TaskItem.configure({
-        nested: true,
-      }),
-      Mention.configure({
-        HTMLAttributes: {
-          class: "mention",
-        },
-        suggestion,
-      }),
-      Comment,
-    ],
+    extensions: customExtensionsFull,
     content: content,
   });
 

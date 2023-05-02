@@ -179,14 +179,14 @@ function initPeopleColumns(
       id: "name",
       cell: (info) => (
         <IndexCell
-          className="min-w-[20rem]"
+          className="min-w-[12rem]"
           href={getHref(info.row.original.id)}
         >
           {info.getValue() as string}
         </IndexCell>
       ),
       header: () => (
-        <IndexHeaderCell className="min-w-[20rem]">Name</IndexHeaderCell>
+        <IndexHeaderCell className="min-w-[12rem]">Name</IndexHeaderCell>
       ),
       footer: () => null,
     },
@@ -238,6 +238,54 @@ function initPeopleColumns(
       ),
       header: () => (
         <IndexHeaderCell className="min-w-[10rem]">Email</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => (item.isFaculty ? "Yes" : "No"),
+      id: "isFaculty",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[6rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[6rem]">Is Faculty</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand?.major_name,
+      id: "major_name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Major</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand?.department_name,
+      id: "department_name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Department</IndexHeaderCell>
       ),
       footer: () => null,
     },

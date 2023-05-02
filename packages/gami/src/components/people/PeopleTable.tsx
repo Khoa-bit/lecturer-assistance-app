@@ -1,13 +1,16 @@
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type { PeopleResponse, UsersResponse } from "raito";
+import type { Education, Experience, Interests } from "src/types/peopleJSON";
 
 interface UsersExpand {
   "users(person)": UsersResponse;
 }
 
 interface PeopleTableProps {
-  people: ListResult<PeopleResponse<UsersExpand>>;
+  people: ListResult<
+    PeopleResponse<Education, Experience, Interests, UsersExpand>
+  >;
 }
 
 function PeopleTable({ people }: PeopleTableProps) {
@@ -60,7 +63,7 @@ function PeopleTable({ people }: PeopleTableProps) {
       </td>
       <td>
         <Link
-          className="block w-10 truncate py-1 px-2"
+          className="block w-10 truncate px-2 py-1"
           href={`/people/${encodeURIComponent(person.id)}`}
         >
           <span className="material-symbols-rounded">chevron_right</span>

@@ -11,6 +11,7 @@ export enum Collections {
 	Departments = "departments",
 	Documents = "documents",
 	EventDocuments = "eventDocuments",
+	Experience = "experience",
 	FullDocuments = "fullDocuments",
 	Majors = "majors",
 	Participants = "participants",
@@ -141,6 +142,17 @@ export type EventDocumentsRecord = {
 	toFullDocument?: RecordIdString
 }
 
+export type ExperienceRecord = {
+	title: string
+	organizationName: string
+	location?: string
+	startTime: IsoDateString
+	endTime?: IsoDateString
+	isCurrent?: boolean
+	description?: string
+	person: RecordIdString
+}
+
 export enum FullDocumentsInternalOptions {
 	"Academic material" = "Academic material",
 	"Course" = "Course",
@@ -177,7 +189,7 @@ export enum PeopleGenderOptions {
 	"Non-Binary" = "Non-Binary",
 	"Not Listed" = "Not Listed",
 }
-export type PeopleRecord = {
+export type PeopleRecord<Teducation = unknown, Texperience = unknown, Tinterests = unknown> = {
 	personId?: string
 	name?: string
 	avatar?: string
@@ -188,9 +200,13 @@ export type PeopleRecord = {
 	gender?: PeopleGenderOptions
 	major?: RecordIdString
 	deleted?: IsoDateString
-	isAdvisor?: boolean
-	isLecturer?: boolean
 	thumbnail?: string
+	interests?: null | Tinterests
+	contactRoom?: string
+	contactLocation?: string
+	experience?: null | Texperience
+	education?: null | Teducation
+	isFaculty?: boolean
 }
 
 export type PersonalNotesRecord = {
@@ -215,10 +231,11 @@ export type CoursesResponse<Texpand = unknown> = CoursesRecord & BaseSystemField
 export type DepartmentsResponse = DepartmentsRecord & BaseSystemFields
 export type DocumentsResponse<Texpand = unknown> = DocumentsRecord & BaseSystemFields<Texpand>
 export type EventDocumentsResponse<Texpand = unknown> = EventDocumentsRecord & BaseSystemFields<Texpand>
+export type ExperienceResponse<Texpand = unknown> = ExperienceRecord & BaseSystemFields<Texpand>
 export type FullDocumentsResponse<Texpand = unknown> = FullDocumentsRecord & BaseSystemFields<Texpand>
 export type MajorsResponse<Texpand = unknown> = MajorsRecord & BaseSystemFields<Texpand>
 export type ParticipantsResponse<Texpand = unknown> = ParticipantsRecord & BaseSystemFields<Texpand>
-export type PeopleResponse<Texpand = unknown> = PeopleRecord & BaseSystemFields<Texpand>
+export type PeopleResponse<Teducation = unknown, Texperience = unknown, Tinterests = unknown, Texpand = unknown> = PeopleRecord<Teducation, Texperience, Tinterests> & BaseSystemFields<Texpand>
 export type PersonalNotesResponse<Texpand = unknown> = PersonalNotesRecord & BaseSystemFields<Texpand>
 export type RelationshipsResponse<Texpand = unknown> = RelationshipsRecord & BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = UsersRecord & AuthSystemFields<Texpand>
@@ -232,6 +249,7 @@ export type CollectionRecords = {
 	departments: DepartmentsRecord
 	documents: DocumentsRecord
 	eventDocuments: EventDocumentsRecord
+	experience: ExperienceRecord
 	fullDocuments: FullDocumentsRecord
 	majors: MajorsRecord
 	participants: ParticipantsRecord

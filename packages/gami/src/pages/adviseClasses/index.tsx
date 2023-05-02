@@ -114,14 +114,14 @@ function initClassesColumns(): ColumnDef<ClassesCustomResponse>[] {
       id: "major_name",
       cell: (info) => (
         <IndexCell
-          className="min-w-[15rem]"
+          className="min-w-[12rem]"
           href={getHref(info.row.original.id)}
         >
           {info.getValue() as string}
         </IndexCell>
       ),
       header: () => (
-        <IndexHeaderCell className="min-w-[15rem]">Major</IndexHeaderCell>
+        <IndexHeaderCell className="min-w-[12rem]">Major</IndexHeaderCell>
       ),
       footer: () => null,
     },

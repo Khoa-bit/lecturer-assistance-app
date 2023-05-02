@@ -22,17 +22,19 @@ export function useSaveDoc<T extends FieldValues>({
   trigger,
 }: useDocHelperParams<T>): boolean {
   const router = useRouter();
-  const initial = useRef(true);
   const [hasSaved, setHasSaved] = useState(true);
 
-  const submitForm = useCallback(async () => {
-    setHasSaved(false);
-    if (!(await trigger(undefined, { shouldFocus: false }))) return;
+  const submitForm = useCallback(
+    async (shouldFocus = false) => {
+      setHasSaved(false);
+      if (!(await trigger(undefined, { shouldFocus }))) return;
 
-    formRef.current?.requestSubmit(submitRef.current);
+      formRef.current?.requestSubmit(submitRef.current);
 
-    setHasSaved(true);
-  }, [formRef, setHasSaved, submitRef]);
+      setHasSaved(true);
+    },
+    [formRef, submitRef, trigger]
+  );
 
   useEffect(() => {
     const handleBrowseAway = () => {
@@ -52,7 +54,7 @@ export function useSaveDoc<T extends FieldValues>({
       if (e.ctrlKey && e.key === "s" && !hasSaved) {
         // Prevent the Save dialog to open
         e.preventDefault();
-        submitForm();
+        submitForm(true);
       }
     };
     document.addEventListener("keydown", keyDownEvent);
@@ -68,10 +70,6 @@ export function useSaveDoc<T extends FieldValues>({
     const subscription = watch((data, { name }) => {
       // name == undefined to disregard form reset() that updates the whole form
       if (name == undefined || name == "diffHash") return;
-      if (initial.current) {
-        initial.current = false;
-        return;
-      }
 
       setHasSaved(false);
       debouncedSave();

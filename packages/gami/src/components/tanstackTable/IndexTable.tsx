@@ -1,6 +1,5 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import type {
   Column,
   ColumnDef,
@@ -54,15 +53,6 @@ function IndexTable({ heading, initData, columns }: IndexTableProps) {
   const [globalFilter, setGlobalFilter] = useState("");
 
   const tableId = `${initData?.items.length}-${initData?.items.at(0)?.id}`;
-
-  const queryClient = useQueryClient();
-  useEffect(() => {
-    setInterval(
-      () =>
-        queryClient.invalidateQueries({ queryKey: ["coursesCustomResponse"] }),
-      15 * 1000
-    );
-  }, [queryClient]);
 
   const table = useReactTable<any>({
     data: initData?.items ?? [],

@@ -68,11 +68,20 @@ export function dateToISOOrUndefined(
   }
 }
 
+// Format Date to a string format
+// Ref: https://date-fns.org/v2.29.3/docs/format
 export function formatDate(
   d: string | number | Date | null | undefined,
   dateTimeFormat: string
 ) {
-  return d ? format(new Date(d), dateTimeFormat) : null;
+  return d ? format(new Date(), dateTimeFormat) : null;
+}
+
+// Format date time for input fields such as min, max, value, defaultValue
+export function formatDateToInput(
+  d: string | number | Date | null | undefined
+) {
+  return `${formatDate(d, "yyyy-MM-dd")}T${formatDate(d, "hh:mm")}`;
 }
 
 // Sort date time from past to future (ascending)

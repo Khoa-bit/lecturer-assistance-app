@@ -82,10 +82,6 @@ export const getServerSideProps = async ({
       internal: FullDocumentsInternalOptions.Course,
     } as FullDocumentsRecord);
 
-  const person = await pbServer
-    .collection(Collections.People)
-    .getOne<PeopleResponse>(user.person);
-
   const lectureCourse = await pbServer
     .collection(Collections.Courses)
     .create<CoursesResponse>({
@@ -93,14 +89,6 @@ export const getServerSideProps = async ({
       courseTemplate: undefined,
       semester: getCurrentSemester(),
     } as CoursesRecord);
-
-  if (!person.isAdvisor) {
-    await pbServer
-      .collection(Collections.People)
-      .update<PeopleResponse>(person.id, {
-        isAdvisor: true,
-      } as PeopleRecord);
-  }
 
   const newEventDocUrl = `/lectureCourses/${lectureCourse.id}`;
 

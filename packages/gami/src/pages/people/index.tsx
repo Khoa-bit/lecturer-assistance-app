@@ -7,8 +7,10 @@ import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
+  DepartmentsResponse,
+  MajorsResponse,
   PeopleResponse,
-  UsersResponse
+  UsersResponse,
 } from "raito";
 import { Collections } from "raito";
 import MainLayout from "src/components/layouts/MainLayout";
@@ -16,14 +18,22 @@ import IndexCell from "src/components/tanstackTable/IndexCell";
 import IndexHeaderCell from "src/components/tanstackTable/IndexHeaderCell";
 import IndexTable from "src/components/tanstackTable/IndexTable";
 import { getPBServer } from "src/lib/pb_server";
+import type { Education, Experience, Interests } from "src/types/peopleJSON";
 import SuperJSON from "superjson";
 
 interface PeopleData {
-  people: ListResult<PeopleResponse<UsersExpand>>;
+  people: ListResult<
+    PeopleResponse<Education, Experience, Interests, UsersExpand>
+  >;
+}
+
+interface MajorExpand {
+  department: DepartmentsResponse;
 }
 
 interface UsersExpand {
   "users(person)": UsersResponse;
+  major: MajorsResponse<MajorExpand>;
 }
 
 function People({
@@ -67,9 +77,13 @@ export const getServerSideProps = async ({
 
   const people = await pbServer
     .collection(Collections.People)
-    .getList<PeopleResponse<UsersExpand>>(undefined, undefined, {
-      expand: "users(person)",
-    });
+    .getList<PeopleResponse<Education, Experience, Interests, UsersExpand>>(
+      undefined,
+      undefined,
+      {
+        expand: "users(person),major.department",
+      }
+    );
 
   return {
     props: {
@@ -78,7 +92,9 @@ export const getServerSideProps = async ({
   };
 };
 
-function initPeopleColumns(): ColumnDef<PeopleResponse<UsersExpand>>[] {
+function initPeopleColumns(): ColumnDef<
+  PeopleResponse<Education, Experience, Interests, UsersExpand>
+>[] {
   const getHref = (lectureCourseId: string) =>
     `/people/${encodeURIComponent(lectureCourseId)}`;
 
@@ -88,14 +104,14 @@ function initPeopleColumns(): ColumnDef<PeopleResponse<UsersExpand>>[] {
       id: "name",
       cell: (info) => (
         <IndexCell
-          className="min-w-[20rem]"
+          className="min-w-[12rem]"
           href={getHref(info.row.original.id)}
         >
           {info.getValue() as string}
         </IndexCell>
       ),
       header: () => (
-        <IndexHeaderCell className="min-w-[20rem]">Name</IndexHeaderCell>
+        <IndexHeaderCell className="min-w-[12rem]">Name</IndexHeaderCell>
       ),
       footer: () => null,
     },
@@ -147,6 +163,54 @@ function initPeopleColumns(): ColumnDef<PeopleResponse<UsersExpand>>[] {
       ),
       header: () => (
         <IndexHeaderCell className="min-w-[10rem]">Email</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => (item.isFaculty ? "Yes" : "No"),
+      id: "isFaculty",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[6rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[6rem]">Is Faculty</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand?.major.name,
+      id: "major_name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Major</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand?.major.expand?.department.name,
+      id: "department_name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Department</IndexHeaderCell>
       ),
       footer: () => null,
     },

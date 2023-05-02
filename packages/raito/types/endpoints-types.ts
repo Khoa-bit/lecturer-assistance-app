@@ -2,6 +2,7 @@ import {
   AcademicMaterialsResponse,
   ClassesResponse,
   CoursesResponse,
+  DocumentsResponse,
   EventDocumentsResponse,
   FullDocumentsResponse,
   PeopleResponse,
@@ -90,6 +91,38 @@ export interface AcademicMaterialsCustomResponse
   };
 }
 
+// GetAcademicMaterialsWithParticipants
+export interface AcademicMaterialsGroupCustomResponse
+  extends DocumentsResponse {
+  expand: {
+    academicMaterial_category_list: string[];
+    academicMaterial_created_list: string[];
+    academicMaterial_fullDocument_list: string[];
+    academicMaterial_id_list: string[];
+    academicMaterial_updated_list: string[];
+    person_avatar_list: string[];
+    person_contactLocation_list: string[];
+    person_contactRoom_list: string[];
+    person_created_list: string[];
+    person_deleted_list: string[];
+    person_education_list: string[];
+    person_experience_list: string[];
+    person_gender_list: string[];
+    person_id_list: string[];
+    person_interests_list: string[];
+    person_isFaculty_list: string[];
+    person_major_list: string[];
+    person_name_list: string[];
+    person_personId_list: string[];
+    person_personalEmail_list: string[];
+    person_phone_list: string[];
+    person_placeOfBirth_list: string[];
+    person_thumbnail_list: string[];
+    person_title_list: string[];
+    person_updated_list: string[];
+  };
+}
+
 // GetPersonalNotes, GetParticipatedPersonalNotes
 export interface PersonalNotesCustomResponse extends PersonalNotesResponse {
   expand: {
@@ -164,6 +197,15 @@ export interface ContactsCustomResponse extends PeopleResponse {
     user_id: string;
     user_person: string;
     user_updated: string;
+    major_created: string;
+    major_department: string;
+    major_id: string;
+    major_name: string;
+    major_updated: string;
+    department_created: string;
+    department_id: string;
+    department_name: string;
+    department_updated: string;
   };
 }
 
@@ -180,6 +222,15 @@ export interface StarredContactsCustomResponse extends ContactsCustomResponse {
     user_id: string;
     user_person: string;
     user_updated: string;
+    major_created: string;
+    major_department: string;
+    major_id: string;
+    major_name: string;
+    major_updated: string;
+    department_created: string;
+    department_id: string;
+    department_name: string;
+    department_updated: string;
   };
 }
 

@@ -43,7 +43,10 @@ export const getServerSideProps = async ({
 
   const person = await pbServer
     .collection(Collections.People)
-    .create<PeopleResponse>({} as PeopleRecord);
+    .create<PeopleResponse>({
+      contactLocation:
+        "International University, Block 6, Linh Trung Ward, Thu Duc District, HCM City, Vietnam",
+    } as PeopleRecord);
 
   const newPersonUrl = `/people/${person.id}`;
 

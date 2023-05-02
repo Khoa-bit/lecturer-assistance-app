@@ -8,6 +8,10 @@ import type { FullDocumentChildProps } from "./FullDocument";
 import type { SelectOption, SelectProps } from "./Select";
 import Select from "./Select";
 
+interface DepartmentExpand {
+  department: DepartmentsResponse;
+}
+
 interface MajorDepartmentProps<TFieldValues extends FieldValues = FieldValues>
   extends FullDocumentChildProps<TFieldValues> {
   initDepartmentId: string;
@@ -126,6 +130,26 @@ export const fetchMajorDepartment: FetchMajorDepartmentFunc = async (
     });
 
   return { departments, majorOptions };
+};
+
+export type FetchOneMajorDepartmentFunc = (
+  majorId: string,
+  pbCustom: PBCustom
+) => Promise<{
+  majorDepartment: MajorsResponse<DepartmentExpand>;
+}>;
+
+export const fetchOneMajorDepartment: FetchOneMajorDepartmentFunc = async (
+  majorId,
+  pbCustom
+) => {
+  const majorDepartment = await pbCustom
+    .collection(Collections.Majors)
+    .getOne<MajorsResponse<DepartmentExpand>>(majorId, {
+      expand: `department`,
+    });
+
+  return { majorDepartment };
 };
 
 export default MajorDepartment;

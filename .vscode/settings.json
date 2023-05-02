@@ -8,5 +8,6 @@
     }
   ],
   "editor.formatOnSave": true,
-  "files.autoSave": "onFocusChange"
+  "files.autoSave": "onFocusChange",
+  "vue.features.codeActions.enable": false
 }

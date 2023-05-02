@@ -40,6 +40,61 @@ interface TipTapProps {
   setCurAttachments: Dispatch<SetStateAction<AttachmentsResponse<unknown>[]>>;
 }
 
+export const customExtensionsFull = [
+  StarterKit,
+  TextAlign.configure({
+    types: ["heading", "paragraph"],
+  }),
+  Highlight,
+  Link,
+  TextStyle,
+  Color,
+  Typography,
+  CustomImage,
+  TaskList.configure({
+    HTMLAttributes: {
+      class: "pl-0",
+    },
+  }),
+  TaskItem.configure({
+    nested: true,
+  }),
+  Mention.configure({
+    HTMLAttributes: {
+      class: "mention",
+    },
+    suggestion,
+  }),
+  Comment,
+];
+
+export const customExtensions = [
+  StarterKit,
+  TextAlign.configure({
+    types: ["heading", "paragraph"],
+  }),
+  Highlight,
+  Link,
+  TextStyle,
+  Color,
+  Typography,
+  TaskList.configure({
+    HTMLAttributes: {
+      class: "pl-0",
+    },
+  }),
+  TaskItem.configure({
+    nested: true,
+  }),
+  Mention.configure({
+    HTMLAttributes: {
+      class: "mention",
+    },
+    suggestion,
+  }),
+  Comment,
+];
+
 const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
 
 const TipTap = ({
@@ -123,33 +178,7 @@ const TipTap = ({
       },
     },
 
-    extensions: [
-      StarterKit,
-      TextAlign.configure({
-        types: ["heading", "paragraph"],
-      }),
-      Highlight,
-      Link,
-      TextStyle,
-      Color,
-      Typography,
-      CustomImage.configure({ imageProxy }),
-      TaskList.configure({
-        HTMLAttributes: {
-          class: "pl-0",
-        },
-      }),
-      TaskItem.configure({
-        nested: true,
-      }),
-      Mention.configure({
-        HTMLAttributes: {
-          class: "mention",
-        },
-        suggestion,
-      }),
-      Comment,
-    ],
+    extensions: [...customExtensions, CustomImage.configure({ imageProxy })],
     content: content,
   });
 
@@ -486,21 +515,21 @@ const TipTap = ({
 
             <section className="flex w-full flex-row gap-1">
               <button
-                className="w-1/4 rounded border border-slate-500 bg-transparent py-2 px-4 font-semibold text-slate-700 shadow-lg hover:border-transparent hover:bg-slate-500 hover:text-white"
+                className="w-1/4 rounded border border-slate-500 bg-transparent px-4 py-2 font-semibold text-slate-700 shadow-lg hover:border-transparent hover:bg-slate-500 hover:text-white"
                 onClick={() => setCommentText("")}
               >
                 Clear
               </button>
 
               <button
-                className="w-1/4 rounded border border-yellow-500 bg-transparent py-2 px-4 font-semibold text-yellow-700 shadow-lg hover:border-transparent hover:bg-yellow-500 hover:text-white"
+                className="w-1/4 rounded border border-yellow-500 bg-transparent px-4 py-2 font-semibold text-yellow-700 shadow-lg hover:border-transparent hover:bg-yellow-500 hover:text-white"
                 onClick={() => toggleComment(editor)}
               >
                 Toggle
               </button>
 
               <button
-                className="w-2/4 rounded border border-blue-500 bg-transparent py-2 px-4 font-semibold text-blue-700 shadow-lg hover:border-transparent hover:bg-blue-500 hover:text-white"
+                className="w-2/4 rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 shadow-lg hover:border-transparent hover:bg-blue-500 hover:text-white"
                 onClick={() => {
                   setComment(
                     editor,
@@ -612,21 +641,21 @@ const TipTap = ({
 
                   <section className="flex w-full flex-row gap-1">
                     <button
-                      className="w-1/4 rounded-lg border border-slate-500 bg-transparent py-2 px-4 font-semibold text-slate-700 shadow-lg hover:border-transparent hover:bg-slate-500 hover:text-white"
+                      className="w-1/4 rounded-lg border border-slate-500 bg-transparent px-4 py-2 font-semibold text-slate-700 shadow-lg hover:border-transparent hover:bg-slate-500 hover:text-white"
                       onClick={() => setCommentText("")}
                     >
                       Clear
                     </button>
 
                     <button
-                      className="w-1/4 rounded-lg border border-rose-500 bg-transparent py-2 px-4 font-semibold text-rose-700 shadow-lg hover:border-transparent hover:bg-rose-500 hover:text-white"
+                      className="w-1/4 rounded-lg border border-rose-500 bg-transparent px-4 py-2 font-semibold text-rose-700 shadow-lg hover:border-transparent hover:bg-rose-500 hover:text-white"
                       onClick={() => unsetComment(editor)}
                     >
                       Resolved
                     </button>
 
                     <button
-                      className="w-2/4 rounded-lg border border-blue-500 bg-transparent py-2 px-4 font-semibold text-blue-700 shadow-lg hover:border-transparent hover:bg-blue-500 hover:text-white"
+                      className="w-2/4 rounded-lg border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 shadow-lg hover:border-transparent hover:bg-blue-500 hover:text-white"
                       onClick={() => {
                         setComment(
                           editor,

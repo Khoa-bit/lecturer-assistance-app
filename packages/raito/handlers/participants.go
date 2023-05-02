@@ -211,6 +211,14 @@ func GetContacts(app *pocketbase.PocketBase, c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("majors", "major", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("departments", "department", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
 
 	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
 	userPersonId := authRecord.GetString("person")
@@ -239,7 +247,9 @@ func GetContacts(app *pocketbase.PocketBase, c echo.Context) error {
         WHERE me.person = {:fromPerson}
       ) as contact
       INNER JOIN people ppl ON ppl.id = contact.person
-      LEFT JOIN users user ON user.person = contact.person`,
+      LEFT JOIN users user ON user.person = contact.person
+      LEFT JOIN majors major ON major.id = ppl.major
+      LEFT JOIN departments department ON department.id = major.department`,
 		selectArgs))
 
 	query.Bind(dbx.Params{"fromPerson": userPersonId})
@@ -268,6 +278,14 @@ func GetStarredContacts(app *pocketbase.PocketBase, c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("majors", "major", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("departments", "department", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
 
 	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
 	userPersonId := authRecord.GetString("person")
@@ -277,6 +295,8 @@ func GetStarredContacts(app *pocketbase.PocketBase, c echo.Context) error {
       FROM relationships relationship
         INNER JOIN people ppl ON relationship.toPerson = ppl.id
         LEFT JOIN users user ON user.person = ppl.id
+        LEFT JOIN majors major ON major.id = ppl.major
+        LEFT JOIN departments department ON department.id = major.department
       WHERE fromPerson = '%s'`,
 		selectArgs, userPersonId))
 
@@ -317,8 +337,7 @@ func GetAllDocParticipants(app *pocketbase.PocketBase, c echo.Context) error {
       FROM participants participant
         INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.id == {:docId}
         INNER JOIN people ppl ON participant.person == ppl.id
-        LEFT JOIN users user ON user.person = ppl.id
-      GROUP BY ppl.id`,
+        LEFT JOIN users user ON user.person = ppl.id`,
 		selectArgs))
 
 	query.Bind(dbx.Params{"docId": docId})

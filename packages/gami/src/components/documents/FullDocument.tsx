@@ -30,6 +30,7 @@ import {
   useState,
 } from "react";
 import type {
+  FieldArrayPath,
   FieldValues,
   Path,
   RegisterOptions,
@@ -102,6 +103,15 @@ export interface FullDocumentChildProps<
   TFieldValues extends FieldValues = FieldValues
 > extends Partial<UseFormReturn<TFieldValues>> {
   name: Path<TFieldValues>;
+  type?: HTMLInputTypeAttribute;
+  options?: RegisterOptions<TFieldValues>;
+}
+
+export interface FullDocumentChildArrayProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TFieldArrayName extends FieldArrayPath<TFieldValues> = FieldArrayPath<TFieldValues>
+> extends Partial<UseFormReturn<TFieldValues>> {
+  name: TFieldArrayName;
   type?: HTMLInputTypeAttribute;
   options?: RegisterOptions<TFieldValues>;
 }

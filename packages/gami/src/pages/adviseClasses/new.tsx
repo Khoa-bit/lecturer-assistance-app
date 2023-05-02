@@ -91,14 +91,6 @@ export const getServerSideProps = async ({
       academicProgram: ClassesAcademicProgramOptions.Undergraduate,
     } as ClassesRecord);
 
-  if (!person.isLecturer) {
-    await pbServer
-      .collection(Collections.People)
-      .update<PeopleResponse>(person.id, {
-        isLecturer: true,
-      } as PeopleRecord);
-  }
-
   const newFullDocUrl = `/adviseClasses/${adviseClass.id}`;
 
   return {
