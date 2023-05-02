@@ -21,15 +21,12 @@ import type {
 import FullDocument, {
   fetchFullDocumentData,
 } from "src/components/documents/FullDocument";
-import type { InputProps } from "src/components/documents/Input";
-import Input from "src/components/documents/Input";
 import type {
   SelectOption,
   SelectProps,
 } from "src/components/documents/Select";
 import Select from "src/components/documents/Select";
 import MainLayout from "src/components/layouts/MainLayout";
-import { dateToISOLikeButLocalOrUndefined } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
@@ -61,7 +58,6 @@ function EventDocument({
   const [toFullDocument, setToFullDocument] = useState(
     eventDocument.toFullDocument
   );
-  const [startTime, setStartTime] = useState(eventDocument.startTime);
   const fullDocumentData = dataParse.fullDocumentData;
 
   const isEventOwner = baseDocument?.owner === user.person;
@@ -75,8 +71,6 @@ function EventDocument({
     pbClient,
     childrenDefaultValue: {
       fullDocument: eventDocument.fullDocument,
-      startTime: dateToISOLikeButLocalOrUndefined(startTime),
-      endTime: dateToISOLikeButLocalOrUndefined(eventDocument.endTime),
       recurring: eventDocument.recurring,
       toFullDocument: toFullDocument,
     },
@@ -104,28 +98,6 @@ function EventDocument({
         <title>Event Document</title>
       </Head>
       <FullDocument {...fullDocumentProps}>
-        <Input
-          {...({
-            id: "startTime",
-            label: "Start Time",
-            name: "startTime",
-            options: { required: true },
-            type: "datetime-local",
-            onChange: (e) => {
-              setStartTime(e.currentTarget.value);
-            },
-          } as InputProps<EventDocumentsRecord>)}
-        ></Input>
-        <Input
-          {...({
-            id: "endTime",
-            label: "End Time",
-            name: "endTime",
-            options: { required: true },
-            type: "datetime-local",
-            min: dateToISOLikeButLocalOrUndefined(startTime),
-          } as InputProps<EventDocumentsRecord>)}
-        ></Input>
         {/* <Select
           {...({
             name: "recurring",

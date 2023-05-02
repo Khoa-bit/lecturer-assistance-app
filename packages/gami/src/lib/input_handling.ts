@@ -34,7 +34,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
   };
 }
 
-// From input local-datetime To send to PB
+// From PB To send to input local-datetime
 export function dateToISOLikeButLocalOrUndefined(
   dateTimeStr: string | undefined
 ): string | undefined {
@@ -46,7 +46,7 @@ export function dateToISOLikeButLocalOrUndefined(
   }
 }
 
-// From input local-datetime To send to PB
+// From PB To send to input local-datetime
 export function dateToISOLikeButLocal(dateTime: Date): string {
   const offsetMs = dateTime.getTimezoneOffset() * 60 * 1000;
   const msLocal = dateTime.getTime() - offsetMs;
@@ -56,7 +56,7 @@ export function dateToISOLikeButLocal(dateTime: Date): string {
   return isoLocal;
 }
 
-// From PB To send to input local-datetime
+// From input local-datetime To send to PB
 export function dateToISOOrUndefined(
   dateTimeStr: string | undefined
 ): string | undefined {
@@ -74,7 +74,7 @@ export function formatDate(
   d: string | number | Date | null | undefined,
   dateTimeFormat: string
 ) {
-  return d ? format(new Date(), dateTimeFormat) : null;
+  return d ? format(new Date(d), dateTimeFormat) : null;
 }
 
 // Format date time for input fields such as min, max, value, defaultValue

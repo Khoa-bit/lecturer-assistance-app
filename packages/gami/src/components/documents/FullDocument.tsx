@@ -4,12 +4,12 @@ import { useRouter } from "next/router";
 import type { ListResult } from "pocketbase";
 import type {
   AttachmentsResponse,
-  ParticipantsCustomResponse,
   DocumentsRecord,
   DocumentsResponse,
   EventDocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
+  ParticipantsCustomResponse,
   PeopleResponse,
   UsersResponse,
 } from "raito";
@@ -39,20 +39,22 @@ import type {
 } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import Attachments from "src/components/documents/Attachments";
+import TipTapByPermission from "src/components/wysiwyg/TipTapByPermission";
 import { createHandleAttachment } from "src/components/wysiwyg/documents/createHandleAttachment";
 import { createHandleThumbnail } from "src/components/wysiwyg/documents/createHandleThumbnail";
 import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
-import TipTapByPermission from "src/components/wysiwyg/TipTapByPermission";
 import { env } from "src/env/client.mjs";
 import {
   dateToISOLikeButLocal,
   dateToISOLikeButLocalOrUndefined,
   dateToISOOrUndefined,
+  formatDateToInput,
 } from "src/lib/input_handling";
 import type { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
-import ParticipantsList from "./ParticipantsList";
 import EventsList from "./EventsList";
+import Input, { InputProps } from "./Input";
+import ParticipantsList from "./ParticipantsList";
 
 export interface FullDocumentData {
   fullDocument: FullDocumentsResponse<DocumentsExpand>;
@@ -157,7 +159,10 @@ function FullDocument<TRecord>({
       richText: baseDocument?.richText,
       document: fullDocument.document,
       diffHash: baseDocument?.diffHash,
+      attachments: undefined,
       attachmentsHash: baseDocument?.attachmentsHash,
+      startTime: dateToISOLikeButLocalOrUndefined(baseDocument?.startTime),
+      endTime: dateToISOLikeButLocalOrUndefined(baseDocument?.endTime),
       ...childrenDefaultValue,
     },
   });
@@ -171,6 +176,8 @@ function FullDocument<TRecord>({
   );
   const [attachments, setAttachments] =
     useState<AttachmentsResponse[]>(initAttachments);
+
+  const [startTime, setStartTime] = useState(baseDocument?.startTime);
 
   const handleThumbnail = createHandleThumbnail(
     pbClient,
@@ -238,6 +245,8 @@ function FullDocument<TRecord>({
             priority: inputData.priority,
             status: inputData.status,
             richText: inputData.richText,
+            startTime: dateToISOOrUndefined(inputData.startTime),
+            endTime: dateToISOOrUndefined(inputData.endTime),
             diffHash: newDiffHash,
             attachmentsHash: newAttachmentsHash,
           } as DocumentsRecord);
@@ -331,6 +340,24 @@ function FullDocument<TRecord>({
     pbClient,
     reset,
   ]);
+
+  const statusWatch = watch("status", DocumentsStatusOptions.Todo);
+  useEffect(() => {
+    if (
+      getValues("startTime") === "" &&
+      statusWatch !== DocumentsStatusOptions.Todo
+    ) {
+      setValue("startTime", formatDateToInput(new Date()));
+    }
+
+    if (
+      getValues("endTime") === "" &&
+      (statusWatch === DocumentsStatusOptions.Closed ||
+        statusWatch === DocumentsStatusOptions.Done)
+    ) {
+      setValue("endTime", formatDateToInput(new Date()));
+    }
+  }, [getValues, setValue, statusWatch]);
 
   // This css is currently duplicated with [personId].tsx page
   return (
@@ -468,6 +495,44 @@ function FullDocument<TRecord>({
               </option>
             ))}
           </select>
+          <Input
+            {...({
+              id: "startTime",
+              label: "Start Time",
+              name: "startTime",
+              register,
+              options: { disabled: !isWrite },
+              type: "datetime-local",
+              onChange: (e) => {
+                setStartTime(e.currentTarget.value);
+              },
+            } as InputProps<FullDocumentInput>)}
+          ></Input>
+          <Input
+            {...({
+              id: "endTime",
+              label: "End Time",
+              name: "endTime",
+              register,
+              options: { disabled: !isWrite },
+              type: "datetime-local",
+              min: dateToISOLikeButLocalOrUndefined(startTime),
+            } as InputProps<FullDocumentInput>)}
+          ></Input>
+          {children &&
+            Children.map(children, (child) => {
+              return child?.props.name
+                ? createElement(child.type, {
+                    ...{
+                      ...child.props,
+                      options: { disabled: !isWrite, ...child?.props.options },
+                      register,
+                      setValue,
+                      key: child.props.name,
+                    },
+                  })
+                : child;
+            })}
           <label className="py-2" htmlFor="attachments">
             Attachments
           </label>
@@ -498,20 +563,6 @@ function FullDocument<TRecord>({
             pbClient={pbClient}
             disabled={!isWrite}
           ></Attachments>
-          {children &&
-            Children.map(children, (child) => {
-              return child?.props.name
-                ? createElement(child.type, {
-                    ...{
-                      ...child.props,
-                      options: { disabled: !isWrite, ...child?.props.options },
-                      register,
-                      setValue,
-                      key: child.props.name,
-                    },
-                  })
-                : child;
-            })}
           <label className="py-2" htmlFor="richText">
             Note
           </label>
@@ -592,17 +643,17 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
   const upcomingEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
     .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument.document.deleted = "" && toFullDocument = "${fullDocId}" && (endTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
+      filter: `fullDocument.document.deleted = "" && toFullDocument = "${fullDocId}" && (fullDocument.document.endTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}")`,
       expand: "fullDocument.document",
-      sort: "startTime",
+      sort: "fullDocument.document.startTime",
     });
 
   const pastEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
     .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument.document.deleted = "" && toFullDocument = "${fullDocId}" && (endTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
+      filter: `fullDocument.document.deleted = "" && toFullDocument = "${fullDocId}" && (fullDocument.document.endTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}")`,
       expand: "fullDocument.document",
-      sort: "-startTime",
+      sort: "-fullDocument.document.startTime",
     });
 
   const allDocParticipants =

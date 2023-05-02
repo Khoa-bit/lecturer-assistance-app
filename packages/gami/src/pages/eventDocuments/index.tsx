@@ -89,17 +89,17 @@ export const getServerSideProps = async ({
   const upcomingEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
     .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument.document.deleted = "" && (endTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}" || endTime = "")`,
+      filter: `fullDocument.document.deleted = "" && (fullDocument.document.endTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}" || fullDocument.document.endTime = "")`,
       expand: "fullDocument.document",
-      sort: "startTime",
+      sort: "fullDocument.document.startTime",
     });
 
   const pastEventDocuments = await pbServer
     .collection(Collections.EventDocuments)
     .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument.document.deleted = "" && (endTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}" && endTime != "")`,
+      filter: `fullDocument.document.deleted = "" && (fullDocument.document.endTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}" && fullDocument.document.endTime != "")`,
       expand: "fullDocument.document",
-      sort: "-startTime",
+      sort: "-fullDocument.document.startTime",
     });
 
   return {
@@ -136,7 +136,11 @@ function initEventDocumentColumns(): ColumnDef<
       footer: () => null,
     },
     {
-      accessorFn: (item) => formatDate(item.startTime, "HH:mm - dd/LL/yy"),
+      accessorFn: (item) =>
+        formatDate(
+          item.expand?.fullDocument.expand?.document.startTime,
+          "HH:mm - dd/LL/yy"
+        ),
       id: "startTime",
       cell: (info) => (
         <IndexCell
@@ -152,7 +156,11 @@ function initEventDocumentColumns(): ColumnDef<
       footer: () => null,
     },
     {
-      accessorFn: (item) => formatDate(item.endTime, "HH:mm - dd/LL/yy"),
+      accessorFn: (item) =>
+        formatDate(
+          item.expand?.fullDocument.expand?.document.endTime,
+          "HH:mm - dd/LL/yy"
+        ),
       id: "endTime",
       cell: (info) => (
         <IndexCell
@@ -171,8 +179,8 @@ function initEventDocumentColumns(): ColumnDef<
       accessorFn: (item) =>
         eventStatus(
           item.expand?.fullDocument.expand?.document?.status,
-          item.startTime,
-          item.endTime
+          item.expand?.fullDocument.expand?.document.startTime,
+          item.expand?.fullDocument.expand?.document.endTime
         ),
       id: "statusEvent",
       cell: (info) => (

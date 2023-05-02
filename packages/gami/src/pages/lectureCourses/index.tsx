@@ -13,6 +13,7 @@ import IndexCell from "src/components/tanstackTable/IndexCell";
 import IndexFooterCell from "src/components/tanstackTable/IndexFooterCell";
 import IndexHeaderCell from "src/components/tanstackTable/IndexHeaderCell";
 import IndexTable from "src/components/tanstackTable/IndexTable";
+import { formatDate } from "src/lib/input_handling";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
@@ -184,6 +185,40 @@ function initCourseColumns(
       ),
       header: () => (
         <IndexHeaderCell className="min-w-[8rem]">Status</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) =>
+        formatDate(item.expand?.userDocument_startTime, "HH:mm - dd/LL/yy"),
+      id: "startTime",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Start time</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) =>
+        formatDate(item.expand?.userDocument_endTime, "HH:mm - dd/LL/yy"),
+      id: "endTime",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">End time</IndexHeaderCell>
       ),
       footer: () => null,
     },

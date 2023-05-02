@@ -69,6 +69,7 @@ import { getPBServer } from "src/lib/pb_server";
 import type { Education, Experience, Interests } from "src/types/peopleJSON";
 import SuperJSON from "superjson";
 import account_circle_black from "../../../public/account_circle_black.png";
+import { differenceInMonths, formatDuration } from "date-fns";
 
 interface DocumentData {
   person: PeopleResponse<Education, Experience, Interests, UsersExpand>;
@@ -82,9 +83,12 @@ interface DocumentData {
 
 interface CompactAcademicMaterials {
   [category: string]: {
+    id: string;
     documentName: string;
     participants: string[];
     description?: string;
+    startTime?: string;
+    endTime?: string;
   }[];
 }
 
@@ -246,46 +250,73 @@ function Person({
     for (const [key, values] of Object.entries(compactAcademicMaterials)) {
       if (values.length == 0) continue;
       categories.push(
-        <>
+        <section key={key}>
           <h4>{key}</h4>
           <ol>
-            {values.map((value) => (
-              <>
-                <li key={value.documentName}>
+            {values.map((value) => {
+              const startTimeStr = value.startTime;
+              const endTimeStr = value.endTime;
+              const startTime = startTimeStr
+                ? `${formatDate(startTimeStr, "MMM yyyy")} - `
+                : "";
+
+              const endTime = endTimeStr
+                ? formatDate(endTimeStr, "MMM yyyy")
+                : "Present";
+
+              let duration;
+              if (startTimeStr && endTimeStr) {
+                const diffMonths = differenceInMonths(
+                  new Date(endTimeStr),
+                  new Date(startTimeStr)
+                );
+                duration = formatDuration(
+                  {
+                    years: Math.floor(diffMonths / 12),
+                    months: diffMonths % 12,
+                  },
+                  { format: ["years", "months"] }
+                );
+              }
+              return (
+                <li key={value.id}>
                   <b>{value.documentName}</b>
+                  <ul>
+                    <li>
+                      <i>Timeline: </i>
+                      <span>{`${startTime}${endTime}`}</span>
+                      <small>{duration && ` (${duration})`}</small>
+                    </li>
+                    <li>
+                      <i>Participants: </i>
+                      <span>{value.participants.join(", ")}</span>
+                    </li>
+                    <li>
+                      <i>Description: </i>
+                      <TipTapView
+                        key="TipTapComponent"
+                        richText={value.description ?? "{}"}
+                      ></TipTapView>
+                    </li>
+                  </ul>
                 </li>
-                <ul>
-                  <li>
-                    <i>Participants: </i>
-                    {value.participants.join(", ")}
-                  </li>
-                  <li>
-                    <i>Description: </i>
-                    <TipTapView
-                      key="TipTapComponent"
-                      richText={value.description ?? "{}"}
-                    ></TipTapView>
-                  </li>
-                </ul>
-              </>
-            ))}
+              );
+            })}
           </ol>
-        </>
+        </section>
       );
     }
 
-    return <>{categories}</>;
+    return categories;
   }, [compactAcademicMaterials]);
 
   const [isDisplay, setIsDisplay] = useState(true);
   const display = useMemo(() => {
     const interests = values.interests?.map((interest) => (
-      <>
-        <p className="grid grid-cols-[1fr_4fr] gap-3">
-          <b>{interest.name}</b>
-          <span>{`${interest.description}`}</span>
-        </p>
-      </>
+      <p className="grid grid-cols-[1fr_4fr] gap-3" key={interest.name}>
+        <b>{interest.name}</b>
+        <span>{`${interest.description}`}</span>
+      </p>
     ));
 
     const education = values.education?.map((education, index) => (
@@ -930,9 +961,12 @@ export const getServerSideProps = async ({
     const categoryKey =
       userDocument.expand.academicMaterial_category_list.at(0) ?? "Unknown";
     (compactAcademicMaterials[categoryKey] ??= []).push({
+      id: userDocument.id,
       documentName: userDocument.name,
       participants: userDocument.expand.person_name_list,
       description: userDocument.richText,
+      startTime: userDocument.startTime,
+      endTime: userDocument.endTime,
     });
   }
 

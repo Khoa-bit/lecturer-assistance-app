@@ -25,6 +25,8 @@ export interface EventDocumentsCustomResponse extends EventDocumentsResponse {
     userDocument_status: string;
     userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
@@ -43,6 +45,8 @@ export interface FullDocumentsCustomResponse extends FullDocumentsResponse {
     userDocument_status: string;
     userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
@@ -69,6 +73,8 @@ export interface SharedDocumentsCustomResponse extends FullDocumentsResponse {
     userDocument_status: string;
     userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
@@ -88,6 +94,8 @@ export interface AcademicMaterialsCustomResponse
     userDocument_status: string;
     userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
@@ -138,6 +146,8 @@ export interface PersonalNotesCustomResponse extends PersonalNotesResponse {
     userDocument_status: string;
     userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
@@ -161,6 +171,8 @@ export interface ClassesCustomResponse extends ClassesResponse {
     userDocument_status: string;
     userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
@@ -186,6 +198,8 @@ export interface CoursesCustomResponse extends CoursesResponse {
     userDocument_status: string;
     userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 

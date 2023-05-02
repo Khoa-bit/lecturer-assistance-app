@@ -125,6 +125,8 @@ export type DocumentsRecord = {
 	deleted?: IsoDateString
 	richText?: string
 	attachmentsHash?: string
+	startTime?: IsoDateString
+	endTime?: IsoDateString
 }
 
 export enum EventDocumentsRecurringOptions {
@@ -136,8 +138,6 @@ export enum EventDocumentsRecurringOptions {
 }
 export type EventDocumentsRecord = {
 	fullDocument: RecordIdString
-	startTime?: IsoDateString
-	endTime?: IsoDateString
 	recurring: EventDocumentsRecurringOptions
 	toFullDocument?: RecordIdString
 }
