@@ -16,7 +16,7 @@ const (
 	BOOL   DataType = iota
 )
 
-// Fields metadata specifies what fields to expands in the results
+// FieldMetadata Fields metadata specifies what fields to expands in the results
 //
 // Example Simple FieldMetadata argument without `hasGroupBy`:
 //
@@ -31,7 +31,7 @@ type FieldMetadata struct {
 	DataType
 }
 
-// Fields metadata specifies what fields to expands in the results
+// FieldMetaDataList Fields metadata specifies what fields to expands in the results
 //
 // Example Simple FieldMetadata argument without `hasGroupBy`:
 //

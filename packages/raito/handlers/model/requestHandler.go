@@ -41,7 +41,7 @@ func GetRequestHandler(app *pocketbase.PocketBase, c echo.Context, query *dbx.Qu
 	// TODO: Implement API Rules
 
 	// fetch models
-	items := []dbx.NullStringMap{}
+	var items []dbx.NullStringMap
 	if err := query.All(&items); err != nil {
 		return err
 	}
@@ -91,8 +91,11 @@ func GetRequestHandler(app *pocketbase.PocketBase, c echo.Context, query *dbx.Qu
 
 	mainResults := models.NewRecordsFromNullStringMaps(mainCollection, paginatedItems)
 
-	// Enrich results with expands relations and api rules + visibility
-	apis.EnrichRecords(c, app.Dao(), mainResults)
+	// Enrich results with `expands` relations and api rules + visibility
+	err = apis.EnrichRecords(c, app.Dao(), mainResults)
+	if err != nil {
+		return err
+	}
 
 	// set expands
 	for index, item := range mainResults {
@@ -116,7 +119,7 @@ func GetRequestHandler(app *pocketbase.PocketBase, c echo.Context, query *dbx.Qu
 	result := &Result{
 		Page:       page,
 		PerPage:    perPage,
-		TotalItems: int(totalCount),
+		TotalItems: totalCount,
 		TotalPages: totalPages,
 		Items:      mainResults,
 	}

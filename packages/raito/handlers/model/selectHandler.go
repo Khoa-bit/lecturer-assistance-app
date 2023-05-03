@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Build arguments for `SELECT` query from a list of `FieldMetaData` accounting for `GROUP BY`.
+// BuildSelectArgs Build arguments for `SELECT` query from a list of `FieldMetaData` accounting for `GROUP BY`.
 func BuildSelectArgs(fieldMetadataList FieldMetaDataList, hasGroupBy bool) string {
 	selectBuilder := strings.Builder{}
 	for _, metadata := range fieldMetadataList {

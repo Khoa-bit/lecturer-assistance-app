@@ -142,17 +142,6 @@ export type EventDocumentsRecord = {
 	toFullDocument?: RecordIdString
 }
 
-export type ExperienceRecord = {
-	title: string
-	organizationName: string
-	location?: string
-	startTime: IsoDateString
-	endTime?: IsoDateString
-	isCurrent?: boolean
-	description?: string
-	person: RecordIdString
-}
-
 export enum FullDocumentsInternalOptions {
 	"Academic material" = "Academic material",
 	"Course" = "Course",
@@ -231,7 +220,6 @@ export type CoursesResponse<Texpand = unknown> = CoursesRecord & BaseSystemField
 export type DepartmentsResponse = DepartmentsRecord & BaseSystemFields
 export type DocumentsResponse<Texpand = unknown> = DocumentsRecord & BaseSystemFields<Texpand>
 export type EventDocumentsResponse<Texpand = unknown> = EventDocumentsRecord & BaseSystemFields<Texpand>
-export type ExperienceResponse<Texpand = unknown> = ExperienceRecord & BaseSystemFields<Texpand>
 export type FullDocumentsResponse<Texpand = unknown> = FullDocumentsRecord & BaseSystemFields<Texpand>
 export type MajorsResponse<Texpand = unknown> = MajorsRecord & BaseSystemFields<Texpand>
 export type ParticipantsResponse<Texpand = unknown> = ParticipantsRecord & BaseSystemFields<Texpand>
@@ -249,7 +237,6 @@ export type CollectionRecords = {
 	departments: DepartmentsRecord
 	documents: DocumentsRecord
 	eventDocuments: EventDocumentsRecord
-	experience: ExperienceRecord
 	fullDocuments: FullDocumentsRecord
 	majors: MajorsRecord
 	participants: ParticipantsRecord

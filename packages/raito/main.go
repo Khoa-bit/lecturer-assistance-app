@@ -13,21 +13,6 @@ import (
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 )
 
-// DefaultPerPage specifies the default returned search result items.
-const DefaultPerPage int = 30
-
-// MaxPerPage specifies the maximum allowed search result items returned in a single page.
-const MaxPerPage int = 500
-
-// Result defines the returned search result structure.
-type Result struct {
-	Page       int `json:"page"`
-	PerPage    int `json:"perPage"`
-	TotalItems int `json:"totalItems"`
-	TotalPages int `json:"totalPages"`
-	Items      any `json:"items"`
-}
-
 func main() {
 	app := pocketbase.New()
 
@@ -42,13 +27,13 @@ func main() {
 		)
 
 		// Get all event documents
-		// Deprecated since events page now show upcoming and part events
+		// Deprecated since events page now shows upcoming and part events
 		subGroup.GET("/getEventDocuments", func(c echo.Context) error {
 			return handlers.GetEventDocuments(app, c)
 		})
 
-		// Get all event documents that the current user participate in
-		// Deprecated since events page now show upcoming and part events
+		// Get all event documents that the current user participates in
+		// Deprecated since events page now shows upcoming and part events
 		subGroup.GET("/getParticipatedEventDocuments", func(c echo.Context) error {
 			return handlers.GetParticipatedEventDocuments(app, c)
 		})
@@ -59,14 +44,14 @@ func main() {
 			return handlers.GetFullDocuments(app, c)
 		})
 
-		// Get all full documents that the current user participate in
+		// Get all full documents that the current user participates in
 		// Full documents is now shared base for other documents
 		subGroup.GET("/participatedFullDocuments", func(c echo.Context) error {
 			return handlers.GetParticipatedFullDocuments(app, c)
 		})
 
 		// Get all user's write-access full documents for event documents
-		// Full documents is now shared base for other documents
+		// Full documents are now shared base for other documents
 		subGroup.GET("/getHasWriteFullDocuments", func(c echo.Context) error {
 			return handlers.GetHasWriteFullDocuments(app, c)
 		})
@@ -76,7 +61,7 @@ func main() {
 			return handlers.GetAcademicMaterials(app, c)
 		})
 
-		// Get all academic materials that the current user participate in
+		// Get all academic materials that the current user participates in
 		subGroup.GET("/getParticipatedAcademicMaterials", func(c echo.Context) error {
 			return handlers.GetParticipatedAcademicMaterials(app, c)
 		})
@@ -91,7 +76,7 @@ func main() {
 			return handlers.GetPersonalNotes(app, c)
 		})
 
-		// Get all personalNotes that the current user participate in
+		// Get all personalNotes that the current user participates in
 		subGroup.GET("/getParticipatedPersonalNotes", func(c echo.Context) error {
 			return handlers.GetParticipatedPersonalNotes(app, c)
 		})
@@ -101,7 +86,7 @@ func main() {
 			return handlers.GetClasses(app, c)
 		})
 
-		// Get all event documents that the current user participate in
+		// Get all event documents that the current user participates in
 		subGroup.GET("/getParticipatedClasses", func(c echo.Context) error {
 			return handlers.GetParticipatedClasses(app, c)
 		})
@@ -111,7 +96,7 @@ func main() {
 			return handlers.GetCourses(app, c)
 		})
 
-		// Get all event documents that the current user participate in
+		// Get all event documents that the current user participates in
 		subGroup.GET("/getParticipatedCourses", func(c echo.Context) error {
 			return handlers.GetParticipatedCourses(app, c)
 		})
@@ -126,7 +111,7 @@ func main() {
 			return handlers.GetStarredContacts(app, c)
 		})
 
-		// Get all documents that the query person participate in the current user's document
+		// Get all documents that the query person participates in the current user's document
 		subGroup.GET("/getSharedDocuments/:toPerson", func(c echo.Context) error {
 			return handlers.GetSharedDocuments(app, c)
 		})
