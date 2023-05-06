@@ -80,7 +80,6 @@ CREATE INDEX `_8qzwbi8qig96dy3_created_idx` ON `majors` (`created`);
 CREATE UNIQUE INDEX `idx_unique_0r6kke4b` ON `majors` (`name`);
 CREATE INDEX `_d1gfoputrdow7mx_created_idx` ON `participants` (`created`);
 CREATE INDEX `_vks6ezu0clb3qja_created_idx` ON `people` (`created`);
-CREATE INDEX `_q22h280gruk59ry_created_idx` ON `relationships` (`created`);
 CREATE INDEX `_fewbiz09m7bi4kg_created_idx` ON `personalNotes` (`created`);
 CREATE UNIQUE INDEX `idx_unique_xu7lw6et` ON `personalNotes` (`fullDocument`);
 CREATE INDEX `_ykaefycx2ie9dtn_created_idx` ON `academicMaterials` (`created`);
@@ -88,3 +87,4 @@ CREATE UNIQUE INDEX `idx_unique_gy4j389h` ON `academicMaterials` (`fullDocument`
 CREATE INDEX `_fdvpbps19x0r7r0_created_idx` ON `eventDocuments` (`created`);
 CREATE UNIQUE INDEX `idx_unique_tha3swja` ON `eventDocuments` (`fullDocument`);
 CREATE INDEX `_j4ausx28rc681dq_created_idx` ON `documents` (`created`);
+CREATE INDEX `_q22h280gruk59ry_created_idx` ON `relationships` (`created`);

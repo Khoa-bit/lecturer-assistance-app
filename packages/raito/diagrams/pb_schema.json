@@ -729,51 +729,6 @@
     "options": {}
   },
   {
-    "id": "q22h280gruk59ry",
-    "name": "relationships",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "4si6gxog",
-        "name": "fromPerson",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "vks6ezu0clb3qja",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": null
-        }
-      },
-      {
-        "id": "uk38iicu",
-        "name": "toPerson",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "vks6ezu0clb3qja",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": null
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX `_q22h280gruk59ry_created_idx` ON \"relationships\" (`created`)"
-    ],
-    "listRule": "@request.auth.id != \"\"",
-    "viewRule": "@request.auth.id != \"\"",
-    "createRule": "@request.auth.id != \"\"",
-    "updateRule": "@request.auth.id != \"\"",
-    "deleteRule": "@request.auth.id != \"\"",
-    "options": {}
-  },
-  {
     "id": "fewbiz09m7bi4kg",
     "name": "personalNotes",
     "type": "base",
@@ -1092,6 +1047,51 @@
     "createRule": "@request.auth.person.id = @request.data.owner",
     "updateRule": "@request.auth.person.id = owner.id || (\n  @collection.participants.document.id ?= id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
     "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "q22h280gruk59ry",
+    "name": "relationships",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "4si6gxog",
+        "name": "fromPerson",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": null
+        }
+      },
+      {
+        "id": "uk38iicu",
+        "name": "toPerson",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": null
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX `_q22h280gruk59ry_created_idx` ON `relationships` (`created`)"
+    ],
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": "@request.auth.id != \"\"",
+    "updateRule": "@request.auth.id != \"\"",
+    "deleteRule": "@request.auth.id != \"\"",
     "options": {}
   }
 ]
