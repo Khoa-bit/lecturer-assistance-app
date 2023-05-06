@@ -8,10 +8,17 @@ import type {
   UsersResponse,
 } from "raito";
 import { Collections, ParticipantsPermissionOptions } from "raito";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { PBCustom } from "src/types/pb-custom";
 import account_circle_black from "../../../public/account_circle_black.png";
 import ImageFallback from "../ImageFallback";
+import type { Education, Experience, Interests } from "../../types/peopleJSON";
+import type {
+  InvitationRequestBody,
+  InvitationResponse,
+} from "../../pages/api/email/invitation";
+import SuperJSON from "superjson";
+import { tryGetFirstValidEmail } from "../../lib/input_handling";
 
 interface PeopleExpand {
   person: PeopleResponse;
@@ -19,7 +26,7 @@ interface PeopleExpand {
 
 interface NewParticipantFormProps {
   docId: string;
-  people: PeopleResponse<unknown>[];
+  people: PeopleResponse<Education, Experience, Interests, unknown>[];
   owner: PeopleResponse;
   user: UsersResponse<PeopleExpand>;
   defaultValue: ListResult<ParticipantsCustomResponse>;
@@ -47,6 +54,33 @@ function ParticipantsList({
           ) && user.person != person.id
       ),
     [allDocParticipants.items, people, user.person]
+  );
+
+  const sendInvitation = useCallback(
+    async (allDocParticipant: ParticipantsCustomResponse) => {
+      const requestBody: InvitationRequestBody = {
+        docId,
+        participant: allDocParticipant,
+      };
+
+      const invitationResponse = await fetch(
+        `/api/email/invitation?toEmail=${tryGetFirstValidEmail([
+          allDocParticipant.personalEmail,
+          allDocParticipant.expand.user_email,
+        ])}`,
+        { method: "POST", body: SuperJSON.stringify(requestBody) }
+      )
+        .then((res) => {
+          return res.json() as Promise<InvitationResponse>;
+        })
+        .catch((err: Error) => {
+          throw err;
+        });
+
+      console.log(invitationResponse);
+      return invitationResponse;
+    },
+    [docId]
   );
 
   const participantsList = useMemo(
@@ -134,7 +168,7 @@ function ParticipantsList({
         <select
           className="select-bordered select w-full"
           onChange={async (e) => {
-            await pbClient
+            const newDocParticipant = await pbClient
               ?.collection(Collections.Participants)
               .create<ParticipantsResponse>({
                 document: docId,
@@ -142,11 +176,18 @@ function ParticipantsList({
                 permission: ParticipantsPermissionOptions.read,
               } as ParticipantsRecord);
 
-            await pbClient
-              ?.apiGetList<ParticipantsCustomResponse>(
+            const allDocParticipants =
+              await pbClient?.apiGetList<ParticipantsCustomResponse>(
                 `/api/user/getAllDocParticipants/${docId}?fullList=true`
-              )
-              .then((value) => setAllDocParticipants(value));
+              );
+
+            const allDocParticipant = allDocParticipants.items.find(
+              (allDocParticipant) =>
+                allDocParticipant.id == newDocParticipant.person
+            );
+
+            setAllDocParticipants(allDocParticipants);
+            if (allDocParticipant) sendInvitation(allDocParticipant);
           }}
           disabled={newPeopleOptions.length == 0}
           value=""

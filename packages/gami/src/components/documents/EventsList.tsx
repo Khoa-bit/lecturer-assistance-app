@@ -7,11 +7,12 @@ import type {
 } from "raito";
 import { useState } from "react";
 import { formatDate } from "src/lib/input_handling";
-import StatusEvent, { StatusEventOptions, eventStatus } from "./StatusEvent";
+import StatusEvent, { eventStatus, StatusEventOptions } from "./StatusEvent";
 
 interface FullDocumentExpand {
   fullDocument: FullDocumentsResponse<DocumentsExpand>;
 }
+
 interface DocumentsExpand {
   document: DocumentsResponse;
 }
@@ -82,8 +83,8 @@ function EventsList({
 
             const upcomingEventStatus = eventStatus(
               document?.status,
-              eventDocument.startTime,
-              eventDocument.endTime
+              eventDocument.expand?.fullDocument.expand?.document.startTime,
+              eventDocument.expand?.fullDocument.expand?.document.endTime
             );
 
             return (
@@ -97,11 +98,19 @@ function EventsList({
                   <p className="flex flex-grow flex-col font-semibold">
                     {document?.name}
                     <small className="flex items-center gap-1 font-normal">
-                      {formatDate(eventDocument.startTime, "HH:mm - dd/LL")}
+                      {formatDate(
+                        eventDocument.expand?.fullDocument.expand?.document
+                          .startTime,
+                        "HH:mm - dd/LL"
+                      )}
                       <span className="material-symbols-rounded !text-base [font-variation-settings:'opsz'_24]">
                         start
                       </span>
-                      {formatDate(eventDocument.endTime, "HH:mm - dd/LL")}
+                      {formatDate(
+                        eventDocument.expand?.fullDocument.expand?.document
+                          .endTime,
+                        "HH:mm - dd/LL"
+                      )}
                     </small>
                   </p>
                   <StatusEvent status={upcomingEventStatus}></StatusEvent>
@@ -152,8 +161,8 @@ function EventsList({
 
             const pastEventStatus = eventStatus(
               document?.status,
-              eventDocument.startTime,
-              eventDocument.endTime
+              eventDocument.expand?.fullDocument.expand?.document.startTime,
+              eventDocument.expand?.fullDocument.expand?.document.endTime
             );
 
             if (
@@ -173,11 +182,19 @@ function EventsList({
                   <p className="flex flex-grow flex-col font-semibold">
                     {document?.name}
                     <small className="flex items-center gap-1 font-normal">
-                      {formatDate(eventDocument.startTime, "HH:mm - dd/LL")}
+                      {formatDate(
+                        eventDocument.expand?.fullDocument.expand?.document
+                          .startTime,
+                        "HH:mm - dd/LL"
+                      )}
                       <span className="material-symbols-rounded !text-base [font-variation-settings:'opsz'_24]">
                         start
                       </span>
-                      {formatDate(eventDocument.endTime, "HH:mm - dd/LL")}
+                      {formatDate(
+                        eventDocument.expand?.fullDocument.expand?.document
+                          .endTime,
+                        "HH:mm - dd/LL"
+                      )}
                     </small>
                   </p>
                   <StatusEvent status={pastEventStatus}></StatusEvent>

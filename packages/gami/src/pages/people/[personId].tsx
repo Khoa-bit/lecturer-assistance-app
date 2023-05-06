@@ -55,7 +55,6 @@ import { IcRoundSchool } from "src/components/icons/IcRoundSchool";
 import { IcRoundScience } from "src/components/icons/IcRoundScience";
 import { IcRoundWork } from "src/components/icons/IcRoundWork";
 import MainLayout from "src/components/layouts/MainLayout";
-import TipTapView from "src/components/wysiwyg/TipTapView";
 import { createHandleAvatar } from "src/components/wysiwyg/documents/createHandleAvatar";
 import { createHandlePersonThumbnail } from "src/components/wysiwyg/documents/createHandlePersonThumbnail";
 import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
@@ -293,10 +292,7 @@ function Person({
                     </li>
                     <li>
                       <i>Description: </i>
-                      <TipTapView
-                        key="TipTapComponent"
-                        richText={value.description ?? "{}"}
-                      ></TipTapView>
+                      <span>{value.description}</span>
                     </li>
                   </ul>
                 </li>
@@ -318,6 +314,11 @@ function Person({
         <span>{`${interest.description}`}</span>
       </p>
     ));
+
+    const teachingCourses =
+      allCourses.size > 0 ? (
+        <p>{Array.from(allCourses.values()).join(", ")}</p>
+      ) : undefined;
 
     const education = values.education?.map((education, index) => (
       <section key={index}>
@@ -413,7 +414,7 @@ function Person({
             <IcRoundMenuBook className="h-6 text-gray-500"></IcRoundMenuBook>
             <span>Teaching Courses</span>
           </h3>
-          <p>{Array.from(allCourses.values()).join(", ")}</p>
+          {teachingCourses}
           <h3 className="flex items-center gap-2 border-b-2">
             <IcRoundSchool className="h-6 text-gray-500"></IcRoundSchool>
             <span>Education</span>
@@ -430,13 +431,15 @@ function Person({
           </h3>
           {academicMaterialsDisplay}
         </section>
-        <button
-          className={`flex justify-center gap-2 rounded bg-gray-400 py-2 font-semibold text-white transition-colors hover:bg-blue-400`}
-          onClick={() => setIsDisplay(false)}
-        >
-          <IcRoundCreate className="h-6"></IcRoundCreate>
-          Edit
-        </button>
+        {isWrite && (
+          <button
+            className={`flex justify-center gap-2 rounded bg-gray-400 py-2 font-semibold text-white transition-colors hover:bg-blue-400`}
+            onClick={() => setIsDisplay(false)}
+          >
+            <IcRoundCreate className="h-6"></IcRoundCreate>
+            Edit
+          </button>
+        )}
       </section>
     );
   }, [
@@ -477,7 +480,9 @@ function Person({
       <header className="flex w-full items-start gap-x-4">
         <label htmlFor="avatar">
           <ImageFallback
-            className="h-16 w-16 cursor-pointer rounded-full shadow hover:bg-slate-300 hover:grayscale"
+            className={`h-16 w-16 rounded-full shadow hover:bg-slate-300 ${
+              isWrite && "cursor-pointer hover:grayscale"
+            }`}
             src={pbClient.buildUrl(`api/files/people/${personId}/${avatar}`)}
             fallbackSrc={account_circle_black}
             alt="Person avatar"
@@ -495,6 +500,7 @@ function Person({
             handleAvatar(e);
           }}
           accept="image/*"
+          disabled={!isWrite}
         />
 
         <h1 className="flex-grow">
@@ -586,6 +592,7 @@ function Person({
                 label: "Personal email",
                 register,
                 options: { disabled: !isWrite },
+                type: "email",
               } as InputProps<PersonInput>)}
             ></Input>
             <Input
@@ -950,7 +957,7 @@ export const getServerSideProps = async ({
 
   const academicMaterialsGroupCustomResponse =
     await pbServer.apiGetList<AcademicMaterialsGroupCustomResponse>(
-      "/api/user/getAcademicMaterialsWithParticipants"
+      `/api/user/getAcademicMaterialsWithParticipants/${personId}?fullList=true`
     );
 
   const compactAcademicMaterials: CompactAcademicMaterials = {};
@@ -964,26 +971,18 @@ export const getServerSideProps = async ({
       id: userDocument.id,
       documentName: userDocument.name,
       participants: userDocument.expand.person_name_list,
-      description: userDocument.richText,
+      description: userDocument.description,
       startTime: userDocument.startTime,
       endTime: userDocument.endTime,
     });
   }
 
-  const lectureCourses = await pbServer.apiGetList<CoursesCustomResponse>(
-    "/api/user/getCourses"
+  const allRelatedCourses = await pbServer.apiGetList<CoursesCustomResponse>(
+    `/api/user/getRelatedCourses/${personId}?fullList=true`
   );
 
-  const participatedLectureCourses =
-    await pbServer.apiGetList<CoursesCustomResponse>(
-      "/api/user/getParticipatedCourses?fullList=true"
-    );
-
   const allCourses = new Set<string>();
-  for (const course of lectureCourses.items) {
-    allCourses.add(course.expand.courseTemplate_name);
-  }
-  for (const course of participatedLectureCourses.items) {
+  for (const course of allRelatedCourses.items) {
     allCourses.add(course.expand.courseTemplate_name);
   }
 

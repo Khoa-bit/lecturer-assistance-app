@@ -333,7 +333,7 @@ func GetAllDocParticipants(app *pocketbase.PocketBase, c echo.Context) error {
 	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
 
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
-		`SELECT ppl.* %s
+		`SELECT ppl.*, user.email AS user_email %s
       FROM participants participant
         INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.id == {:docId}
         INNER JOIN people ppl ON participant.person == ppl.id

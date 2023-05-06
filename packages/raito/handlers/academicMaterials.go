@@ -47,12 +47,15 @@ func GetAcademicMaterials(app *pocketbase.PocketBase, c echo.Context) error {
 }
 
 func GetAcademicMaterialsWithParticipants(app *pocketbase.PocketBase, c echo.Context) error {
-	authRecord, err := auth.GetUser(app, c)
+	_, err := auth.GetUser(app, c)
 	if err != nil {
 		return err
 	}
 
-	userPersonId := authRecord.GetString("person")
+	personId := c.PathParam("personId")
+	if err != nil {
+		return err
+	}
 
 	mainCollectionName := "documents"
 	hasGroupBy := true
@@ -76,7 +79,7 @@ func GetAcademicMaterialsWithParticipants(app *pocketbase.PocketBase, c echo.Con
                   userDocument.*
               FROM
                   documents userDocument
-              WHERE userDocument.owner = {:userPersonId}
+              WHERE userDocument.owner = {:personId}
               UNION
               SELECT
                   userDocument.*
@@ -84,7 +87,7 @@ func GetAcademicMaterialsWithParticipants(app *pocketbase.PocketBase, c echo.Con
                   participants p
                   INNER JOIN documents userDocument ON p.document = userDocument.id
                   AND userDocument.deleted == ''
-              WHERE p.person = {:userPersonId}
+              WHERE p.person = {:personId}
           ) AS userDocument
           INNER JOIN participants participant ON participant.document = userDocument.id
           INNER JOIN people person ON person.id = participant.person
@@ -93,7 +96,7 @@ func GetAcademicMaterialsWithParticipants(app *pocketbase.PocketBase, c echo.Con
           GROUP BY userDocument.id`,
 		selectArgs))
 
-	query.Bind(dbx.Params{"userPersonId": userPersonId})
+	query.Bind(dbx.Params{"personId": personId})
 
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
 }

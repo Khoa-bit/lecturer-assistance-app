@@ -5,9 +5,9 @@ import type {
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import type {
-  CourseTemplatesResponse,
   CoursesRecord,
   CoursesResponse,
+  CourseTemplatesResponse,
   DocumentsResponse,
   FullDocumentsResponse,
 } from "raito";
@@ -31,6 +31,7 @@ import { useCourseTemplate } from "src/components/lectureCourses/NewCourseTempla
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
+
 const NewCourseTemplate = dynamic(
   () => import("src/components/lectureCourses/NewCourseTemplate"),
   {

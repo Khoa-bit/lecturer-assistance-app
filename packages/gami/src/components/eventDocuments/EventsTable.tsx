@@ -50,8 +50,8 @@ function EventsTable({ eventDocuments }: EventsTableProps) {
           <StatusEvent
             status={eventStatus(
               eventDoc.expand?.fullDocument.expand?.document?.status,
-              eventDoc.startTime,
-              eventDoc.endTime
+              eventDoc.expand?.fullDocument.expand?.document.startTime,
+              eventDoc.expand?.fullDocument.expand?.document.endTime
             )}
           ></StatusEvent>
         </Link>
@@ -61,7 +61,10 @@ function EventsTable({ eventDocuments }: EventsTableProps) {
           className="block w-44 truncate p-2"
           href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}
         >
-          {formatDate(eventDoc.startTime, "HH:mm - dd/LL/yy")}
+          {formatDate(
+            eventDoc.expand?.fullDocument.expand?.document.startTime,
+            "HH:mm - dd/LL/yy"
+          )}
         </Link>
       </td>
       <td>
@@ -69,12 +72,15 @@ function EventsTable({ eventDocuments }: EventsTableProps) {
           className="block w-44 truncate p-2"
           href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}
         >
-          {formatDate(eventDoc.endTime, "HH:mm - dd/LL/yy")}
+          {formatDate(
+            eventDoc.expand?.fullDocument.expand?.document.endTime,
+            "HH:mm - dd/LL/yy"
+          )}
         </Link>
       </td>
       <td>
         <Link
-          className="block w-10 truncate py-1 px-2"
+          className="block w-10 truncate px-2 py-1"
           href={`/eventDocuments/${encodeURIComponent(eventDoc.id)}`}
         >
           <span className="material-symbols-rounded">chevron_right</span>

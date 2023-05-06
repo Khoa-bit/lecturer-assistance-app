@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { FieldValues, FieldArrayPath, FieldArray } from "react-hook-form";
+import type { FieldArray, FieldArrayPath, FieldValues } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { IcRoundAddCircle } from "../icons/IcRoundAddCircle";
 import { IcRoundRemoveCircle } from "../icons/IcRoundRemoveCircle";

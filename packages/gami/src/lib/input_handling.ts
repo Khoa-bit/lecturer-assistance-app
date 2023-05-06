@@ -1,4 +1,5 @@
-import { format } from "date-fns";
+import {format} from "date-fns";
+import {z} from "zod";
 
 // https://stackoverflow.com/questions/24004791/what-is-the-debounce-function-in-javascript
 export function debounce<T extends (...args: unknown[]) => unknown>(
@@ -189,4 +190,16 @@ export function categorizeFile(filename: string): {
   } else {
     return { fileExtension: FileExtensions.Unknown, color: "text-gray-500" };
   }
+}
+
+export const zodEmailValidator = z.string().email();
+
+export function tryGetFirstValidEmail(emails: string[]): string | null {
+  for (const email of emails) {
+    const parsedEmail = zodEmailValidator.safeParse(email);
+    if (parsedEmail.success) {
+      return parsedEmail.data;
+    }
+  }
+  return null;
 }

@@ -1,7 +1,7 @@
 // middleware.ts
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { _middlewarePBClient } from "./lib/pb_client";
+import type {NextRequest} from "next/server";
+import {NextResponse} from "next/server";
+import {_middlewarePBClient} from "./lib/pb_client";
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
@@ -11,14 +11,20 @@ export async function middleware(request: NextRequest) {
     url.pathname
   );
 
-  if (!user && !request.nextUrl.pathname.startsWith("/auth")) {
+  if (!user && url.search.match("emailLink=true")) {
+    const redirectUrl = new URL("/redirect", url.origin);
+    redirectUrl.search = `?url=${encodeURI(url.toString())}`;
+    console.log(`Being redirect to ${redirectUrl.toString()}`);
+
+    return NextResponse.redirect(redirectUrl);
+  } else if (!user && !request.nextUrl.pathname.startsWith("/auth")) {
     url.pathname = `/auth/login/`;
-    console.log(`Being redirect to ${url}`);
+    console.log(`Being redirect to ${url.toString()}`);
 
     return NextResponse.redirect(url);
   } else if (request.nextUrl.pathname.length <= 1) {
     url.pathname = `/eventDocuments`;
-    console.log(`Being redirect to ${url}`);
+    console.log(`Being redirect to ${url.toString()}`);
 
     return NextResponse.redirect(url);
   }
@@ -45,5 +51,8 @@ export async function middleware(request: NextRequest) {
  * - favicon.ico (favicon file)
  */
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).+)", "/"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|screenshots|redirect).+)",
+    "/",
+  ],
 };

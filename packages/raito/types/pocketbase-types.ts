@@ -11,7 +11,6 @@ export enum Collections {
 	Departments = "departments",
 	Documents = "documents",
 	EventDocuments = "eventDocuments",
-	Experience = "experience",
 	FullDocuments = "fullDocuments",
 	Majors = "majors",
 	Participants = "participants",
@@ -127,6 +126,7 @@ export type DocumentsRecord = {
 	attachmentsHash?: string
 	startTime?: IsoDateString
 	endTime?: IsoDateString
+	description?: string
 }
 
 export enum EventDocumentsRecurringOptions {
@@ -212,21 +212,23 @@ export type UsersRecord = {
 }
 
 // Response types include system fields and match responses from the PocketBase API
-export type AcademicMaterialsResponse<Texpand = unknown> = AcademicMaterialsRecord & BaseSystemFields<Texpand>
-export type AttachmentsResponse<Texpand = unknown> = AttachmentsRecord & BaseSystemFields<Texpand>
-export type ClassesResponse<Texpand = unknown> = ClassesRecord & BaseSystemFields<Texpand>
-export type CourseTemplatesResponse = CourseTemplatesRecord & BaseSystemFields
-export type CoursesResponse<Texpand = unknown> = CoursesRecord & BaseSystemFields<Texpand>
-export type DepartmentsResponse = DepartmentsRecord & BaseSystemFields
-export type DocumentsResponse<Texpand = unknown> = DocumentsRecord & BaseSystemFields<Texpand>
-export type EventDocumentsResponse<Texpand = unknown> = EventDocumentsRecord & BaseSystemFields<Texpand>
-export type FullDocumentsResponse<Texpand = unknown> = FullDocumentsRecord & BaseSystemFields<Texpand>
-export type MajorsResponse<Texpand = unknown> = MajorsRecord & BaseSystemFields<Texpand>
-export type ParticipantsResponse<Texpand = unknown> = ParticipantsRecord & BaseSystemFields<Texpand>
-export type PeopleResponse<Teducation = unknown, Texperience = unknown, Tinterests = unknown, Texpand = unknown> = PeopleRecord<Teducation, Texperience, Tinterests> & BaseSystemFields<Texpand>
-export type PersonalNotesResponse<Texpand = unknown> = PersonalNotesRecord & BaseSystemFields<Texpand>
-export type RelationshipsResponse<Texpand = unknown> = RelationshipsRecord & BaseSystemFields<Texpand>
-export type UsersResponse<Texpand = unknown> = UsersRecord & AuthSystemFields<Texpand>
+export type AcademicMaterialsResponse<Texpand = unknown> = Required<AcademicMaterialsRecord> & BaseSystemFields<Texpand>
+export type AttachmentsResponse<Texpand = unknown> = Required<AttachmentsRecord> & BaseSystemFields<Texpand>
+export type ClassesResponse<Texpand = unknown> = Required<ClassesRecord> & BaseSystemFields<Texpand>
+export type CourseTemplatesResponse = Required<CourseTemplatesRecord> & BaseSystemFields
+export type CoursesResponse<Texpand = unknown> = Required<CoursesRecord> & BaseSystemFields<Texpand>
+export type DepartmentsResponse = Required<DepartmentsRecord> & BaseSystemFields
+export type DocumentsResponse<Texpand = unknown> = Required<DocumentsRecord> & BaseSystemFields<Texpand>
+export type EventDocumentsResponse<Texpand = unknown> = Required<EventDocumentsRecord> & BaseSystemFields<Texpand>
+export type FullDocumentsResponse<Texpand = unknown> = Required<FullDocumentsRecord> & BaseSystemFields<Texpand>
+export type MajorsResponse<Texpand = unknown> = Required<MajorsRecord> & BaseSystemFields<Texpand>
+export type ParticipantsResponse<Texpand = unknown> = Required<ParticipantsRecord> & BaseSystemFields<Texpand>
+export type PeopleResponse<Teducation = unknown, Texperience = unknown, Tinterests = unknown, Texpand = unknown> = Required<PeopleRecord<Teducation, Texperience, Tinterests>> & BaseSystemFields<Texpand>
+export type PersonalNotesResponse<Texpand = unknown> = Required<PersonalNotesRecord> & BaseSystemFields<Texpand>
+export type RelationshipsResponse<Texpand = unknown> = Required<RelationshipsRecord> & BaseSystemFields<Texpand>
+export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSystemFields<Texpand>
+
+// Types containing all Records and Responses, useful for creating typing helper functions
 
 export type CollectionRecords = {
 	academicMaterials: AcademicMaterialsRecord
@@ -244,4 +246,22 @@ export type CollectionRecords = {
 	personalNotes: PersonalNotesRecord
 	relationships: RelationshipsRecord
 	users: UsersRecord
+}
+
+export type CollectionResponses = {
+	academicMaterials: AcademicMaterialsResponse
+	attachments: AttachmentsResponse
+	classes: ClassesResponse
+	courseTemplates: CourseTemplatesResponse
+	courses: CoursesResponse
+	departments: DepartmentsResponse
+	documents: DocumentsResponse
+	eventDocuments: EventDocumentsResponse
+	fullDocuments: FullDocumentsResponse
+	majors: MajorsResponse
+	participants: ParticipantsResponse
+	people: PeopleResponse
+	personalNotes: PersonalNotesResponse
+	relationships: RelationshipsResponse
+	users: UsersResponse
 }

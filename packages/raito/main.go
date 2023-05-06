@@ -67,7 +67,7 @@ func main() {
 		})
 
 		// Get all academic materials and all participants
-		subGroup.GET("/getAcademicMaterialsWithParticipants", func(c echo.Context) error {
+		subGroup.GET("/getAcademicMaterialsWithParticipants/:personId", func(c echo.Context) error {
 			return handlers.GetAcademicMaterialsWithParticipants(app, c)
 		})
 
@@ -99,6 +99,11 @@ func main() {
 		// Get all event documents that the current user participates in
 		subGroup.GET("/getParticipatedCourses", func(c echo.Context) error {
 			return handlers.GetParticipatedCourses(app, c)
+		})
+
+		// Get all event documents that the current user participates in
+		subGroup.GET("/getRelatedCourses/:personId", func(c echo.Context) error {
+			return handlers.GetRelatedCourses(app, c)
 		})
 
 		// Get all participants from the current user's documents

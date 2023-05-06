@@ -53,8 +53,12 @@ import {
 import type { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
 import EventsList from "./EventsList";
-import Input, { InputProps } from "./Input";
+import type { InputProps } from "./Input";
+import Input from "./Input";
 import ParticipantsList from "./ParticipantsList";
+import type { Education, Experience, Interests } from "../../types/peopleJSON";
+import type { TextAreaProps } from "./TextArea";
+import TextArea from "./TextArea";
 
 export interface FullDocumentData {
   fullDocument: FullDocumentsResponse<DocumentsExpand>;
@@ -65,7 +69,7 @@ export interface FullDocumentData {
   pastEventDocuments: ListResult<EventDocumentsResponse<FullDocumentExpand>>;
   allDocParticipants: ListResult<ParticipantsCustomResponse>;
   permission: ParticipantsPermissionOptions;
-  people: PeopleResponse<unknown>[];
+  people: PeopleResponse<Education, Experience, Interests, unknown>[];
   user: UsersResponse<PeopleExpand>;
 }
 
@@ -163,6 +167,7 @@ function FullDocument<TRecord>({
       attachmentsHash: baseDocument?.attachmentsHash,
       startTime: dateToISOLikeButLocalOrUndefined(baseDocument?.startTime),
       endTime: dateToISOLikeButLocalOrUndefined(baseDocument?.endTime),
+      description: baseDocument?.description,
       ...childrenDefaultValue,
     },
   });
@@ -247,6 +252,7 @@ function FullDocument<TRecord>({
             richText: inputData.richText,
             startTime: dateToISOOrUndefined(inputData.startTime),
             endTime: dateToISOOrUndefined(inputData.endTime),
+            description: inputData.description,
             diffHash: newDiffHash,
             attachmentsHash: newAttachmentsHash,
           } as DocumentsRecord);
@@ -467,6 +473,15 @@ function FullDocument<TRecord>({
           ref={formRef}
           onSubmit={handleSubmit(onSubmit)}
         >
+          <TextArea
+            {...({
+              id: "description",
+              label: "Description",
+              name: "description",
+              register,
+              options: { disabled: !isWrite },
+            } as TextAreaProps<FullDocumentInput>)}
+          ></TextArea>
           <label className="py-2" htmlFor="priority">
             Priority
           </label>
@@ -679,7 +694,7 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
 
   const people = await pbServer
     .collection(Collections.People)
-    .getFullList<PeopleResponse>();
+    .getFullList<PeopleResponse<Education, Experience, Interests, unknown>>();
 
   return {
     fullDocument,
