@@ -17,6 +17,8 @@ export enum Collections {
 	People = "people",
 	PersonalNotes = "personalNotes",
 	Relationships = "relationships",
+	Reminders = "reminders",
+	Services = "services",
 	Users = "users",
 }
 
@@ -140,6 +142,7 @@ export type EventDocumentsRecord = {
 	fullDocument: RecordIdString
 	recurring: EventDocumentsRecurringOptions
 	toFullDocument?: RecordIdString
+	reminderAt?: IsoDateString
 }
 
 export enum FullDocumentsInternalOptions {
@@ -207,6 +210,78 @@ export type RelationshipsRecord = {
 	toPerson: RecordIdString
 }
 
+export enum RemindersFulldocumentInternalOptions {
+	"Academic material" = "Academic material",
+	"Course" = "Course",
+	"Class" = "Class",
+	"Personal note" = "Personal note",
+	"Event" = "Event",
+}
+
+export enum RemindersFulldocumentDocumentPriorityOptions {
+	"Lower" = "Lower",
+	"Low" = "Low",
+	"Medium" = "Medium",
+	"High" = "High",
+	"Higher" = "Higher",
+}
+
+export enum RemindersFulldocumentDocumentStatusOptions {
+	"Todo" = "Todo",
+	"In progress" = "In progress",
+	"Review" = "Review",
+	"Done" = "Done",
+	"Closed" = "Closed",
+}
+
+export enum RemindersTofulldocumentInternalOptions {
+	"Academic material" = "Academic material",
+	"Course" = "Course",
+	"Class" = "Class",
+	"Personal note" = "Personal note",
+	"Event" = "Event",
+}
+
+export enum RemindersTofulldocumentDocumentPriorityOptions {
+	"Lower" = "Lower",
+	"Low" = "Low",
+	"Medium" = "Medium",
+	"High" = "High",
+	"Higher" = "Higher",
+}
+
+export enum RemindersTofulldocumentDocumentStatusOptions {
+	"Todo" = "Todo",
+	"In progress" = "In progress",
+	"Review" = "Review",
+	"Done" = "Done",
+	"Closed" = "Closed",
+}
+export type RemindersRecord<TallParticipantsEmails = unknown> = {
+	reminderAt?: IsoDateString
+	fullDocument_id?: RecordIdString
+	fullDocument_internal: RemindersFulldocumentInternalOptions
+	fullDocument_document_name: string
+	fullDocument_document_priority: RemindersFulldocumentDocumentPriorityOptions
+	fullDocument_document_status: RemindersFulldocumentDocumentStatusOptions
+	fullDocument_document_startTime?: IsoDateString
+	fullDocument_document_endTime?: IsoDateString
+	fullDocument_document_description?: string
+	fullDocument_document_owner_name?: string
+	toFullDocument_id?: RecordIdString
+	toFullDocument_internal: RemindersTofulldocumentInternalOptions
+	toFullDocument_document_name: string
+	toFullDocument_document_priority: RemindersTofulldocumentDocumentPriorityOptions
+	toFullDocument_document_status: RemindersTofulldocumentDocumentStatusOptions
+	toFullDocument_document_startTime?: IsoDateString
+	toFullDocument_document_endTime?: IsoDateString
+	toFullDocument_document_description?: string
+	toFullDocument_document_owner_name?: string
+	allParticipantsEmails?: null | TallParticipantsEmails
+}
+
+export type ServicesRecord = never
+
 export type UsersRecord = {
 	person: RecordIdString
 }
@@ -226,6 +301,8 @@ export type ParticipantsResponse<Texpand = unknown> = Required<ParticipantsRecor
 export type PeopleResponse<Teducation = unknown, Texperience = unknown, Tinterests = unknown, Texpand = unknown> = Required<PeopleRecord<Teducation, Texperience, Tinterests>> & BaseSystemFields<Texpand>
 export type PersonalNotesResponse<Texpand = unknown> = Required<PersonalNotesRecord> & BaseSystemFields<Texpand>
 export type RelationshipsResponse<Texpand = unknown> = Required<RelationshipsRecord> & BaseSystemFields<Texpand>
+export type RemindersResponse<TallParticipantsEmails = unknown, Texpand = unknown> = Required<RemindersRecord<TallParticipantsEmails>> & BaseSystemFields<Texpand>
+export type ServicesResponse = Required<ServicesRecord> & AuthSystemFields
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSystemFields<Texpand>
 
 // Types containing all Records and Responses, useful for creating typing helper functions
@@ -245,6 +322,8 @@ export type CollectionRecords = {
 	people: PeopleRecord
 	personalNotes: PersonalNotesRecord
 	relationships: RelationshipsRecord
+	reminders: RemindersRecord
+	services: ServicesRecord
 	users: UsersRecord
 }
 
@@ -263,5 +342,7 @@ export type CollectionResponses = {
 	people: PeopleResponse
 	personalNotes: PersonalNotesResponse
 	relationships: RelationshipsResponse
+	reminders: RemindersResponse
+	services: ServicesResponse
 	users: UsersResponse
 }

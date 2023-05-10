@@ -35,7 +35,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
   };
 }
 
-// From PB To send to input local-datetime
+// From PB datetime string To send to input local-datetime
 export function dateToISOLikeButLocalOrUndefined(
   dateTimeStr: string | undefined
 ): string | undefined {
@@ -47,7 +47,7 @@ export function dateToISOLikeButLocalOrUndefined(
   }
 }
 
-// From PB To send to input local-datetime
+// From PB datetime string To send to input local-datetime
 export function dateToISOLikeButLocal(dateTime: Date): string {
   const offsetMs = dateTime.getTimezoneOffset() * 60 * 1000;
   const msLocal = dateTime.getTime() - offsetMs;
@@ -57,7 +57,7 @@ export function dateToISOLikeButLocal(dateTime: Date): string {
   return isoLocal;
 }
 
-// From input local-datetime To send to PB
+// From input local-datetime To send to PB datetime string
 export function dateToISOOrUndefined(
   dateTimeStr: string | undefined
 ): string | undefined {
@@ -67,6 +67,16 @@ export function dateToISOOrUndefined(
   } catch (_) {
     return undefined;
   }
+}
+
+// From PB datetime string to JS-native Date
+export function pbToDate(d: string): Date {
+  return new Date(d);
+}
+
+// From JS-native Date to PB datetime string
+export function dateToPb(d: Date): string {
+  return d.toISOString();
 }
 
 // Format Date to a string format

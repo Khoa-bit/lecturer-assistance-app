@@ -34,6 +34,9 @@ interface NewParticipantFormProps {
   disabled: boolean;
 }
 
+// 15-seconds delay for form modification :3
+const emailInvitationDelay = 15000;
+
 function ParticipantsList({
   docId,
   people,
@@ -187,7 +190,11 @@ function ParticipantsList({
             );
 
             setAllDocParticipants(allDocParticipants);
-            if (allDocParticipant) sendInvitation(allDocParticipant);
+            if (allDocParticipant)
+              setTimeout(
+                () => sendInvitation(allDocParticipant),
+                emailInvitationDelay
+              );
           }}
           disabled={newPeopleOptions.length == 0}
           value=""

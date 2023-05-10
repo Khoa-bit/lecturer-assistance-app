@@ -1,46 +1,5 @@
 [
   {
-    "id": "_pb_users_auth_",
-    "name": "users",
-    "type": "auth",
-    "system": false,
-    "schema": [
-      {
-        "id": "tjtkcplz",
-        "name": "person",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "vks6ezu0clb3qja",
-          "cascadeDelete": true,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": null
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX `__pb_users_auth__created_idx` ON `users` (`created`)",
-      "CREATE UNIQUE INDEX \"idx_unique_tjtkcplz\" on \"users\" (\"person\")"
-    ],
-    "listRule": "id = @request.auth.id",
-    "viewRule": "@request.auth.id != \"\"",
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {
-      "allowEmailAuth": true,
-      "allowOAuth2Auth": true,
-      "allowUsernameAuth": true,
-      "exceptEmailDomains": null,
-      "manageRule": null,
-      "minPasswordLength": 8,
-      "onlyEmailDomains": null,
-      "requireEmail": false
-    }
-  },
-  {
     "id": "e8b4edpfxo6tszo",
     "name": "attachments",
     "type": "base",
@@ -321,6 +280,178 @@
     "viewRule": "@request.auth.id != \"\"",
     "createRule": null,
     "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "j4ausx28rc681dq",
+    "name": "documents",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "2uoyxb26",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "1ek0nj8b",
+        "name": "thumbnail",
+        "type": "file",
+        "system": false,
+        "required": false,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [],
+          "thumbs": [],
+          "protected": false
+        }
+      },
+      {
+        "id": "a1ot8na9",
+        "name": "priority",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "Lower",
+            "Low",
+            "Medium",
+            "High",
+            "Higher"
+          ]
+        }
+      },
+      {
+        "id": "dhueurhe",
+        "name": "status",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "Todo",
+            "In progress",
+            "Review",
+            "Done",
+            "Closed"
+          ]
+        }
+      },
+      {
+        "id": "qprx5ng2",
+        "name": "diffHash",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "p607nig8",
+        "name": "owner",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": null
+        }
+      },
+      {
+        "id": "0vetkuvs",
+        "name": "deleted",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "mdzr68dz",
+        "name": "richText",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "l0pssxso",
+        "name": "attachmentsHash",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "ewpfczdf",
+        "name": "startTime",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "sj2wqg4h",
+        "name": "endTime",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "lxcn2l2p",
+        "name": "description",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX `_j4ausx28rc681dq_created_idx` ON `documents` (`created`)"
+    ],
+    "listRule": "@request.auth.person.id = owner.id || (\n  @collection.participants.document.id ?= id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
+    "viewRule": "@request.auth.person.id = owner.id || (\n  @collection.participants.document.id ?= id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
+    "createRule": "@request.auth.person.id = @request.data.owner",
+    "updateRule": "@request.auth.person.id = owner.id || (\n  @collection.participants.document.id ?= id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
     "deleteRule": null,
     "options": {}
   },
@@ -729,6 +860,92 @@
     "options": {}
   },
   {
+    "id": "_pb_users_auth_",
+    "name": "users",
+    "type": "auth",
+    "system": false,
+    "schema": [
+      {
+        "id": "tjtkcplz",
+        "name": "person",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": true,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": null
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX `__pb_users_auth__created_idx` ON `users` (`created`)",
+      "CREATE UNIQUE INDEX \"idx_unique_tjtkcplz\" on \"users\" (\"person\")"
+    ],
+    "listRule": "id = @request.auth.id",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {
+      "allowEmailAuth": true,
+      "allowOAuth2Auth": true,
+      "allowUsernameAuth": true,
+      "exceptEmailDomains": null,
+      "manageRule": null,
+      "minPasswordLength": 8,
+      "onlyEmailDomains": null,
+      "requireEmail": false
+    }
+  },
+  {
+    "id": "q22h280gruk59ry",
+    "name": "relationships",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "4si6gxog",
+        "name": "fromPerson",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": null
+        }
+      },
+      {
+        "id": "uk38iicu",
+        "name": "toPerson",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "vks6ezu0clb3qja",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": null
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX `_q22h280gruk59ry_created_idx` ON `relationships` (`created`)"
+    ],
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": "@request.auth.id != \"\"",
+    "updateRule": "@request.auth.id != \"\"",
+    "deleteRule": "@request.auth.id != \"\"",
+    "options": {}
+  },
+  {
     "id": "fewbiz09m7bi4kg",
     "name": "personalNotes",
     "type": "base",
@@ -815,6 +1032,29 @@
     "options": {}
   },
   {
+    "id": "s6k8xiqz09qxjd6",
+    "name": "services",
+    "type": "auth",
+    "system": false,
+    "schema": [],
+    "indexes": [],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {
+      "allowEmailAuth": true,
+      "allowOAuth2Auth": true,
+      "allowUsernameAuth": true,
+      "exceptEmailDomains": null,
+      "manageRule": null,
+      "minPasswordLength": 8,
+      "onlyEmailDomains": null,
+      "requireEmail": false
+    }
+  },
+  {
     "id": "fdvpbps19x0r7r0",
     "name": "eventDocuments",
     "type": "base",
@@ -864,28 +1104,82 @@
           "maxSelect": 1,
           "displayFields": null
         }
+      },
+      {
+        "id": "vk3zctoo",
+        "name": "reminderAt",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
       }
     ],
     "indexes": [
       "CREATE INDEX `_fdvpbps19x0r7r0_created_idx` ON `eventDocuments` (`created`)",
-      "CREATE UNIQUE INDEX `idx_unique_tha3swja` ON `eventDocuments` (`fullDocument`)"
+      "CREATE UNIQUE INDEX `idx_unique_tha3swja` ON `eventDocuments` (`fullDocument`)",
+      "CREATE INDEX `idx_UKGxIUL` ON `eventDocuments` (`reminderAt`)"
     ],
     "listRule": "@request.auth.person.id = fullDocument.document.owner.id || (\n  @collection.participants.document.id ?= fullDocument.document.id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
     "viewRule": "@request.auth.person.id = fullDocument.document.owner.id || (\n  @collection.participants.document.id ?= fullDocument.document.id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
     "createRule": "@request.auth.person.id = fullDocument.document.owner.id",
-    "updateRule": "@request.auth.person.id = fullDocument.document.owner.id || (\n  @collection.participants.document.id ?= fullDocument.document.id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"write\"\n  )\n)",
+    "updateRule": "@collection.services.id = @request.auth.id ||\n@request.auth.person.id = fullDocument.document.owner.id || (\n  @collection.participants.document.id ?= fullDocument.document.id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"write\"\n  )\n)",
     "deleteRule": null,
     "options": {}
   },
   {
-    "id": "j4ausx28rc681dq",
-    "name": "documents",
-    "type": "base",
+    "id": "wg26kw9i9qjmuoq",
+    "name": "reminders",
+    "type": "view",
     "system": false,
     "schema": [
       {
-        "id": "2uoyxb26",
-        "name": "name",
+        "id": "oz27z8yk",
+        "name": "reminderAt",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "vyvckxj5",
+        "name": "fullDocument_id",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "gcqfd846lugrlnj",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": null
+        }
+      },
+      {
+        "id": "8nzsdihz",
+        "name": "fullDocument_internal",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "Academic material",
+            "Course",
+            "Class",
+            "Personal note",
+            "Event"
+          ]
+        }
+      },
+      {
+        "id": "jqdahqov",
+        "name": "fullDocument_document_name",
         "type": "text",
         "system": false,
         "required": true,
@@ -896,22 +1190,8 @@
         }
       },
       {
-        "id": "1ek0nj8b",
-        "name": "thumbnail",
-        "type": "file",
-        "system": false,
-        "required": false,
-        "options": {
-          "maxSelect": 1,
-          "maxSize": 5242880,
-          "mimeTypes": [],
-          "thumbs": [],
-          "protected": false
-        }
-      },
-      {
-        "id": "a1ot8na9",
-        "name": "priority",
+        "id": "h5enbive",
+        "name": "fullDocument_document_priority",
         "type": "select",
         "system": false,
         "required": true,
@@ -927,8 +1207,8 @@
         }
       },
       {
-        "id": "dhueurhe",
-        "name": "status",
+        "id": "vncr0ado",
+        "name": "fullDocument_document_status",
         "type": "select",
         "system": false,
         "required": true,
@@ -944,8 +1224,30 @@
         }
       },
       {
-        "id": "qprx5ng2",
-        "name": "diffHash",
+        "id": "y1sgdrqs",
+        "name": "fullDocument_document_startTime",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "cy6wvgxv",
+        "name": "fullDocument_document_endTime",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "hposehi9",
+        "name": "fullDocument_document_description",
         "type": "text",
         "system": false,
         "required": false,
@@ -956,13 +1258,25 @@
         }
       },
       {
-        "id": "p607nig8",
-        "name": "owner",
+        "id": "6stonew7",
+        "name": "fullDocument_document_owner_name",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "m5tfujby",
+        "name": "toFullDocument_id",
         "type": "relation",
         "system": false,
-        "required": true,
+        "required": false,
         "options": {
-          "collectionId": "vks6ezu0clb3qja",
+          "collectionId": "gcqfd846lugrlnj",
           "cascadeDelete": false,
           "minSelect": null,
           "maxSelect": 1,
@@ -970,8 +1284,71 @@
         }
       },
       {
-        "id": "0vetkuvs",
-        "name": "deleted",
+        "id": "mxisfuyq",
+        "name": "toFullDocument_internal",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "Academic material",
+            "Course",
+            "Class",
+            "Personal note",
+            "Event"
+          ]
+        }
+      },
+      {
+        "id": "eaqljnqi",
+        "name": "toFullDocument_document_name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "2me7tfvi",
+        "name": "toFullDocument_document_priority",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "Lower",
+            "Low",
+            "Medium",
+            "High",
+            "Higher"
+          ]
+        }
+      },
+      {
+        "id": "mwyegb63",
+        "name": "toFullDocument_document_status",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "Todo",
+            "In progress",
+            "Review",
+            "Done",
+            "Closed"
+          ]
+        }
+      },
+      {
+        "id": "uvxzcfiq",
+        "name": "toFullDocument_document_startTime",
         "type": "date",
         "system": false,
         "required": false,
@@ -981,8 +1358,19 @@
         }
       },
       {
-        "id": "mdzr68dz",
-        "name": "richText",
+        "id": "cpdq4g6v",
+        "name": "toFullDocument_document_endTime",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "evxrh0nb",
+        "name": "toFullDocument_document_description",
         "type": "text",
         "system": false,
         "required": false,
@@ -993,8 +1381,8 @@
         }
       },
       {
-        "id": "l0pssxso",
-        "name": "attachmentsHash",
+        "id": "m9fpqvrp",
+        "name": "toFullDocument_document_owner_name",
         "type": "text",
         "system": false,
         "required": false,
@@ -1005,93 +1393,22 @@
         }
       },
       {
-        "id": "ewpfczdf",
-        "name": "startTime",
-        "type": "date",
+        "id": "smbydbkb",
+        "name": "allParticipantsEmails",
+        "type": "json",
         "system": false,
         "required": false,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      },
-      {
-        "id": "sj2wqg4h",
-        "name": "endTime",
-        "type": "date",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      },
-      {
-        "id": "lxcn2l2p",
-        "name": "description",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
+        "options": {}
       }
     ],
-    "indexes": [
-      "CREATE INDEX `_j4ausx28rc681dq_created_idx` ON `documents` (`created`)"
-    ],
-    "listRule": "@request.auth.person.id = owner.id || (\n  @collection.participants.document.id ?= id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
-    "viewRule": "@request.auth.person.id = owner.id || (\n  @collection.participants.document.id ?= id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"read\" ||\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
-    "createRule": "@request.auth.person.id = @request.data.owner",
-    "updateRule": "@request.auth.person.id = owner.id || (\n  @collection.participants.document.id ?= id &&\n  @collection.participants.person.id ?= @request.auth.person.id && (\n    @collection.participants.permission ?= \"comment\" ||\n    @collection.participants.permission ?= \"write\"\n  )\n)",
+    "indexes": [],
+    "listRule": "@collection.services.id ?= @request.auth.id",
+    "viewRule": "@collection.services.id ?= @request.auth.id",
+    "createRule": null,
+    "updateRule": null,
     "deleteRule": null,
-    "options": {}
-  },
-  {
-    "id": "q22h280gruk59ry",
-    "name": "relationships",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "4si6gxog",
-        "name": "fromPerson",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "vks6ezu0clb3qja",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": null
-        }
-      },
-      {
-        "id": "uk38iicu",
-        "name": "toPerson",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "vks6ezu0clb3qja",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": null
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE INDEX `_q22h280gruk59ry_created_idx` ON `relationships` (`created`)"
-    ],
-    "listRule": "@request.auth.id != \"\"",
-    "viewRule": "@request.auth.id != \"\"",
-    "createRule": "@request.auth.id != \"\"",
-    "updateRule": "@request.auth.id != \"\"",
-    "deleteRule": "@request.auth.id != \"\"",
-    "options": {}
+    "options": {
+      "query": "SELECT \n\ted.id,\n\ted.reminderAt,\n\tfullDocument.id fullDocument_id,\n\tfullDocument.internal fullDocument_internal,\n\tfullDocument_document.name fullDocument_document_name,\n\tfullDocument_document.priority fullDocument_document_priority,\n\tfullDocument_document.status fullDocument_document_status,\n\tfullDocument_document.startTime fullDocument_document_startTime,\n\tfullDocument_document.endTime fullDocument_document_endTime,\n\tfullDocument_document.description fullDocument_document_description,\n\tfullDocument_document_owner.name fullDocument_document_owner_name,\n\ttoFullDocument.id toFullDocument_id,\n\ttoFullDocument.internal toFullDocument_internal,\n\ttoFullDocument_document.name toFullDocument_document_name,\n\ttoFullDocument_document.priority toFullDocument_document_priority,\n\ttoFullDocument_document.status toFullDocument_document_status,\n\ttoFullDocument_document.startTime toFullDocument_document_startTime,\n\ttoFullDocument_document.endTime toFullDocument_document_endTime,\n\ttoFullDocument_document.description toFullDocument_document_description,\n\ttoFullDocument_document_owner.name toFullDocument_document_owner_name,\n\tGROUP_CONCAT(COALESCE(IFNULL(u.email, person.personalEmail), ''), ', ') AS allParticipantsEmails\nFROM eventDocuments ed \nINNER JOIN fullDocuments fullDocument ON fullDocument.id = ed.fullDocument \nINNER JOIN documents fullDocument_document ON fullDocument_document.id = fullDocument.document \nLEFT JOIN people fullDocument_document_owner ON fullDocument_document_owner.id = fullDocument_document.owner\nLEFT JOIN fullDocuments toFullDocument ON toFullDocument.id = ed.toFullDocument\nLEFT JOIN documents toFullDocument_document  ON toFullDocument_document.id = toFullDocument.document \nLEFT JOIN people toFullDocument_document_owner ON toFullDocument_document_owner.id = toFullDocument_document.owner \nINNER JOIN participants p ON p.document = fullDocument_document.id\nLEFT JOIN users u ON u.person = p.person \nLEFT JOIN people person ON person.id = p.person\nWHERE ed.reminderAt <> '' AND ed.reminderAt < DATETIME()\n"
+    }
   }
 ]

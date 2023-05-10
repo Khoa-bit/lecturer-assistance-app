@@ -332,9 +332,11 @@ function FullDocument<TRecord>({
       });
 
     return () => {
-      unsubscribeFunc.then((func) => func());
-      if (env.NEXT_PUBLIC_DEBUG_MODE)
-        console.log("Successfully unsubscribe to documents collection");
+      unsubscribeFunc.then((func) => {
+        if (env.NEXT_PUBLIC_DEBUG_MODE)
+          console.log("Successfully unsubscribe to documents collection");
+        return func();
+      });
     };
   }, [
     childCollectionName,

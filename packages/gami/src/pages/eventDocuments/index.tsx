@@ -62,14 +62,14 @@ function EventDocuments({
       </header>
       <section className="my-4 w-full rounded-lg bg-white px-7 py-5">
         <IndexTable
-          heading="Upcoming events list"
+          heading="Upcoming events"
           initData={upcomingEventDocuments}
           columns={initEventDocumentColumns()}
         ></IndexTable>
       </section>
       <section className="my-4 w-full rounded-lg bg-white px-7 py-5">
         <IndexTable
-          heading="Past events list"
+          heading="Past events"
           initData={pastEventDocuments}
           columns={initEventDocumentColumns()}
         ></IndexTable>

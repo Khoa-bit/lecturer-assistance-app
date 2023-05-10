@@ -19,7 +19,12 @@ export async function getPBServer(
   }
 
   // load the store data from the request cookie string
-  pbServer.authStore.loadFromCookie(req?.headers?.cookie || "");
+  pbServer.authStore.loadFromCookie(
+    req?.headers?.cookie?.replace(
+      "%2C%22record%22%3A%7B",
+      "%2C%22model%22%3A%7B"
+    ) ?? ""
+  );
 
   // // Default token expires in 14 days
   // // Approximate 24 clicks/day * 14 days = 336 (clicks/14 days)

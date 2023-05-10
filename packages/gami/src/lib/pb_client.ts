@@ -23,7 +23,9 @@ export function usePBClient(pbAuthCookie: string): {
     const pb = new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL) as PBCustom;
 
     // load the store data from the request cookie string
-    pb.authStore.loadFromCookie(pbAuthCookie);
+    pb.authStore.loadFromCookie(
+      pbAuthCookie.replace("%2C%22record%22%3A%7B", "%2C%22model%22%3A%7B")
+    );
 
     return pb;
   }, [pbAuthCookie, router.asPath]);
@@ -59,7 +61,9 @@ export function _middlewarePBClient(
   const pbClient = new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL) as PBCustom;
 
   // load the store data from the request cookie string
-  pbClient.authStore.loadFromCookie(pbAuthCookie);
+  pbClient.authStore.loadFromCookie(
+    pbAuthCookie.replace("%2C%22record%22%3A%7B", "%2C%22model%22%3A%7B")
+  );
 
   const user = pbClient.authStore.model as unknown as UsersResponse | undefined;
 

@@ -2,9 +2,11 @@ package main
 
 import (
 	"log"
-
+	"raito-pocketbase/cronFunc"
 	"raito-pocketbase/handlers"
 	_ "raito-pocketbase/migrations"
+
+	"github.com/robfig/cron/v3"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
@@ -14,6 +16,18 @@ import (
 )
 
 func main() {
+	// Create a new cron job
+	c := cron.New()
+
+	// Add func to the cron job
+	cronFunc.AddSendMailEveryMinFunc(c)
+
+	// Start the cron job
+	c.Start()
+
+	// Defer stopping the cron job
+	defer c.Stop()
+
 	app := pocketbase.New()
 
 	migratecmd.MustRegister(app, app.RootCmd, &migratecmd.Options{

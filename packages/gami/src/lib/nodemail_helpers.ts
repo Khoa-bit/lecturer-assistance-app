@@ -19,9 +19,9 @@ export async function sendMailAsync(
 
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
-        resolve(error.message);
+        resolve(`Error: ${error.message}`);
       } else {
-        resolve(info.response);
+        resolve(`Success: ${info.response}`);
       }
     });
   });

@@ -44,9 +44,11 @@ export const getServerSideProps = async ({
     .collection(Collections.FullDocuments)
     .getOne<FullDocumentsResponse<RedirectExpand>>(fullDocId, {
       expand: expandStr,
-    });
+    })
+    .then((value) => value)
+    .catch(() => null);
 
-  if (!fullDocument.expand)
+  if (!fullDocument?.expand)
     return {
       redirect: {
         destination: "/notFound",

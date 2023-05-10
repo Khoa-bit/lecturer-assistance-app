@@ -13,7 +13,7 @@
 
     <mj-section background-color="#f9fafb" padding-top="0">
       <mj-column>
-        <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">Your are invited to
+        <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">Your are reminded to
           <b>{{documentName}}</b>
           {{documentType}}
         </mj-text>
@@ -43,6 +43,17 @@
 
     <mj-section background-color="#f9fafb" padding-top="0">
       <mj-column width="23%" vertical-align="middle">
+        <mj-text color="#1e293b">Of document:</mj-text>
+      </mj-column>
+      <mj-column vertical-align="middle">
+        <mj-button background-color="#dbeafe" color="#1d4ed8" inner-padding="5px 10px" border-radius="20px"
+                   href="{{toDocumentNameLink}}?emailLink=true">{{toDocumentName}}
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#f9fafb" padding-top="0">
+      <mj-column width="23%" vertical-align="middle">
         <mj-text color="#1e293b">Priority:</mj-text>
       </mj-column>
       <mj-column vertical-align="middle">
@@ -55,7 +66,7 @@
         <mj-text color="#1e293b">Status:</mj-text>
       </mj-column>
       <mj-column vertical-align="middle">
-        <mj-image src="{{status}}" alt="{{statusAlt}}"></mj-image>
+        <mj-image width="80px" src="{{status}}" alt="{{statusAlt}}"></mj-image>
       </mj-column>
     </mj-section>
     <mj-section background-color="#f9fafb" padding-top="0">

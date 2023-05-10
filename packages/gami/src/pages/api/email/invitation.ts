@@ -26,7 +26,7 @@ export interface InvitationRequestBody {
 }
 
 export interface InvitationResponse {
-  requestBody: string;
+  message: string;
 }
 
 const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
@@ -34,7 +34,7 @@ const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
     const toEmail = zodEmailValidator.safeParse(req.query.toEmail);
     if (!toEmail.success) {
       res.status(400).json({
-        requestBody: `Invalid recipient email address: "${req.query.toEmail}"`,
+        message: `Invalid recipient email address: "${req.query.toEmail}"`,
       });
       return;
     }
@@ -60,10 +60,10 @@ const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
     const documentType =
       baseDocument.expand?.["fullDocuments(document)"].internal ??
       "Document / Event";
+    const logo = "cid:logo";
     const description = baseDocument.description;
     const startTime = formatDate(baseDocument.startTime, "hh:mm, dd/MM/yyyy");
     const endTime = formatDate(baseDocument.endTime, "hh:mm, dd/MM/yyyy");
-    // const status = `${env.GAMI_URL}/screenshots/${"StatusClosed"}.png`;
     const status = "cid:status";
     const statusFileName = getStatusFileName(baseDocument.status);
     const statusAlt = baseDocument.status;
@@ -71,6 +71,7 @@ const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
     const invitationLink = `${env.GAMI_URL}/fullDocuments/${baseDocument.expand?.["fullDocuments(document)"].id}`;
 
     const mjmlContent = mjmlTemplate
+      .replace("{{logo}}", logo)
       .replace("{{documentName}}", documentName)
       .replace("{{documentType}}", documentType)
       .replace("{{owner}}", documentOwner)
@@ -94,6 +95,11 @@ const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
       html: htmlContent,
       attachments: [
         {
+          filename: "IUIconFavicon.png",
+          path: "public/IUIconFavicon.png",
+          cid: "logo",
+        },
+        {
           filename: statusFileName,
           path: `public/screenshots/${statusFileName}`,
           cid: "status",
@@ -101,11 +107,11 @@ const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
       ],
     });
 
-    res.status(200).json({ requestBody: `${message}: ${toEmail.data}` });
+    res.status(200).json({ message: `${message}: ${toEmail.data}` });
     return;
   }
 
-  res.status(400).json({ requestBody: "Not a POST request" });
+  res.status(400).json({ message: "Not a POST request" });
   return;
 };
 

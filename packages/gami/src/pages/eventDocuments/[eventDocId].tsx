@@ -6,6 +6,7 @@ import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
+  DocumentsRecord,
   DocumentsResponse,
   EventDocumentsRecord,
   EventDocumentsResponse,
@@ -13,7 +14,7 @@ import type {
   FullDocumentsResponse,
 } from "raito";
 import { Collections } from "raito";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type {
   FullDocumentData,
   FullDocumentProps,
@@ -30,6 +31,8 @@ import MainLayout from "src/components/layouts/MainLayout";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
+import { env } from "../../env/client.mjs";
+import { dateToPb, pbToDate } from "../../lib/input_handling";
 
 interface DocumentData {
   fullDocumentData: FullDocumentData;
@@ -37,6 +40,8 @@ interface DocumentData {
   toFullDocuments: ListResult<FullDocumentsCustomResponse>;
   pbAuthCookie: string;
 }
+
+const remindBeforeMinutes = 30;
 
 interface FullDocumentsExpand {
   fullDocument: FullDocumentsResponse<DocumentsExpand>;
@@ -92,6 +97,35 @@ function EventDocument({
     <></>
   );
 
+  useEffect(() => {
+    if (!baseDocument?.id) return;
+
+    const unsubscribeFunc = pbClient
+      .collection(Collections.Documents)
+      .subscribe<DocumentsRecord>(baseDocument.id, (data) => {
+        if (!data.record.startTime) return;
+
+        const startTime = pbToDate(data.record.startTime);
+        startTime.setMinutes(startTime.getMinutes() - remindBeforeMinutes);
+
+        console.log("... Trying to update reminder ...", eventDocument.id);
+
+        pbClient
+          .collection(Collections.EventDocuments)
+          .update<EventDocumentsRecord>(eventDocument.id, {
+            reminderAt: dateToPb(startTime),
+          } as EventDocumentsRecord)
+          .then(() => {
+            console.log(">>> Successfully update reminder", eventDocument.id);
+          });
+      });
+
+    return () => {
+      unsubscribeFunc.then((func) => func());
+      if (env.NEXT_PUBLIC_DEBUG_MODE)
+        console.log("Successfully unsubscribe to documents collection");
+    };
+  }, []);
   return (
     <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
