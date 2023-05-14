@@ -69,6 +69,7 @@ import type { Education, Experience, Interests } from "src/types/peopleJSON";
 import SuperJSON from "superjson";
 import account_circle_black from "../../../public/account_circle_black.png";
 import { differenceInMonths, formatDuration } from "date-fns";
+import { IcRoundVerified } from "../../components/icons/IcRoundVerified";
 
 interface DocumentData {
   person: PeopleResponse<Education, Experience, Interests, UsersExpand>;
@@ -445,6 +446,7 @@ function Person({
   }, [
     academicMaterialsDisplay,
     allCourses,
+    isWrite,
     majorDepartmentData?.majorDepartment.expand?.department.name,
     majorDepartmentData?.majorDepartment.name,
     person.expand,
@@ -478,7 +480,11 @@ function Person({
         )}
       </div>
       <header className="flex w-full items-start gap-x-4">
-        <label htmlFor="avatar">
+        <label
+          htmlFor="avatar"
+          className="flex gap-1"
+          title={person.hasAccount ? "Verified" : "Unverified"}
+        >
           <ImageFallback
             className={`h-16 w-16 rounded-full shadow hover:bg-slate-300 ${
               isWrite && "cursor-pointer hover:grayscale"
@@ -489,6 +495,9 @@ function Person({
             width={64}
             height={64}
           />
+          {person.hasAccount && (
+            <IcRoundVerified className="h-6 w-6 text-blue-400"></IcRoundVerified>
+          )}
         </label>
         <input
           id="avatar"

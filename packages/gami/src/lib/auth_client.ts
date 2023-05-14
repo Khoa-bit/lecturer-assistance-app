@@ -12,18 +12,26 @@ interface AuthWithPasswordAndCookieArgs {
   pbClient: PocketBase;
 }
 
+interface AuthWithOAuthAndCookieArgs {
+  provider: string;
+  pbClient: PocketBase;
+}
+
 interface requestEmailVerificationArgs {
   email: string;
   pbClient: PocketBase;
 }
+
 interface confirmEmailVerificationArgs {
   token: string;
   pbClient: PocketBase;
 }
+
 interface requestPasswordResetEmailArgs {
   email: string;
   pbClient: PocketBase;
 }
+
 interface confirmPasswordResetEmailArgs {
   token: string;
   newPassword: string;
@@ -43,6 +51,26 @@ export async function _authWithPasswordAndCookie({
   return await pbClient
     .collection(Collections.Users)
     .authWithPassword<UsersResponse>(username, password)
+    .then((record) => {
+      document.cookie = pbClient.authStore.exportToCookie({
+        httpOnly: false,
+      });
+      return record.record;
+    })
+    .catch((err: Error) => {
+      throw err;
+    });
+}
+
+export async function _authWithOAuth2AndCookie({
+  provider,
+  pbClient,
+}: AuthWithOAuthAndCookieArgs): Promise<UsersResponse> {
+  return await pbClient
+    .collection(Collections.Users)
+    .authWithOAuth2<UsersResponse>({
+      provider,
+    })
     .then((record) => {
       document.cookie = pbClient.authStore.exportToCookie({
         httpOnly: false,

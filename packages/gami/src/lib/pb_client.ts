@@ -34,7 +34,6 @@ export function usePBClient(pbAuthCookie: string): {
   const user = pbClient.authStore.model as unknown as UsersResponse | undefined;
 
   if (!user) {
-    router.push("/internalServerError");
     throw new Error("500 - Unauthenticated user must have been redirect");
   }
 
@@ -44,7 +43,7 @@ export function usePBClient(pbAuthCookie: string): {
   return { pbClient, user };
 }
 
-export function _middlewarePBClient(
+export function _getPBMiddleware(
   pbAuthCookie: string,
   pathname: string
 ): {
@@ -54,7 +53,7 @@ export function _middlewarePBClient(
   // Information Logging if a new client is initialized
   if (env.NEXT_PUBLIC_DEBUG_MODE === "true") {
     console.log(
-      `debug - Initializing new PocketBase Client instance... ${pathname} (middleware)`
+      `debug - Initializing new PocketBase Middleware instance... ${pathname} (middleware)`
     );
   }
 

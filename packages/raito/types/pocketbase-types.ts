@@ -199,6 +199,7 @@ export type PeopleRecord<Teducation = unknown, Texperience = unknown, Tinterests
 	experience?: null | Texperience
 	education?: null | Teducation
 	isFaculty?: boolean
+	hasAccount?: boolean
 }
 
 export type PersonalNotesRecord = {
@@ -284,6 +285,7 @@ export type ServicesRecord = never
 
 export type UsersRecord = {
 	person: RecordIdString
+	justRegistered?: boolean
 }
 
 // Response types include system fields and match responses from the PocketBase API

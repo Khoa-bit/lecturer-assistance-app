@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import type { RefObject } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type {
   FieldValues,
   UseFormTrigger,
@@ -37,17 +37,28 @@ export function useSaveDoc<T extends FieldValues>({
   );
 
   useEffect(() => {
+    const handleWindowClose = (e: BeforeUnloadEvent) => {
+      console.log("handleWindowClose");
+      if (hasSaved) return;
+      e.preventDefault();
+      submitForm();
+      return;
+    };
+
     const handleBrowseAway = () => {
+      console.log("handleBrowseAway");
       if (hasSaved) return;
       submitForm();
       return;
     };
 
+    window.addEventListener("beforeunload", handleWindowClose);
     router.events.on("routeChangeStart", handleBrowseAway);
     return () => {
+      window.removeEventListener("beforeunload", handleWindowClose);
       router.events.off("routeChangeStart", handleBrowseAway);
     };
-  }, [hasSaved, router.events, submitForm]);
+  }, [formRef, hasSaved, router.events, submitForm, submitRef]);
 
   useEffect(() => {
     const keyDownEvent = (e: KeyboardEvent) => {

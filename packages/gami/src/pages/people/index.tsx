@@ -20,6 +20,7 @@ import IndexTable from "src/components/tanstackTable/IndexTable";
 import { getPBServer } from "src/lib/pb_server";
 import type { Education, Experience, Interests } from "src/types/peopleJSON";
 import SuperJSON from "superjson";
+import { IcRoundVerified } from "../../components/icons/IcRoundVerified";
 
 interface PeopleData {
   people: ListResult<
@@ -34,6 +35,11 @@ interface MajorExpand {
 interface UsersExpand {
   "users(person)": UsersResponse;
   major: MajorsResponse<MajorExpand>;
+}
+
+interface NameItem {
+  name: string;
+  hasAccount: boolean;
 }
 
 function People({
@@ -100,14 +106,24 @@ function initPeopleColumns(): ColumnDef<
 
   return [
     {
-      accessorFn: (item) => item.name,
+      accessorFn: (item) => {
+        return {
+          name: item.name,
+          hasAccount: item.hasAccount,
+        };
+      },
       id: "name",
       cell: (info) => (
         <IndexCell
           className="min-w-[12rem]"
           href={getHref(info.row.original.id)}
         >
-          {info.getValue() as string}
+          <p className="flex items-center gap-1">
+            {(info.getValue() as NameItem).name}
+            {(info.getValue() as NameItem).hasAccount && (
+              <IcRoundVerified className="h-4 w-4 text-blue-400"></IcRoundVerified>
+            )}
+          </p>
         </IndexCell>
       ),
       header: () => (
@@ -183,7 +199,7 @@ function initPeopleColumns(): ColumnDef<
       footer: () => null,
     },
     {
-      accessorFn: (item) => item.expand?.major.name,
+      accessorFn: (item) => item.expand?.major?.name,
       id: "major_name",
       cell: (info) => (
         <IndexCell
@@ -199,7 +215,7 @@ function initPeopleColumns(): ColumnDef<
       footer: () => null,
     },
     {
-      accessorFn: (item) => item.expand?.major.expand?.department.name,
+      accessorFn: (item) => item.expand?.major?.expand?.department?.name,
       id: "department_name",
       cell: (info) => (
         <IndexCell

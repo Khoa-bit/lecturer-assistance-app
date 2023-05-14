@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { env } from "src/env/client.mjs";
 import {
+  _authWithOAuth2AndCookie,
   _authWithPasswordAndCookie,
   _clearAuthStoreAndCookie,
   _confirmEmailVerification,
@@ -30,6 +31,9 @@ export type AuthContextType = {
   signInWithPassword: (
     username: string,
     password: string
+  ) => Promise<UsersResponse | undefined>;
+  signInWithOAuth2AndCookie: (
+    provider: string
   ) => Promise<UsersResponse | undefined>;
   signOut: () => Promise<PBClearResponse | undefined>;
   requestEmailVerification: (email: string) => Promise<boolean>;
@@ -87,6 +91,16 @@ export default function AuthContextProvider({
     return usersResponse;
   };
 
+  const signInWithOAuth2AndCookie = async (provider: string) => {
+    const usersResponse = await _authWithOAuth2AndCookie({
+      provider,
+      pbClient,
+    });
+    setIsValid(pbClient.authStore.isValid);
+    setUser(pbClient.authStore.model as User | null);
+    return usersResponse;
+  };
+
   const signOut = async () => {
     const pbClearResponse = await _clearAuthStoreAndCookie({ pbClient });
     setIsValid(pbClient.authStore.isValid);
@@ -124,6 +138,7 @@ export default function AuthContextProvider({
     userPerson,
     pbClient,
     signInWithPassword,
+    signInWithOAuth2AndCookie,
     signOut,
     requestEmailVerification,
     confirmEmailVerification,

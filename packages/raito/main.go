@@ -1,12 +1,11 @@
 package main
 
 import (
+	"github.com/robfig/cron/v3"
 	"log"
 	"raito-pocketbase/cronFunc"
 	"raito-pocketbase/handlers"
 	_ "raito-pocketbase/migrations"
-
-	"github.com/robfig/cron/v3"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
@@ -151,6 +150,24 @@ func main() {
 		subGroup.GET("/getNewRelationshipsOptions", func(c echo.Context) error {
 			return handlers.GetNewRelationshipsOptions(app, c)
 		})
+
+		return nil
+	})
+
+	app.OnRecordBeforeAuthWithOAuth2Request().Add(func(e *core.RecordAuthWithOAuth2Event) error {
+		if !strings.Contains(e.OAuth2User.Email, "@hcmiu.edu.vn") {
+			return fmt.Errorf("email doesn't contain '@hcmiu.edu.vn' => not a faculty account: %s", e.OAuth2User.Email)
+		}
+
+		err := handlers.CreatePersonRecordForUser(app, e)
+		if err != nil {
+			return err
+		}
+
+		err = handlers.CreatePersonRecordForUser(app, e)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})

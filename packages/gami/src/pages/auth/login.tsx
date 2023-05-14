@@ -1,80 +1,55 @@
-import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import type { SubmitHandler } from "react-hook-form";
-import { useForm } from "react-hook-form";
 import { useAuthContext } from "src/lib/auth_client";
+import { useCallback, useEffect, useState } from "react";
+import { IUIcon } from "../../components/icons/IUIcon";
+import { MdiMicrosoft } from "../../components/icons/MdiMicrosoft";
 
-interface LoginInputs {
-  email: string;
-  password: string;
-}
+function Login() {
+  const [showInvalidEmail, setShowInvalidEmail] = useState(false);
 
-const Login: NextPage = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginInputs>();
   const router = useRouter();
 
-  const { signInWithPassword, userPerson, signOut } = useAuthContext();
+  const { signInWithOAuth2AndCookie, userPerson } = useAuthContext();
 
-  const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
+  useEffect(() => {
+    if (userPerson) {
+      // User has already logged in
+      router.push("/");
+    }
+  }, [router, userPerson]);
+
+  const handleMicrosoftOAuth = useCallback(async () => {
     try {
-      await signInWithPassword(data.email, data.password);
+      await signInWithOAuth2AndCookie("microsoft");
       router.push("/");
     } catch (error) {
+      setShowInvalidEmail(true);
       console.error(error);
     }
-  };
+  }, [router, signInWithOAuth2AndCookie]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center">
-      <div className="w-full max-w-md space-y-4 overflow-hidden px-4 sm:px-0">
-        <div className="relative h-96">
-          <div>
-            <h1>App Sign In</h1>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <input
-                className="input-bordered input border"
-                type="email"
-                {...register("email", { required: true })}
-              />
-              {errors.email && <span>Email is required</span>}
-
-              <input
-                className="input-bordered input border"
-                type="password"
-                {...register("password", { required: true })}
-              />
-              {errors.password && <span>Password is required</span>}
-
-              <input
-                className="border bg-indigo-800 p-2 text-white hover:bg-indigo-700"
-                type="submit"
-                value={"Sign in"}
-              />
-            </form>
-            <button
-              className="border bg-indigo-800 p-2 text-white hover:bg-indigo-700"
-              onClick={signOut}
-            >
-              Sign out
-            </button>
-            <p>{JSON.stringify(userPerson)}</p>
-            {/* <a
-              className="cursor-pointer text-center text-sm text-gray-600"
-              onClick={() => {
-                router.push("forgetPassword");
-              }}
-            >
-              Forgotten Password?
-            </a> */}
-          </div>
-        </div>
-      </div>
+    <div className="flex h-screen w-screen items-center justify-center">
+      <section className="flex flex-col items-center justify-center gap-8 rounded-2xl bg-white p-8">
+        <IUIcon className="h-24 w-24 drop-shadow-md"></IUIcon>
+        <h1 className="text-xl font-semibold">Log in</h1>
+        {showInvalidEmail && (
+          <p className="w-48 text-center text-error">
+            Invalid email address <i>@hcmiu.edu.vn</i>
+            <br />
+            <span className="font-semibold underline">Faculty only</span>
+          </p>
+        )}
+        <button
+          className="flex items-center justify-center gap-2 rounded bg-blue-400 p-2 font-semibold text-white transition-colors hover:bg-blue-500"
+          onClick={handleMicrosoftOAuth}
+        >
+          <MdiMicrosoft className="h-8 w-8"></MdiMicrosoft>
+          Continue with Microsoft
+        </button>
+      </section>
     </div>
   );
-};
+}
 
 export default Login;

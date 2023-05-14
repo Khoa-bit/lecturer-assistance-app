@@ -41,8 +41,6 @@ func AddSendMailEveryMinFunc(c *cron.Cron) *cron.Cron {
 	raitoURL := os.Getenv("RAITO_URL")
 	gamiURL := os.Getenv("GAMI_URL")
 
-	log.Println("RAITO_SERVICE_USERNAME", os.Getenv("RAITO_SERVICE_USERNAME"))
-	log.Println("RAITO_SERVICE_PASSWORD", os.Getenv("RAITO_SERVICE_PASSWORD"))
 	// Prepare the POST request body
 	authReq := map[string]string{
 		"identity": os.Getenv("RAITO_SERVICE_USERNAME"),
