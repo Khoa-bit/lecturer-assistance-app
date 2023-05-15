@@ -10,23 +10,40 @@ import {
   RelationshipsResponse,
 } from './pocketbase-types';
 
-// GetEventDocuments, GetParticipatedEventDocuments
+// GetEventDocuments, GetParticipatedEventDocuments are missing CustomResponse types
+
+// GetUpcomingEvents, GetPastEvents
 export interface EventDocumentsCustomResponse extends EventDocumentsResponse {
   expand: {
-    userDocument_attachmentsHash: string;
-    userDocument_created: string;
-    userDocument_deleted: string;
-    userDocument_diffHash: string;
-    userDocument_id: string;
-    userDocument_name: string;
-    userDocument_owner: string;
-    userDocument_priority: string;
-    userDocument_richText: string;
-    userDocument_status: string;
-    userDocument_thumbnail: string;
-    userDocument_updated: string;
-    userDocument_startTime: string;
-    userDocument_endTime: string;
+    document_attachmentsHash: string;
+    document_created: string;
+    document_deleted: string;
+    document_description: string;
+    document_diffHash: string;
+    document_endTime: string;
+    document_id: string;
+    document_name: string;
+    document_owner: string;
+    document_priority: string;
+    document_richText: string;
+    document_startTime: string;
+    document_status: string;
+    document_thumbnail: string;
+    document_updated: string;
+    fullDocument_created: string;
+    fullDocument_document: string;
+    fullDocument_id: string;
+    fullDocument_internal: string;
+    fullDocument_updated: string;
+    participant_created: string;
+    participant_document: string;
+    participant_id: string;
+    participant_note: string;
+    participant_permission: string;
+    participant_person: string;
+    participant_role: string;
+    participant_status: string;
+    participant_updated: string;
   };
 }
 
@@ -60,6 +77,7 @@ export interface SharedDocumentsCustomResponse extends FullDocumentsResponse {
     participant_permission: string;
     participant_person: string;
     participant_role: string;
+    participant_status: string;
     participant_updated: string;
     userDocument_attachmentsHash: string;
     userDocument_created: string;
@@ -258,6 +276,7 @@ export interface ParticipantsCustomResponse extends PeopleResponse {
     participant_permission: string;
     participant_person: string;
     participant_role: string;
+    participant_status: string;
     participant_updated: string;
     user_created: string;
     user_email: string;

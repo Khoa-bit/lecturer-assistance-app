@@ -647,7 +647,7 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
       expand: "document.owner",
     });
 
-  const document = fullDocument.expand?.document;
+  const baseDocument = fullDocument.expand?.document;
 
   const attachments = await pbServer
     .collection(Collections.Attachments)
@@ -675,13 +675,13 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
 
   const allDocParticipants =
     await pbServer.apiGetList<ParticipantsCustomResponse>(
-      `/api/user/getAllDocParticipants/${document?.id}?fullList=true`
+      `/api/user/getAllDocParticipants/${baseDocument?.id}?fullList=true`
     );
 
   let permission: ParticipantsPermissionOptions | undefined;
-  if (document?.deleted) {
+  if (baseDocument?.deleted) {
     permission = ParticipantsPermissionOptions.read;
-  } else if (document?.owner == user.person) {
+  } else if (baseDocument?.owner == user.person) {
     permission = ParticipantsPermissionOptions.write;
   } else {
     const participant = allDocParticipants.items.find(

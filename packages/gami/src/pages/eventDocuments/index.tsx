@@ -7,11 +7,10 @@ import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
-  DocumentsResponse,
-  EventDocumentsResponse,
-  FullDocumentsResponse,
+  DocumentsStatusOptions,
+  EventDocumentsCustomResponse,
 } from "raito";
-import { Collections, EventDocumentsRecurringOptions } from "raito";
+import { ParticipantsStatusOptions } from "raito";
 import type { StatusEventOptions } from "src/components/documents/StatusEvent";
 import StatusEvent, { eventStatus } from "src/components/documents/StatusEvent";
 import MainLayout from "src/components/layouts/MainLayout";
@@ -21,20 +20,12 @@ import IndexTable from "src/components/tanstackTable/IndexTable";
 import { formatDate } from "src/lib/input_handling";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
-
-interface FullDocumentExpand {
-  fullDocument: FullDocumentsResponse<DocumentsExpand>;
-}
-
-interface DocumentsExpand {
-  document: DocumentsResponse;
-}
+import { ParticipationStatus } from "../../components/documents/ParticipationStatus";
+import React from "react";
 
 interface EventsData {
-  upcomingEventDocuments: ListResult<
-    EventDocumentsResponse<FullDocumentExpand>
-  >;
-  pastEventDocuments: ListResult<EventDocumentsResponse<FullDocumentExpand>>;
+  upcomingEventDocuments: ListResult<EventDocumentsCustomResponse>;
+  pastEventDocuments: ListResult<EventDocumentsCustomResponse>;
 }
 
 function EventDocuments({
@@ -84,23 +75,14 @@ export const getServerSideProps = async ({
 }: GetServerSidePropsContext) => {
   const { pbServer } = await getPBServer(req, resolvedUrl);
 
-  const nowISO = new Date().toISOString().replace("T", " ");
-
-  const upcomingEventDocuments = await pbServer
-    .collection(Collections.EventDocuments)
-    .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument.document.deleted = "" && (fullDocument.document.endTime >= "${nowISO}" || recurring != "${EventDocumentsRecurringOptions.Once}" || fullDocument.document.endTime = "")`,
-      expand: "fullDocument.document",
-      sort: "fullDocument.document.startTime",
-    });
-
-  const pastEventDocuments = await pbServer
-    .collection(Collections.EventDocuments)
-    .getList<EventDocumentsResponse<FullDocumentExpand>>(undefined, undefined, {
-      filter: `fullDocument.document.deleted = "" && (fullDocument.document.endTime < "${nowISO}" && recurring = "${EventDocumentsRecurringOptions.Once}" && fullDocument.document.endTime != "")`,
-      expand: "fullDocument.document",
-      sort: "-fullDocument.document.startTime",
-    });
+  const upcomingEventDocuments =
+    await pbServer.apiGetList<EventDocumentsCustomResponse>(
+      `/api/user/getUpcomingEvents/?fullList=true`
+    );
+  const pastEventDocuments =
+    await pbServer.apiGetList<EventDocumentsCustomResponse>(
+      `/api/user/getPastEvents/?fullList=true`
+    );
 
   return {
     props: {
@@ -112,15 +94,13 @@ export const getServerSideProps = async ({
   };
 };
 
-function initEventDocumentColumns(): ColumnDef<
-  EventDocumentsResponse<FullDocumentExpand>
->[] {
+function initEventDocumentColumns(): ColumnDef<EventDocumentsCustomResponse>[] {
   const getHref = (lectureCourseId: string) =>
     `/eventDocuments/${encodeURIComponent(lectureCourseId)}`;
 
   return [
     {
-      accessorFn: (item) => item.expand?.fullDocument.expand?.document.name,
+      accessorFn: (item) => item.expand?.document_name,
       id: "name",
       cell: (info) => (
         <IndexCell
@@ -136,11 +116,36 @@ function initEventDocumentColumns(): ColumnDef<
       footer: () => null,
     },
     {
+      accessorFn: (item) => {
+        if (item.expand.participant_id === "") {
+          return ParticipantsStatusOptions.Yes;
+        }
+
+        if (item.expand.participant_status === "") {
+          return "Undecided";
+        } else {
+          return item.expand.participant_status;
+        }
+      },
+      id: "participationStatus",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[7rem]"
+          href={getHref(info.row.original.id)}
+        >
+          <ParticipationStatus
+            status={info.getValue() as ParticipantsStatusOptions}
+          ></ParticipationStatus>
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[7rem]">Going?</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
       accessorFn: (item) =>
-        formatDate(
-          item.expand?.fullDocument.expand?.document.startTime,
-          "HH:mm - dd/LL/yy"
-        ),
+        formatDate(item.expand?.document_startTime, "HH:mm - dd/LL/yy"),
       id: "startTime",
       cell: (info) => (
         <IndexCell
@@ -157,10 +162,7 @@ function initEventDocumentColumns(): ColumnDef<
     },
     {
       accessorFn: (item) =>
-        formatDate(
-          item.expand?.fullDocument.expand?.document.endTime,
-          "HH:mm - dd/LL/yy"
-        ),
+        formatDate(item.expand?.document_endTime, "HH:mm - dd/LL/yy"),
       id: "endTime",
       cell: (info) => (
         <IndexCell
@@ -178,9 +180,9 @@ function initEventDocumentColumns(): ColumnDef<
     {
       accessorFn: (item) =>
         eventStatus(
-          item.expand?.fullDocument.expand?.document?.status,
-          item.expand?.fullDocument.expand?.document.startTime,
-          item.expand?.fullDocument.expand?.document.endTime
+          item.expand?.document_status as DocumentsStatusOptions,
+          item.expand?.document_startTime,
+          item.expand?.document_endTime
         ),
       id: "statusEvent",
       cell: (info) => (

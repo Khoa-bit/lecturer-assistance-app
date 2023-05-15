@@ -45,6 +45,18 @@ func main() {
 			return handlers.GetEventDocuments(app, c)
 		})
 
+		// Get all upcoming events for auth user
+		// Deprecated since events page now shows upcoming and part events
+		subGroup.GET("/getUpcomingEvents", func(c echo.Context) error {
+			return handlers.GetUpcomingEvents(app, c)
+		})
+
+		// Get all past events for auth user
+		// Deprecated since events page now shows upcoming and part events
+		subGroup.GET("/getPastEvents", func(c echo.Context) error {
+			return handlers.GetPastEvents(app, c)
+		})
+
 		// Get all event documents that the current user participates in
 		// Deprecated since events page now shows upcoming and part events
 		subGroup.GET("/getParticipatedEventDocuments", func(c echo.Context) error {

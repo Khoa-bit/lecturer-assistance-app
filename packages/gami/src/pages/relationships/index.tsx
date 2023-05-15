@@ -23,11 +23,17 @@ import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import type { PBCustom } from "src/types/pb-custom";
 import SuperJSON from "superjson";
+import { IcRoundVerified } from "../../components/icons/IcRoundVerified";
 
 interface RelationshipsData {
   starredContacts: ListResult<StarredContactsCustomResponse>;
   contacts: ListResult<ContactsCustomResponse>;
   pbAuthCookie: string;
+}
+
+interface NameItem {
+  name: string;
+  hasAccount: boolean;
 }
 
 function Relationships({
@@ -175,14 +181,24 @@ function initPeopleColumns(
       footer: () => null,
     },
     {
-      accessorFn: (item) => item.name,
+      accessorFn: (item) => {
+        return {
+          name: item.name,
+          hasAccount: item.hasAccount,
+        };
+      },
       id: "name",
       cell: (info) => (
         <IndexCell
           className="min-w-[12rem]"
           href={getHref(info.row.original.id)}
         >
-          {info.getValue() as string}
+          <p className="flex items-center gap-1">
+            {(info.getValue() as NameItem).name}
+            {(info.getValue() as NameItem).hasAccount && (
+              <IcRoundVerified className="h-4 w-4 text-blue-400"></IcRoundVerified>
+            )}
+          </p>
         </IndexCell>
       ),
       header: () => (

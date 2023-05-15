@@ -7,8 +7,12 @@ import type {
   PeopleResponse,
   UsersResponse,
 } from "raito";
-import { Collections, ParticipantsPermissionOptions } from "raito";
-import { useCallback, useMemo, useState } from "react";
+import {
+  Collections,
+  ParticipantsPermissionOptions,
+  ParticipantsStatusOptions,
+} from "raito";
+import React, { useCallback, useMemo, useState } from "react";
 import type { PBCustom } from "src/types/pb-custom";
 import account_circle_black from "../../../public/account_circle_black.png";
 import ImageFallback from "../ImageFallback";
@@ -19,6 +23,7 @@ import type {
 } from "../../pages/api/email/invitation";
 import SuperJSON from "superjson";
 import { tryGetFirstValidEmail } from "../../lib/input_handling";
+import { ParticipationStatus } from "./ParticipationStatus";
 
 interface PeopleExpand {
   person: PeopleResponse;
@@ -86,9 +91,25 @@ function ParticipantsList({
     [docId]
   );
 
+  const userParticipation = allDocParticipants.items.find(
+    (allDocParticipant) => allDocParticipant.id === user.person
+  );
+  const [userParticipationStatus, setUserParticipationStatus] = useState(
+    userParticipation?.expand.participant_status
+  );
+
   const participantsList = useMemo(
     () =>
       allDocParticipants.items.map((allDocParticipant) => {
+        let status = allDocParticipant.expand.participant_status as
+          | ParticipantsStatusOptions
+          | undefined;
+        if (allDocParticipant.id === user.person) {
+          status = userParticipationStatus as
+            | ParticipantsStatusOptions
+            | undefined;
+        }
+
         return (
           <li
             key={allDocParticipant.id}
@@ -98,17 +119,23 @@ function ParticipantsList({
               className="flex grow items-center"
               href={`/people/${encodeURIComponent(allDocParticipant.id)}`}
             >
-              <ImageFallback
-                className="mr-2 h-9 w-9 rounded-full"
-                src={pbClient.buildUrl(
-                  `api/files/people/${allDocParticipant.id}/${allDocParticipant.avatar}?thumb=36x36`
-                )}
-                fallbackSrc={account_circle_black}
-                alt="Uploaded avatar"
-                width={36}
-                height={36}
-              />
-              {allDocParticipant.name}
+              <div className="relative min-h-fit min-w-fit">
+                <ImageFallback
+                  className="mr-2 h-9 w-9 rounded-full"
+                  src={pbClient.buildUrl(
+                    `api/files/people/${allDocParticipant.id}/${allDocParticipant.avatar}?thumb=36x36`
+                  )}
+                  fallbackSrc={account_circle_black}
+                  alt="Uploaded avatar"
+                  width={36}
+                  height={36}
+                />
+                <ParticipationStatus
+                  status={status}
+                  className="absolute bottom-0 right-0"
+                ></ParticipationStatus>
+              </div>
+              <span>{allDocParticipant.name}</span>
             </Link>
             <select
               className={`select-bordered select`}
@@ -162,7 +189,14 @@ function ParticipantsList({
           </li>
         );
       }),
-    [allDocParticipants.items, disabled, docId, pbClient]
+    [
+      allDocParticipants.items,
+      disabled,
+      docId,
+      pbClient,
+      user.person,
+      userParticipationStatus,
+    ]
   );
 
   return (
@@ -235,6 +269,41 @@ function ParticipantsList({
           </Link>
         </li>
         {participantsList}
+        {userParticipation && (
+          <>
+            <hr />
+            <div className="flex items-center gap-5 p-2">
+              <select
+                className={`select-bordered select`}
+                defaultValue={userParticipation.expand?.participant_status}
+                onChange={async (e) => {
+                  const participantId =
+                    userParticipation.expand?.participant_id;
+
+                  if (!participantId) return;
+
+                  setUserParticipationStatus(e.currentTarget.value);
+                  await pbClient
+                    ?.collection(Collections.Participants)
+                    .update<ParticipantsResponse>(participantId, {
+                      status: e.currentTarget.value,
+                    } as ParticipantsRecord);
+                }}
+              >
+                <option value="" disabled>
+                  Going?
+                </option>
+                {Object.entries(ParticipantsStatusOptions).map(
+                  ([stringValue]) => (
+                    <option key={stringValue} value={stringValue}>
+                      {stringValue}
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
+          </>
+        )}
       </ol>
     </>
   );

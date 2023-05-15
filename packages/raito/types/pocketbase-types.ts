@@ -167,12 +167,19 @@ export enum ParticipantsPermissionOptions {
 	"comment" = "comment",
 	"write" = "write",
 }
+
+export enum ParticipantsStatusOptions {
+	"Yes" = "Yes",
+	"No" = "No",
+	"Maybe" = "Maybe",
+}
 export type ParticipantsRecord = {
 	permission: ParticipantsPermissionOptions
 	role?: string
 	note?: string
 	document: RecordIdString
 	person: RecordIdString
+	status?: ParticipantsStatusOptions
 }
 
 export enum PeopleGenderOptions {
