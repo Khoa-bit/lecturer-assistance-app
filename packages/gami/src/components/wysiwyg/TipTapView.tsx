@@ -1,14 +1,13 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import { useEffect, useMemo, useState } from "react";
-import { formatDate } from "src/lib/input_handling";
 import SuperJSON from "superjson";
 import { customExtensionsFull } from "./TipTap";
-import CustomImage from "./customImageExtension/image";
 import {
   getCommentFunctions,
   useCommentState,
   useInitComments,
 } from "./tiptapCommentExtension/commentHooks";
+import TipTapCommentCards from "./TipTapCommentCards";
 
 interface TipTapProps {
   id?: string;
@@ -26,6 +25,7 @@ const TipTapView = ({ id, richText }: TipTapProps) => {
 
   const [prevContent, setPrevContent] = useState(content);
 
+  const commentState = useCommentState();
   const {
     commentText,
     setCommentText,
@@ -35,15 +35,16 @@ const TipTapView = ({ id, richText }: TipTapProps) => {
     setActiveCommentDialog,
     allCommentSpans,
     setAllCommentSpans,
-  } = useCommentState();
+  } = commentState;
 
+  const commentFunctions = getCommentFunctions();
   const {
     findAllCommentSpans,
     getActiveCommentDialog,
     setComment,
     toggleComment,
     unsetComment,
-  } = getCommentFunctions();
+  } = commentFunctions;
 
   const editor = useEditor({
     editable: false,
@@ -114,43 +115,16 @@ const TipTapView = ({ id, richText }: TipTapProps) => {
 
   return (
     <div>
-      <EditorContent id={id} key="editor" className="prose" editor={editor} />
+      <EditorContent id={id} key="editor" editor={editor} />
 
-      <section className="flex flex-col">
-        {allUniqueComments.map((comment, i) => {
-          if (!comment.commentDialog.comments) return <></>;
-
-          return (
-            <article
-              className={`comment external-comment my-2 overflow-hidden rounded-md bg-gray-100 shadow-lg transition-all ${
-                comment.commentDialog.uuid === activeCommentDialog.uuid
-                  ? "ml-4"
-                  : "ml-8"
-              }`}
-              key={i + "external_comment"}
-            >
-              {comment.commentDialog.comments.map((jsonComment, j: number) => {
-                return (
-                  <article
-                    key={`${j}_${Math.random()}`}
-                    className="external-comment border-b-2 border-gray-200 p-3"
-                  >
-                    <div className="comment-details">
-                      <strong>{jsonComment.username}</strong>
-
-                      <span className="date-time ml-1 text-xs">
-                        {formatDate(jsonComment.time, dateTimeFormat)}
-                      </span>
-                    </div>
-
-                    <span className="content">{jsonComment.content}</span>
-                  </article>
-                );
-              })}
-            </article>
-          );
-        })}
-      </section>
+      <TipTapCommentCards
+        allUniqueComments={allUniqueComments}
+        editor={editor}
+        username={"Anonymous"}
+        canComment={false}
+        commentState={commentState}
+        commentFunctions={commentFunctions}
+      ></TipTapCommentCards>
     </div>
   );
 };

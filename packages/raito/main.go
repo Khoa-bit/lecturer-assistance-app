@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/robfig/cron/v3"
 	"log"
 	"raito-pocketbase/cronFunc"
 	"raito-pocketbase/handlers"
 	_ "raito-pocketbase/migrations"
+	"strings"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"

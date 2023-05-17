@@ -184,6 +184,8 @@ function FullDocument<TRecord>({
 
   const [startTime, setStartTime] = useState(baseDocument?.startTime);
 
+  const [commnetCards, setCommentCards] = useState(<></>);
+
   const handleThumbnail = createHandleThumbnail(
     pbClient,
     documentId,
@@ -309,16 +311,18 @@ function FullDocument<TRecord>({
           return { ...prev, [key]: inputValue };
         }, {});
 
-        reset({
-          name: data.record.name,
-          thumbnail: data.record.thumbnail,
-          priority: data.record.priority,
-          status: data.record.status,
-          richText: data.record.richText,
-          diffHash: data.record.diffHash,
-          attachmentsHash: data.record.attachmentsHash,
-          ...childBodyParams,
-        });
+        // Disabled resetting for syncing data
+        // This way of doing collaboration is very buggy
+        // reset({
+        //   name: data.record.name,
+        //   thumbnail: data.record.thumbnail,
+        //   priority: data.record.priority,
+        //   status: data.record.status,
+        //   richText: data.record.richText,
+        //   diffHash: data.record.diffHash,
+        //   attachmentsHash: data.record.attachmentsHash,
+        //   ...childBodyParams,
+        // });
 
         setThumbnail(data.record.thumbnail);
 
@@ -583,24 +587,24 @@ function FullDocument<TRecord>({
           <label className="py-2" htmlFor="richText">
             Note
           </label>
-          <div className="rounded-btn h-fit resize-y overflow-auto border-2 px-2 py-2 focus-within:ring-2 focus-within:ring-gray-300 focus-within:ring-offset-2">
-            <Controller
-              name="richText"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <TipTapByPermission
-                  id="richText"
-                  richText={value ?? "{}"}
-                  user={user}
-                  permission={permission}
-                  documentId={documentId}
-                  pbClient={pbClient}
-                  onChange={onChange}
-                  setAttachments={setAttachments}
-                ></TipTapByPermission>
-              )}
-            />
-          </div>
+          <Controller
+            name="richText"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <TipTapByPermission
+                id="richText"
+                richText={value ?? "{}"}
+                user={user}
+                permission={permission}
+                documentId={documentId}
+                pbClient={pbClient}
+                onChange={onChange}
+                setAttachments={setAttachments}
+                // setCommentCards={setCommentCards}
+              ></TipTapByPermission>
+            )}
+          />
+          {/*<div>{commnetCards}</div>*/}
           <button
             className={`flex justify-center gap-2 rounded bg-gray-400 py-2 font-semibold text-white transition-colors hover:bg-blue-400`}
             onClick={(e) => {

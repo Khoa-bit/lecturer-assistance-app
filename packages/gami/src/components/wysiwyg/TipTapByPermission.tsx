@@ -1,6 +1,6 @@
-import type { UsersResponse, AttachmentsResponse } from "raito";
+import type { AttachmentsResponse, UsersResponse } from "raito";
 import { ParticipantsPermissionOptions } from "raito";
-import { Dispatch, SetStateAction, useMemo } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import type { PBCustom } from "src/types/pb-custom";
 import TipTap from "./TipTap";
 import TipTapComment from "./TipTapComment";
@@ -30,6 +30,8 @@ const TipTapByPermission = ({
   onChange,
   setAttachments,
 }: TipTapByPermissionProps) => {
+  let tipTap;
+
   if (
     permission == ParticipantsPermissionOptions.write &&
     documentId &&
@@ -37,7 +39,7 @@ const TipTapByPermission = ({
     onChange &&
     setAttachments
   ) {
-    return (
+    tipTap = (
       <TipTap
         id={id}
         key="TipTapComponent"
@@ -50,7 +52,7 @@ const TipTapByPermission = ({
       ></TipTap>
     );
   } else if (permission == ParticipantsPermissionOptions.comment && onChange) {
-    return (
+    tipTap = (
       <TipTapComment
         id={id}
         key="TipTapComponent"
@@ -60,7 +62,7 @@ const TipTapByPermission = ({
       ></TipTapComment>
     );
   } else {
-    return (
+    tipTap = (
       <TipTapView
         id={id}
         key="TipTapComponent"
@@ -68,6 +70,12 @@ const TipTapByPermission = ({
       ></TipTapView>
     );
   }
+
+  return (
+    <div className="rounded-btn h-fit resize-y overflow-auto border-2 px-2 py-2 focus-within:ring-2 focus-within:ring-gray-300 focus-within:ring-offset-2">
+      {tipTap}
+    </div>
+  );
 };
 
 export default TipTapByPermission;

@@ -1,16 +1,13 @@
-import { BubbleMenu, EditorContent, useEditor } from "@tiptap/react";
-import type { Step } from "prosemirror-transform";
-import type { UsersResponse } from "raito";
-import { useEffect, useMemo, useState } from "react";
-import { formatDate } from "src/lib/input_handling";
+import {EditorContent, useEditor} from "@tiptap/react";
+import type {Step} from "prosemirror-transform";
+import type {UsersResponse} from "raito";
+import {ParticipantsPermissionOptions} from "raito";
+import {useEffect, useMemo, useState} from "react";
 import SuperJSON from "superjson";
-import { customExtensionsFull } from "./TipTap";
-import CustomImage from "./customImageExtension/image";
-import {
-  getCommentFunctions,
-  useCommentState,
-  useInitComments,
-} from "./tiptapCommentExtension/commentHooks";
+import {customExtensionsFull} from "./TipTap";
+import {getCommentFunctions, useCommentState, useInitComments,} from "./tiptapCommentExtension/commentHooks";
+import TipTapBubbleMenu from "./TipTapBubbleMenu";
+import TipTapCommentCards from "./TipTapCommentCards";
 
 // Per extension modification inspect the `editor.schema.marks` to get all active Marks
 type MarkType =
@@ -46,6 +43,7 @@ const TipTapComment = ({ id, onChange, richText, user }: TipTapProps) => {
 
   const [prevContent, setPrevContent] = useState(content);
 
+  const commentState = useCommentState();
   const {
     commentText,
     setCommentText,
@@ -55,15 +53,16 @@ const TipTapComment = ({ id, onChange, richText, user }: TipTapProps) => {
     setActiveCommentDialog,
     allCommentSpans,
     setAllCommentSpans,
-  } = useCommentState();
+  } = commentState;
 
+  const commentFunctions = getCommentFunctions();
   const {
     findAllCommentSpans,
     getActiveCommentDialog,
     setComment,
     toggleComment,
     unsetComment,
-  } = getCommentFunctions();
+  } = commentFunctions;
 
   const editor = useEditor({
     onCreate: ({ editor }) => {
@@ -164,165 +163,26 @@ const TipTapComment = ({ id, onChange, richText, user }: TipTapProps) => {
   return (
     <div>
       {editor && (
-        <BubbleMenu
-          tippyOptions={{ duration: 100, hideOnClick: true }}
+        <TipTapBubbleMenu
           editor={editor}
-        >
-          <section className="comment-adder-section bg-white shadow-lg">
-            <textarea
-              value={commentText}
-              onInput={(e) => setCommentText(e.currentTarget.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setComment(
-                    editor,
-                    commentText,
-                    allCommentSpans,
-                    activeCommentDialog,
-                    username
-                  );
-                  setCommentText("");
-                }
-              }}
-              cols={30}
-              rows={4}
-              placeholder="Add comment..."
-              className="border-none outline-none"
-            />
-
-            <section className="flex w-full flex-row gap-1">
-              <button
-                className="w-1/4 rounded border border-slate-500 bg-transparent px-4 py-2 font-semibold text-slate-700 shadow-lg hover:border-transparent hover:bg-slate-500 hover:text-white"
-                onClick={() => setCommentText("")}
-              >
-                Clear
-              </button>
-
-              <button
-                className="w-1/4 rounded border border-yellow-500 bg-transparent px-4 py-2 font-semibold text-yellow-700 shadow-lg hover:border-transparent hover:bg-yellow-500 hover:text-white"
-                onClick={() => toggleComment(editor)}
-              >
-                Toggle
-              </button>
-
-              <button
-                className="w-2/4 rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 shadow-lg hover:border-transparent hover:bg-blue-500 hover:text-white"
-                onClick={() => {
-                  setComment(
-                    editor,
-                    commentText,
-                    allCommentSpans,
-                    activeCommentDialog,
-                    username
-                  );
-                  setCommentText("");
-                }}
-              >
-                Add
-              </button>
-            </section>
-          </section>
-        </BubbleMenu>
+          setLink={() => null}
+          username={username}
+          permission={ParticipantsPermissionOptions.comment}
+          commentState={commentState}
+          commentFunctions={commentFunctions}
+        ></TipTapBubbleMenu>
       )}
 
-      <EditorContent id={id} key="editor" className="prose" editor={editor} />
+      <EditorContent id={id} key="editor" editor={editor} />
 
-      <section className="flex flex-col">
-        {allUniqueComments.map((comment, i) => {
-          if (!comment.commentDialog.comments) return <></>;
-
-          return (
-            <article
-              className={`comment external-comment my-2 overflow-hidden rounded-md bg-gray-100 shadow-lg transition-all ${
-                comment.commentDialog.uuid === activeCommentDialog.uuid
-                  ? "ml-4"
-                  : "ml-8"
-              }`}
-              key={i + "external_comment"}
-            >
-              {comment.commentDialog.comments.map((jsonComment, j: number) => {
-                return (
-                  <article
-                    key={`${j}_${Math.random()}`}
-                    className="external-comment border-b-2 border-gray-200 p-3"
-                  >
-                    <div className="comment-details">
-                      <strong>{jsonComment.username}</strong>
-
-                      <span className="date-time ml-1 text-xs">
-                        {formatDate(jsonComment.time, dateTimeFormat)}
-                      </span>
-                    </div>
-
-                    <span className="content">{jsonComment.content}</span>
-                  </article>
-                );
-              })}
-
-              {comment.commentDialog.uuid === activeCommentDialog.uuid && (
-                <section className="flex w-full flex-col gap-1">
-                  <textarea
-                    value={commentText}
-                    onInput={(e) => setCommentText(e.currentTarget.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setComment(
-                          editor,
-                          commentText,
-                          allCommentSpans,
-                          activeCommentDialog,
-                          username
-                        );
-                        setCommentText("");
-                      }
-                    }}
-                    cols={30}
-                    rows={4}
-                    placeholder="Add comment..."
-                    className="border-none outline-none"
-                  />
-
-                  <section className="flex w-full flex-row gap-1">
-                    <button
-                      className="w-1/4 rounded-lg border border-slate-500 bg-transparent px-4 py-2 font-semibold text-slate-700 shadow-lg hover:border-transparent hover:bg-slate-500 hover:text-white"
-                      onClick={() => setCommentText("")}
-                    >
-                      Clear
-                    </button>
-
-                    <button
-                      className="w-1/4 rounded-lg border border-rose-500 bg-transparent px-4 py-2 font-semibold text-rose-700 shadow-lg hover:border-transparent hover:bg-rose-500 hover:text-white"
-                      onClick={() => unsetComment(editor)}
-                    >
-                      Resolved
-                    </button>
-
-                    <button
-                      className="w-2/4 rounded-lg border border-blue-500 bg-transparent px-4 py-2 font-semibold text-blue-700 shadow-lg hover:border-transparent hover:bg-blue-500 hover:text-white"
-                      onClick={() => {
-                        setComment(
-                          editor,
-                          commentText,
-                          allCommentSpans,
-                          activeCommentDialog,
-                          username
-                        );
-                        setCommentText("");
-                      }}
-                    >
-                      Add (<kbd>Enter</kbd>)
-                    </button>
-                  </section>
-                </section>
-              )}
-            </article>
-          );
-        })}
-      </section>
+      <TipTapCommentCards
+        allUniqueComments={allUniqueComments}
+        editor={editor}
+        username={username}
+        canComment={true}
+        commentState={commentState}
+        commentFunctions={commentFunctions}
+      ></TipTapCommentCards>
     </div>
   );
 };
