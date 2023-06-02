@@ -289,9 +289,9 @@ function FullDocument<TRecord>({
       .collection(Collections.Documents)
       .subscribe<DocumentsResponse>(documentId, async (data) => {
         // Send child submit update dynamically based on childrenDefaultValue
-        const childRecord = await pbClient
-          .collection(childCollectionName)
-          .getOne(childId);
+        // const childRecord = await pbClient
+        //   .collection(childCollectionName)
+        //   .getOne(childId);
 
         // const childBodyParams = Object.entries(
         //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
