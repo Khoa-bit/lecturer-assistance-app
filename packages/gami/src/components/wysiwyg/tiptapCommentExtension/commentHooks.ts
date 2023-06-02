@@ -17,6 +17,8 @@ export interface CommentDialog {
 }
 
 export interface UserComment {
+  userId: string;
+  userAvatar: string;
   username: string;
   time: number;
   content: string;
@@ -30,6 +32,8 @@ export interface GetCommentFunctionsRetuns {
     commentText: string,
     allCommentSpans: CommentSpan[],
     activeCommentDialog: CommentDialog,
+    userId: string,
+    userAvatar: string,
     username: string
   ) => boolean;
   toggleComment: (editor: Editor) => boolean;
@@ -162,6 +166,8 @@ const setComment = (
   commentText: string,
   allCommentSpans: CommentSpan[],
   activeCommentDialog: CommentDialog,
+  userId: string,
+  userAvatar: string,
   username: string
 ): boolean => {
   if (!commentText.trim().length) return false;
@@ -171,7 +177,9 @@ const setComment = (
   let commentDialog: string;
   if (commentsArray) {
     commentsArray.push({
+      userId,
       username,
+      userAvatar,
       time: Date.now(),
       content: commentText,
     });
@@ -185,7 +193,9 @@ const setComment = (
       uuid: Math.random().toString(),
       comments: [
         {
+          userId,
           username,
+          userAvatar,
           time: Date.now(),
           content: commentText,
         },

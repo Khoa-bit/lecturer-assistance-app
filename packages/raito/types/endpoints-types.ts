@@ -313,3 +313,19 @@ export interface RelationshipsCustomResponse extends RelationshipsResponse {
     toUser_updated: string;
   };
 }
+
+// ParticipantsXlsxImport
+export interface ParticipantsXlsxImportResponse {
+  ID: string;
+  No: number;
+  StudentID: string;
+  LastName: string;
+  FirstName: string;
+  DOB: string;
+  Gender: string;
+  MajorID: string;
+  Major: string;
+  DepartmentID: string;
+  Class: string;
+  Exists: boolean;
+}

@@ -6,7 +6,7 @@ import type {
 } from "raito";
 import { Collections } from "raito";
 import { getPBServer } from "../../../lib/pb_server";
-import { formatDate } from "../../../lib/input_handling";
+import { dateTimeFormat, formatDate } from "../../../lib/input_handling";
 import fs from "fs";
 import { getStatusFileName } from "../../../components/documents/Status";
 import { env } from "../../../env/server.mjs";
@@ -66,11 +66,11 @@ const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
       const description = reminder.fullDocument_document_description;
       const startTime = formatDate(
         reminder.fullDocument_document_startTime,
-        "hh:mm, dd/MM/yyyy"
+        dateTimeFormat
       );
       const endTime = formatDate(
         reminder.fullDocument_document_endTime,
-        "hh:mm, dd/MM/yyyy"
+        dateTimeFormat
       );
       const status = "cid:status";
       const statusFileName = getStatusFileName(

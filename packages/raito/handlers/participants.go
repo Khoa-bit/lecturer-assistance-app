@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-
 	"raito-pocketbase/handlers/auth"
 	"raito-pocketbase/handlers/model"
 
@@ -310,9 +309,6 @@ func GetAllDocParticipants(app *pocketbase.PocketBase, c echo.Context) error {
 	}
 
 	docId := c.PathParam("docId")
-	if err != nil {
-		return err
-	}
 
 	mainCollectionName := "people"
 	hasGroupBy := false

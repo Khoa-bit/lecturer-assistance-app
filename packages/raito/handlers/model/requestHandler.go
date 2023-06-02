@@ -21,11 +21,11 @@ const MaxPerPage int = 500
 
 // Result defines the returned search result structure.
 type Result struct {
-	Page       int `json:"page"`
-	PerPage    int `json:"perPage"`
-	TotalItems int `json:"totalItems"`
-	TotalPages int `json:"totalPages"`
-	Items      any `json:"items"`
+	Page       int              `json:"page"`
+	PerPage    int              `json:"perPage"`
+	TotalItems int              `json:"totalItems"`
+	TotalPages int              `json:"totalPages"`
+	Items      []*models.Record `json:"items"`
 }
 
 // GetRequestHandler takes care of querying, parsing and then injecting data into echo.Context.
@@ -36,57 +36,32 @@ type Result struct {
 //
 // Else, the `expands` field of each result contains fields specified by the `fieldMetadataList`.
 func GetRequestHandler(app *pocketbase.PocketBase, c echo.Context, query *dbx.Query, mainCollectionName string, hasGroupBy bool, fieldMetadataList FieldMetaDataList) error {
-	var err error
+	result, err := GetHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
+	if err != nil {
+		return err
+	}
 
-	// TODO: Implement API Rules
+	return c.JSON(http.StatusOK, result)
+}
+
+func GetHandler(app *pocketbase.PocketBase, c echo.Context, query *dbx.Query, mainCollectionName string, hasGroupBy bool, fieldMetadataList FieldMetaDataList) (*Result, error) {
+	var err error
 
 	// fetch models
 	var items []dbx.NullStringMap
 	if err := query.All(&items); err != nil {
-		return err
+		return nil, err
 	}
 
-	// count
+	// Pagination
 	totalCount := len(items)
-
-	// full list
-	isFullListQueryParam := c.QueryParam("fullList")
-	isFullList, err := strconv.ParseBool(isFullListQueryParam)
-	if err != nil {
-		isFullList = false
-	}
-
-	// normalize perPage
-	perPageQueryParam := c.QueryParam("perPage")
-	perPage, err := strconv.Atoi(perPageQueryParam)
-	if isFullList {
-		perPage = int(math.Max(1, float64(totalCount)))
-	} else if err != nil || perPage <= 0 {
-		perPage = DefaultPerPage
-	} else if perPage > MaxPerPage {
-		perPage = MaxPerPage
-	}
-
-	totalPages := int(math.Ceil(float64(totalCount) / float64(perPage)))
-
-	// normalize page according to the total count
-	pageQueryParam := c.QueryParam("page")
-	page, err := strconv.Atoi(pageQueryParam)
-	if err != nil || page <= 0 || totalCount == 0 {
-		page = 1
-	} else if page > totalPages {
-		page = totalPages
-	}
-
-	// apply pagination
-	startPage := (page - 1) * perPage
-	endPage := int(math.Min(float64(totalCount), float64(startPage+perPage)))
+	page, perPage, totalPages, startPage, endPage, err := PaginateItems(c, totalCount)
 	paginatedItems := items[startPage:endPage]
 
 	// parse rawItems into formatted results by collection schemas
 	mainCollection, err := app.Dao().FindCollectionByNameOrId(mainCollectionName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	mainResults := models.NewRecordsFromNullStringMaps(mainCollection, paginatedItems)
@@ -94,13 +69,13 @@ func GetRequestHandler(app *pocketbase.PocketBase, c echo.Context, query *dbx.Qu
 	// Enrich results with `expands` relations and api rules + visibility
 	err = apis.EnrichRecords(c, app.Dao(), mainResults)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// set expands
 	for index, item := range mainResults {
 		if item.Id != paginatedItems[index]["id"].String {
-			return fmt.Errorf("expanding mismatch in collection '%s' at record id '%s'", mainCollectionName, item.Id)
+			return nil, fmt.Errorf("expanding mismatch in collection '%s' at record id '%s'", mainCollectionName, item.Id)
 		}
 
 		expand := make(map[string]any, len(fieldMetadataList))
@@ -124,5 +99,43 @@ func GetRequestHandler(app *pocketbase.PocketBase, c echo.Context, query *dbx.Qu
 		Items:      mainResults,
 	}
 
-	return c.JSON(http.StatusOK, result)
+	return result, nil
+}
+
+// PaginateItems returns pagination results from optional query params
+func PaginateItems(c echo.Context, totalCount int) (page int, perPage int, totalPages int, startPage int, endPage int, err error) {
+	// full list
+	isFullListQueryParam := c.QueryParam("fullList")
+	isFullList, err := strconv.ParseBool(isFullListQueryParam)
+	if err != nil {
+		isFullList = false
+	}
+
+	// normalize perPage
+	perPageQueryParam := c.QueryParam("perPage")
+	perPage, err = strconv.Atoi(perPageQueryParam)
+	if isFullList {
+		perPage = int(math.Max(1, float64(totalCount)))
+	} else if err != nil || perPage <= 0 {
+		perPage = DefaultPerPage
+	} else if perPage > MaxPerPage {
+		perPage = MaxPerPage
+	}
+
+	totalPages = int(math.Ceil(float64(totalCount) / float64(perPage)))
+
+	// normalize page according to the total count
+	pageQueryParam := c.QueryParam("page")
+	page, err = strconv.Atoi(pageQueryParam)
+	if err != nil || page <= 0 || totalCount == 0 {
+		page = 1
+	} else if page > totalPages {
+		page = totalPages
+	}
+
+	// apply pagination
+	startPage = (page - 1) * perPage
+	endPage = int(math.Min(float64(totalCount), float64(startPage+perPage)))
+
+	return page, perPage, totalPages, startPage, endPage, err
 }

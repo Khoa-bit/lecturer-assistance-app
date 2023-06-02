@@ -138,6 +138,7 @@ function FullDocument<TRecord>({
   childrenDefaultValue,
   hasEvents,
 }: FullDocumentProps<TRecord>) {
+  const userPerson = user.expand?.person;
   const baseDocument = fullDocument.expand?.document;
   const fullDocumentId = fullDocument.id;
   const documentId = fullDocument.document;
@@ -183,8 +184,6 @@ function FullDocument<TRecord>({
     useState<AttachmentsResponse[]>(initAttachments);
 
   const [startTime, setStartTime] = useState(baseDocument?.startTime);
-
-  const [commnetCards, setCommentCards] = useState(<></>);
 
   const handleThumbnail = createHandleThumbnail(
     pbClient,
@@ -294,22 +293,22 @@ function FullDocument<TRecord>({
           .collection(childCollectionName)
           .getOne(childId);
 
-        const childBodyParams = Object.entries(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          childrenDefaultValue as any
-        ).reduce((prev, [key, value]) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let inputValue = (childRecord as any)[key] ?? (value as any);
-
-          // Matches the datetime format "2023-03-29 09:06:00.000Z" for input type "datetime-local"
-          // To convert it into PocketBase local date time format
-          if (
-            inputValue.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3}Z$/)
-          ) {
-            inputValue = dateToISOLikeButLocalOrUndefined(inputValue) ?? "";
-          }
-          return { ...prev, [key]: inputValue };
-        }, {});
+        // const childBodyParams = Object.entries(
+        //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        //   childrenDefaultValue as any
+        // ).reduce((prev, [key, value]) => {
+        //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        //   let inputValue = (childRecord as any)[key] ?? (value as any);
+        //
+        //   // Matches the datetime format "2023-03-29 09:06:00.000Z" for input type "datetime-local"
+        //   // To convert it into PocketBase local date time format
+        //   if (
+        //     inputValue.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3}Z$/)
+        //   ) {
+        //     inputValue = dateToISOLikeButLocalOrUndefined(inputValue) ?? "";
+        //   }
+        //   return { ...prev, [key]: inputValue };
+        // }, {});
 
         // Disabled resetting for syncing data
         // This way of doing collaboration is very buggy
@@ -594,7 +593,7 @@ function FullDocument<TRecord>({
               <TipTapByPermission
                 id="richText"
                 richText={value ?? "{}"}
-                user={user}
+                userPerson={userPerson}
                 permission={permission}
                 documentId={documentId}
                 pbClient={pbClient}

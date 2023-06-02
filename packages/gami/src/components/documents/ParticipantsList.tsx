@@ -24,6 +24,7 @@ import type {
 import SuperJSON from "superjson";
 import { tryGetFirstValidEmail } from "../../lib/input_handling";
 import { ParticipationStatus } from "./ParticipationStatus";
+import { ImportParticipantsInput } from "./ImportParticipantsInput";
 
 interface PeopleExpand {
   person: PeopleResponse;
@@ -116,7 +117,7 @@ function ParticipantsList({
             className="flex w-full items-center justify-center gap-2 rounded p-2 hover:bg-gray-50"
           >
             <Link
-              className="flex grow items-center"
+              className="flex grow items-center gap-1"
               href={`/people/${encodeURIComponent(allDocParticipant.id)}`}
             >
               <div className="relative min-h-fit min-w-fit">
@@ -243,13 +244,18 @@ function ParticipantsList({
           ))}
         </select>
       )}
+      <ImportParticipantsInput
+        docId={docId}
+        disabled={disabled}
+        pbClient={pbClient}
+      ></ImportParticipantsInput>
       <ol>
         <li
           key={owner.id}
           className="flex w-full items-center justify-center gap-2 rounded p-2 hover:bg-gray-50"
         >
           <Link
-            className="flex grow items-center"
+            className="flex grow items-center gap-1"
             href={`/people/${encodeURIComponent(owner.id ?? "")}`}
           >
             <ImageFallback

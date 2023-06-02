@@ -1,0 +1,166 @@
+erDiagram
+    "users" {
+        string email
+        bool emailVisibility
+        string id PK
+        string lastResetSentAt
+        string lastVerificationSentAt
+        string passwordHash
+        string tokenKey
+        string username
+        bool verified
+        string person FK
+        bool justRegistered
+    }
+
+    "attachments" {
+        string document FK
+        string file
+        string id PK
+    }
+
+    "classes" {
+        string classId
+        string cohort
+        string major FK
+        string fullDocument FK
+        string id PK
+        string academicProgram
+    }
+
+    "courseTemplates" {
+        string courseId
+        string id PK
+        string name
+        int periodsCount
+        string academicProgram
+    }
+
+    "courses" {
+        string courseTemplate
+        string fullDocument FK
+        string id PK
+        string semester
+    }
+
+    "departments" {
+        string id PK
+        string name
+        string departmentId
+    }
+
+    "documents" {
+        string id PK
+        string name
+        string priority
+        string status
+        string thumbnail
+        string diffHash
+        string owner
+        string deleted
+        string richText
+        string attachmentsHash
+        string startTime
+        string endTime
+        string description
+    }
+
+    "eventDocuments" {
+        string fullDocument
+        string id PK
+        string recurring
+        string toFullDocument FK
+        string reminderAt
+    }
+
+    "fullDocuments" {
+        string document FK
+        string id PK
+        string internal
+    }
+
+    "majors" {
+        string id PK
+        string name
+        string department FK
+        string majorId
+    }
+
+    "participants" {
+        string document FK
+        string id PK
+        string note
+        string permission
+        string person FK
+        string role
+        string status
+    }
+
+    "people" {
+        string avatar
+        string deleted
+        string major FK
+        string gender
+        string id PK
+        string name
+        string personId
+        string personalEmail
+        string phone
+        string placeOfBirth
+        string title
+        string thumbnail
+        string interests
+        string contactRoom
+        string contactLocation
+        string experience
+        string education
+        bool isFaculty
+        bool hasAccount
+        string dayOfBirth
+    }
+
+    "relationships" {
+        string fromPerson FK
+        string id PK
+        string toPerson FK
+    }
+
+    "personalNotes" {
+        string fullDocument FK
+        string id PK
+    }
+
+    "academicMaterials" {
+        string category
+        string fullDocument FK
+        string id PK
+    }
+
+    "services" {
+        string email
+        bool emailVisibility
+        string id PK
+        string lastResetSentAt
+        string lastVerificationSentAt
+        string passwordHash
+        string tokenKey
+        string username
+        bool verified
+    }
+
+    users ||--|| people: ""
+    attachments }o--|| documents: ""
+    classes }o--|| majors: ""
+    classes ||--|| fullDocuments: ""
+    courseTemplates ||--o{ courses: ""
+    courses ||--|| fullDocuments: ""
+    documents ||--|| people: ""
+    fullDocuments ||--|| documents: ""
+    relationships }o--|| people: ""
+    personalNotes ||--|| fullDocuments: ""
+    academicMaterials ||--|| fullDocuments: ""
+    eventDocuments ||--|| fullDocuments: ""
+    departments ||--o{ majors: ""
+    people }o--|| majors: ""
+    participants ||--|| documents: ""
+    participants ||--|| people: ""

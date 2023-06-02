@@ -8,15 +8,21 @@ import {
   useInitComments,
 } from "./tiptapCommentExtension/commentHooks";
 import TipTapCommentCards from "./TipTapCommentCards";
+import type { PBCustom } from "../../types/pb-custom";
+import type { PeopleResponse } from "raito";
 
 interface TipTapProps {
   id?: string;
   richText: string;
+  pbClient?: PBCustom;
+  userPerson?: PeopleResponse;
 }
 
-const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
+const TipTapView = ({ id, richText, pbClient, userPerson }: TipTapProps) => {
+  const username = userPerson?.name ?? "Anonymous";
+  const userId = userPerson?.id ?? "";
+  const userAvatar = userPerson?.avatar ?? "";
 
-const TipTapView = ({ id, richText }: TipTapProps) => {
   const content: object = SuperJSON.parse(
     richText.length >= 2
       ? richText
@@ -117,14 +123,19 @@ const TipTapView = ({ id, richText }: TipTapProps) => {
     <div>
       <EditorContent id={id} key="editor" editor={editor} />
 
-      <TipTapCommentCards
-        allUniqueComments={allUniqueComments}
-        editor={editor}
-        username={"Anonymous"}
-        canComment={false}
-        commentState={commentState}
-        commentFunctions={commentFunctions}
-      ></TipTapCommentCards>
+      {pbClient && (
+        <TipTapCommentCards
+          allUniqueComments={allUniqueComments}
+          editor={editor}
+          pbClient={pbClient}
+          userId={userId}
+          userAvatar={userAvatar}
+          username={username}
+          canComment={false}
+          commentState={commentState}
+          commentFunctions={commentFunctions}
+        ></TipTapCommentCards>
+      )}
     </div>
   );
 };

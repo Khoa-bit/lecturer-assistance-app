@@ -56,13 +56,13 @@ function EventsList({
         <input
           id="upcoming-collapse"
           type="checkbox"
-          aria-label="toggle collapse panel"
+          className="panel toggle collapse !min-h-fit"
           defaultChecked={true}
         />
-        <h3 className="collapse-title border-0 border-b-4 p-2 font-semibold text-gray-600">
+        <h3 className="collapse-title !min-h-fit border-0 border-b-4 p-0 font-semibold text-gray-600">
           <label
             htmlFor="upcoming-collapse"
-            className={`group flex ${
+            className={`group flex p-2  ${
               upcomingEventDocuments.items.length != 0 && "cursor-pointer"
             }`}
           >
@@ -76,7 +76,7 @@ function EventsList({
             </span>
           </label>
         </h3>
-        <ol className="collapse-content">
+        <ol className="collapse-content p-1">
           {upcomingEventDocuments.items.map((eventDocument) => {
             const document =
               eventDocument.expand?.fullDocument.expand?.document;
@@ -127,12 +127,12 @@ function EventsList({
         <input
           id="past-collapse"
           type="checkbox"
-          aria-label="toggle collapse panel"
+          className="panel toggle collapse !min-h-fit"
         />
-        <h3 className="collapse-title border-0 border-b-4 p-2 font-semibold text-gray-600">
+        <h3 className="collapse-title !min-h-fit border-0 border-b-4 p-0 font-semibold text-gray-600">
           <label
             htmlFor="past-collapse"
-            className={`group flex ${
+            className={`group flex p-2  ${
               pastEventDocuments.items.length != 0 && "cursor-pointer"
             }`}
           >
@@ -154,7 +154,7 @@ function EventsList({
             </span>
           </label>
         </h3>
-        <ol className="collapse-content">
+        <ol className="collapse-content p-1">
           {pastEventDocuments.items.map((eventDocument) => {
             const document =
               eventDocument.expand?.fullDocument.expand?.document;

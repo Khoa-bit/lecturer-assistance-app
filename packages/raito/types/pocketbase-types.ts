@@ -98,6 +98,7 @@ export type CoursesRecord = {
 }
 
 export type DepartmentsRecord = {
+	departmentId: string
 	name: string
 }
 
@@ -158,7 +159,8 @@ export type FullDocumentsRecord = {
 }
 
 export type MajorsRecord = {
-	name: string
+	majorId: string
+	name?: string
 	department: RecordIdString
 }
 
@@ -195,6 +197,7 @@ export type PeopleRecord<Teducation = unknown, Texperience = unknown, Tinterests
 	phone?: string
 	personalEmail?: string
 	title?: string
+	dayOfBirth?: IsoDateString
 	placeOfBirth?: string
 	gender?: PeopleGenderOptions
 	major?: RecordIdString

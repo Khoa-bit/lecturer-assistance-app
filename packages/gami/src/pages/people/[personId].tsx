@@ -62,6 +62,7 @@ import {
   dateToISOLikeButLocalOrUndefined,
   formatDate,
   formatDateToInput,
+  monthFormat,
 } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
@@ -203,7 +204,7 @@ function Person({
         pbClient
           .collection(Collections.People)
           .update<PeopleResponse>(personId, {
-            personId: undefined,
+            personId: inputData.personId?.toUpperCase(),
             name: inputData.name,
             avatar: inputData.avatar,
             phone: inputData.phone,
@@ -257,11 +258,11 @@ function Person({
               const startTimeStr = value.startTime;
               const endTimeStr = value.endTime;
               const startTime = startTimeStr
-                ? `${formatDate(startTimeStr, "MMM yyyy")} - `
+                ? `${formatDate(startTimeStr, monthFormat)} - `
                 : "";
 
               const endTime = endTimeStr
-                ? formatDate(endTimeStr, "MMM yyyy")
+                ? formatDate(endTimeStr, monthFormat)
                 : "Present";
 
               let duration;
@@ -332,11 +333,11 @@ function Person({
         </p>
         <small className="text-gray-500">{`${formatDate(
           education.startTime,
-          "MMM yyyy"
+          monthFormat
         )} - ${
           education.isCurrent
             ? "Present"
-            : formatDate(education.endTime, "MMM yyyy")
+            : formatDate(education.endTime, monthFormat)
         }`}</small>
         <p className="m-0 mt-1">Grade: {education.grade}</p>
         <p className="m-0 mt-2">{education.description}</p>
@@ -350,10 +351,10 @@ function Person({
           {experience.companyName}
           {!!experience.industry && ` - ${experience.industry}`}
         </p>
-        <small>{`${formatDate(experience.startTime, "MMM yyyy")} - ${
+        <small>{`${formatDate(experience.startTime, monthFormat)} - ${
           experience.isCurrent
             ? "Present"
-            : formatDate(experience.endTime, "MMM yyyy")
+            : formatDate(experience.endTime, monthFormat)
         }`}</small>
         <small className="text-gray-500">{experience.location}</small>
         <p className="m-0 mt-2">{experience.description}</p>

@@ -11,7 +11,11 @@ import SuperJSON from "superjson";
 import { getPBServer } from "../../../lib/pb_server";
 import { env } from "../../../env/server.mjs";
 import mjml2html from "mjml";
-import { formatDate, zodEmailValidator } from "../../../lib/input_handling";
+import {
+  dateTimeFormat,
+  formatDate,
+  zodEmailValidator,
+} from "../../../lib/input_handling";
 import { sendMailAsync } from "../../../lib/nodemail_helpers";
 import { getStatusFileName } from "../../../components/documents/Status";
 
@@ -62,8 +66,8 @@ const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
       "Document / Event";
     const logo = "cid:logo";
     const description = baseDocument.description;
-    const startTime = formatDate(baseDocument.startTime, "hh:mm, dd/MM/yyyy");
-    const endTime = formatDate(baseDocument.endTime, "hh:mm, dd/MM/yyyy");
+    const startTime = formatDate(baseDocument.startTime, dateTimeFormat);
+    const endTime = formatDate(baseDocument.endTime, dateTimeFormat);
     const status = "cid:status";
     const statusFileName = getStatusFileName(baseDocument.status);
     const statusAlt = baseDocument.status;

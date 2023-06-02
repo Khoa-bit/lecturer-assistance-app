@@ -1,13 +1,17 @@
 // middleware.ts
-import type {NextRequest} from "next/server";
-import {NextResponse} from "next/server";
-import {_getPBMiddleware} from "./lib/pb_client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { _getPBMiddleware } from "./lib/pb_client";
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const { user } = _getPBMiddleware(
-    `pb_auth=${request.cookies.get("pb_auth")?.value}`,
+    `pb_auth=${
+      request.cookies
+        .get("pb_auth")
+        ?.value?.replace("%2C%22record%22%3A%7B", "%2C%22model%22%3A%7B") ?? ""
+    }`,
     url.pathname
   );
 

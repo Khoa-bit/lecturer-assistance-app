@@ -1,6 +1,6 @@
 import {EditorContent, useEditor} from "@tiptap/react";
 import type {Step} from "prosemirror-transform";
-import type {UsersResponse} from "raito";
+import type {PeopleResponse} from "raito";
 import {ParticipantsPermissionOptions} from "raito";
 import {useEffect, useMemo, useState} from "react";
 import SuperJSON from "superjson";
@@ -8,6 +8,7 @@ import {customExtensionsFull} from "./TipTap";
 import {getCommentFunctions, useCommentState, useInitComments,} from "./tiptapCommentExtension/commentHooks";
 import TipTapBubbleMenu from "./TipTapBubbleMenu";
 import TipTapCommentCards from "./TipTapCommentCards";
+import type {PBCustom} from "../../types/pb-custom";
 
 // Per extension modification inspect the `editor.schema.marks` to get all active Marks
 type MarkType =
@@ -28,13 +29,21 @@ interface TipTapProps {
   id?: string;
   onChange: (...event: unknown[]) => void;
   richText: string;
-  user: UsersResponse;
+  pbClient: PBCustom;
+  userPerson?: PeopleResponse;
 }
 
-const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
+const TipTapComment = ({
+  id,
+  onChange,
+  richText,
+  pbClient,
+  userPerson,
+}: TipTapProps) => {
+  const username = userPerson?.name ?? "Anonymous";
+  const userId = userPerson?.id ?? "";
+  const userAvatar = userPerson?.avatar ?? "";
 
-const TipTapComment = ({ id, onChange, richText, user }: TipTapProps) => {
-  const username = user?.username ?? "Anonymous";
   const content: object = SuperJSON.parse(
     richText.length >= 2
       ? richText
@@ -166,6 +175,8 @@ const TipTapComment = ({ id, onChange, richText, user }: TipTapProps) => {
         <TipTapBubbleMenu
           editor={editor}
           setLink={() => null}
+          userId={userId}
+          userAvatar={userAvatar}
           username={username}
           permission={ParticipantsPermissionOptions.comment}
           commentState={commentState}
@@ -178,6 +189,9 @@ const TipTapComment = ({ id, onChange, richText, user }: TipTapProps) => {
       <TipTapCommentCards
         allUniqueComments={allUniqueComments}
         editor={editor}
+        pbClient={pbClient}
+        userId={userId}
+        userAvatar={userAvatar}
         username={username}
         canComment={true}
         commentState={commentState}

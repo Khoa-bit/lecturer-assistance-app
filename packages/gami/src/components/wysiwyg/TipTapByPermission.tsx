@@ -1,4 +1,4 @@
-import type { AttachmentsResponse, UsersResponse } from "raito";
+import type { AttachmentsResponse, PeopleResponse } from "raito";
 import { ParticipantsPermissionOptions } from "raito";
 import type { Dispatch, SetStateAction } from "react";
 import type { PBCustom } from "src/types/pb-custom";
@@ -9,7 +9,7 @@ import TipTapView from "./TipTapView";
 type TipTapByPermissionProps = {
   id?: string;
   richText: string;
-  user: UsersResponse;
+  userPerson?: PeopleResponse;
   permission: ParticipantsPermissionOptions;
   documentId?: string;
   pbClient?: PBCustom;
@@ -23,7 +23,7 @@ type TipTapByPermissionProps = {
 const TipTapByPermission = ({
   id,
   richText,
-  user,
+  userPerson,
   permission,
   documentId,
   pbClient,
@@ -47,18 +47,23 @@ const TipTapByPermission = ({
         richText={richText}
         documentId={documentId}
         pbClient={pbClient}
-        user={user}
+        userPerson={userPerson}
         setCurAttachments={setAttachments}
       ></TipTap>
     );
-  } else if (permission == ParticipantsPermissionOptions.comment && onChange) {
+  } else if (
+    permission == ParticipantsPermissionOptions.comment &&
+    pbClient &&
+    onChange
+  ) {
     tipTap = (
       <TipTapComment
         id={id}
         key="TipTapComponent"
         onChange={onChange}
         richText={richText}
-        user={user}
+        pbClient={pbClient}
+        userPerson={userPerson}
       ></TipTapComment>
     );
   } else {
@@ -67,6 +72,8 @@ const TipTapByPermission = ({
         id={id}
         key="TipTapComponent"
         richText={richText}
+        pbClient={pbClient}
+        userPerson={userPerson}
       ></TipTapView>
     );
   }

@@ -1,26 +1,34 @@
-import { formatDate } from "../../lib/input_handling";
+import { dateTimeFormat, formatDate } from "../../lib/input_handling";
 import type {
   CommentSpan,
   GetCommentFunctionsRetuns,
   UseCommentStateReturns,
 } from "./tiptapCommentExtension/commentHooks";
 import type { Editor } from "@tiptap/react";
+import account_circle_black from "../../../public/account_circle_black.png";
+import ImageFallback from "../ImageFallback";
+import React from "react";
+import type { PBCustom } from "../../types/pb-custom";
 
 interface TipTapCommentCardsProps {
   allUniqueComments: CommentSpan[];
   editor: Editor;
+  pbClient: PBCustom;
+  userId: string;
+  userAvatar: string;
   username: string;
   canComment: boolean;
   commentState: UseCommentStateReturns;
   commentFunctions: GetCommentFunctionsRetuns;
 }
 
-const dateTimeFormat = "HH:mm dd MMM yyyy";
-
 export default function TipTapCommentCards({
   allUniqueComments,
   editor,
+  pbClient,
+  userId,
   username,
+  userAvatar,
   canComment,
   commentState,
   commentFunctions,
@@ -69,7 +77,17 @@ export default function TipTapCommentCards({
                   key={`${j}_${Math.random()}`}
                   className="external-comment flex flex-col gap-2 border-b-2 border-gray-200 p-3"
                 >
-                  <div className="flex flex-col">
+                  <div className="grid w-fit grid-cols-[max-content_1fr]">
+                    <ImageFallback
+                      className="row-span-2 mr-2 h-9 w-9 rounded-full"
+                      src={pbClient.buildUrl(
+                        `api/files/people/${jsonComment.userId}/${jsonComment.userAvatar}?thumb=36x36`
+                      )}
+                      fallbackSrc={account_circle_black}
+                      alt="Uploaded avatar"
+                      width={36}
+                      height={36}
+                    />
                     <strong>{jsonComment.username}</strong>
 
                     <small className="date-time text-xs">
@@ -97,6 +115,8 @@ export default function TipTapCommentCards({
                           commentText,
                           allCommentSpans,
                           activeCommentDialog,
+                          userId,
+                          userAvatar,
                           username
                         );
                         setCommentText("");
@@ -130,6 +150,8 @@ export default function TipTapCommentCards({
                           commentText,
                           allCommentSpans,
                           activeCommentDialog,
+                          userId,
+                          userAvatar,
                           username
                         );
                         setCommentText("");

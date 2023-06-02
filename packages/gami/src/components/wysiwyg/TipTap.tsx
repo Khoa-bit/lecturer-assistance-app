@@ -8,7 +8,7 @@ import TextStyle from "@tiptap/extension-text-style";
 import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import type { AttachmentsResponse, UsersResponse } from "raito";
+import type { AttachmentsResponse, PeopleResponse } from "raito";
 import { ParticipantsPermissionOptions } from "raito";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -32,7 +32,7 @@ interface TipTapProps {
   richText: string;
   documentId: string;
   pbClient: PBCustom;
-  user: UsersResponse;
+  userPerson?: PeopleResponse;
   setCurAttachments: Dispatch<SetStateAction<AttachmentsResponse<unknown>[]>>;
 }
 
@@ -101,10 +101,13 @@ const TipTap = ({
   richText,
   documentId,
   pbClient,
-  user,
+  userPerson,
   setCurAttachments,
 }: TipTapProps) => {
-  const username = user?.username ?? "Anonymous";
+  const username = userPerson?.name ?? "Anonymous";
+  const userId = userPerson?.id ?? "";
+  const userAvatar = userPerson?.avatar ?? "";
+
   const content: object = SuperJSON.parse(
     richText.length >= 2
       ? richText
@@ -254,6 +257,8 @@ const TipTap = ({
         <TipTapBubbleMenu
           editor={editor}
           setLink={setLink}
+          userId={userId}
+          userAvatar={userAvatar}
           username={username}
           permission={ParticipantsPermissionOptions.write}
           commentState={commentState}
@@ -268,6 +273,9 @@ const TipTap = ({
       <TipTapCommentCards
         allUniqueComments={allUniqueComments}
         editor={editor}
+        pbClient={pbClient}
+        userId={userId}
+        userAvatar={userAvatar}
         username={username}
         canComment={true}
         commentState={commentState}

@@ -24,6 +24,8 @@ import { ParticipantsPermissionOptions } from "raito";
 interface TipTapBubbleMenuProps {
   editor: Editor;
   setLink: () => void;
+  userId: string;
+  userAvatar: string;
   username: string;
   permission: ParticipantsPermissionOptions;
   commentState: UseCommentStateReturns;
@@ -33,6 +35,8 @@ interface TipTapBubbleMenuProps {
 export default function TipTapBubbleMenu({
   editor,
   setLink,
+  userId,
+  userAvatar,
   username,
   permission,
   commentState,
@@ -620,6 +624,8 @@ export default function TipTapBubbleMenu({
                       commentText,
                       allCommentSpans,
                       activeCommentDialog,
+                      userId,
+                      userAvatar,
                       username
                     );
                     setCommentText("");
@@ -654,6 +660,8 @@ export default function TipTapBubbleMenu({
                       commentText,
                       allCommentSpans,
                       activeCommentDialog,
+                      userId,
+                      userAvatar,
                       username
                     );
                     setCommentText("");

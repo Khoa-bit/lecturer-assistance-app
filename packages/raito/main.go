@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"github.com/robfig/cron/v3"
 	"log"
+	"net/http"
 	"raito-pocketbase/cronFunc"
 	"raito-pocketbase/handlers"
 	_ "raito-pocketbase/migrations"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v5"
@@ -18,16 +20,16 @@ import (
 
 func main() {
 	// Create a new cron job
-	c := cron.New()
+	cronJob := cron.New()
 
 	// Add func to the cron job
-	cronFunc.AddSendMailEveryMinFunc(c)
+	cronFunc.AddSendMailEveryMinFunc(cronJob)
 
 	// Start the cron job
-	c.Start()
+	cronJob.Start()
 
 	// Defer stopping the cron job
-	defer c.Stop()
+	defer cronJob.Stop()
 
 	app := pocketbase.New()
 
@@ -163,6 +165,26 @@ func main() {
 		// Deprecated since We don't need to add contact manually anymore - add star will automatically add new relationships
 		subGroup.GET("/getNewRelationshipsOptions", func(c echo.Context) error {
 			return handlers.GetNewRelationshipsOptions(app, c)
+		})
+
+		// Import people from an excel file template (Dry-run mode available as QueryParam `?isDryRun`)
+		subGroup.POST("/importPeople", func(c echo.Context) error {
+			isDryRun, err := strconv.ParseBool(c.QueryParam("isDryRun"))
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, fmt.Errorf("invalid isDryRun query parameter").Error())
+			}
+			return handlers.ParticipantsXlsxImport(app, c, isDryRun, "")
+		})
+
+		// Import people from an excel file template and assign them to be participants for a document (Dry-run mode available as QueryParam `?isDryRun`)
+		subGroup.POST("/importParticipants/:docId", func(c echo.Context) error {
+			isDryRun, err := strconv.ParseBool(c.QueryParam("isDryRun"))
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, fmt.Errorf("invalid isDryRun query parameter").Error())
+			}
+			// To import as participants, we need to add docId
+			docId := c.PathParam("docId")
+			return handlers.ParticipantsXlsxImport(app, c, isDryRun, docId)
 		})
 
 		return nil
