@@ -55,7 +55,7 @@
         <mj-text color="#1e293b">Status:</mj-text>
       </mj-column>
       <mj-column vertical-align="middle">
-        <mj-image src="{{status}}" alt="{{statusAlt}}"></mj-image>
+        <mj-image width="80px" src="{{status}}" alt="{{statusAlt}}"></mj-image>
       </mj-column>
     </mj-section>
     <mj-section background-color="#f9fafb" padding-top="0">

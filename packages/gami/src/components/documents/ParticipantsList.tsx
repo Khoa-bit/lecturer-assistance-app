@@ -56,12 +56,16 @@ function ParticipantsList({
 
   const newPeopleOptions = useMemo(
     () =>
-      people.filter(
-        (person) =>
-          !allDocParticipants.items.some(
-            (allDocParticipant) => allDocParticipant.id == person.id
-          ) && user.person != person.id
-      ),
+      people
+        .filter(
+          (person) =>
+            !allDocParticipants.items.some(
+              (allDocParticipant) => allDocParticipant.id == person.id
+            ) && user.person != person.id
+        )
+        .sort((a, b) =>
+          getParticipantOptionName(a).localeCompare(getParticipantOptionName(b))
+        ),
     [allDocParticipants.items, people, user.person]
   );
 
@@ -86,7 +90,6 @@ function ParticipantsList({
           throw err;
         });
 
-      console.log(invitationResponse);
       return invitationResponse;
     },
     [docId]
@@ -239,16 +242,18 @@ function ParticipantsList({
           </option>
           {newPeopleOptions.map((person) => (
             <option key={person.id} value={person.id}>
-              {person.name}
+              {getParticipantOptionName(person)}
             </option>
           ))}
         </select>
       )}
-      <ImportParticipantsInput
-        docId={docId}
-        disabled={disabled}
-        pbClient={pbClient}
-      ></ImportParticipantsInput>
+      {!disabled && (
+        <ImportParticipantsInput
+          docId={docId}
+          disabled={disabled}
+          pbClient={pbClient}
+        ></ImportParticipantsInput>
+      )}
       <ol>
         <li
           key={owner.id}
@@ -313,6 +318,16 @@ function ParticipantsList({
       </ol>
     </>
   );
+}
+
+const approximateNameLength = 25;
+
+function getParticipantOptionName(person: PeopleResponse) {
+  const alignSpaces = Math.max(
+    1,
+    approximateNameLength - person.name.length ?? 0
+  );
+  return `${person.name} ${"-".repeat(alignSpaces)} ${person.personId}`;
 }
 
 export default ParticipantsList;

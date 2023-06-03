@@ -6,7 +6,6 @@ import AuthContextProvider from "src/contexts/AuthContextProvider";
 import localFont from "next/font/local";
 import "../styles/globals.css";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,7 +50,7 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
           {layout}
         </div>
       </AuthContextProvider>
-      <ReactQueryDevtools initialIsOpen={false}></ReactQueryDevtools>
+      {/*<ReactQueryDevtools initialIsOpen={false}></ReactQueryDevtools>*/}
     </QueryClientProvider>
   );
 };

@@ -37,7 +37,6 @@ function AcademicMaterials({
     () => initAcademicMaterialColumns(),
     []
   );
-  console.log("==AcademicMaterials==");
 
   return (
     <main className="mx-auto flex max-w-screen-lg flex-col px-4 py-8">

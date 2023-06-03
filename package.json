@@ -2,7 +2,9 @@
   "name": "lecturer-assistance-app",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build": "pn nx run gami:build && pn nx run raito:build"
+  },
   "private": true,
   "devDependencies": {
     "@nrwl/nx-cloud": "16.0.5",

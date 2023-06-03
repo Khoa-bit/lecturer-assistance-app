@@ -245,7 +245,7 @@ func GetContacts(app *pocketbase.PocketBase, c echo.Context) error {
           AND userDocument.deleted == ''
         WHERE me.person = {:fromPerson}
       ) as contact
-      INNER JOIN people ppl ON ppl.id = contact.person
+      INNER JOIN people ppl ON ppl.id = contact.person AND ppl.deleted == ''
       LEFT JOIN users user ON user.person = contact.person
       LEFT JOIN majors major ON major.id = ppl.major
       LEFT JOIN departments department ON department.id = major.department`,
@@ -292,7 +292,7 @@ func GetStarredContacts(app *pocketbase.PocketBase, c echo.Context) error {
 	query := app.Dao().DB().NewQuery(fmt.Sprintf(
 		`SELECT ppl.* %s
       FROM relationships relationship
-        INNER JOIN people ppl ON relationship.toPerson = ppl.id
+        INNER JOIN people ppl ON relationship.toPerson = ppl.id AND ppl.deleted == ''
         LEFT JOIN users user ON user.person = ppl.id
         LEFT JOIN majors major ON major.id = ppl.major
         LEFT JOIN departments department ON department.id = major.department
@@ -332,7 +332,7 @@ func GetAllDocParticipants(app *pocketbase.PocketBase, c echo.Context) error {
 		`SELECT ppl.*, user.email AS user_email %s
       FROM participants participant
         INNER JOIN documents userDocument ON participant.document == userDocument.id AND userDocument.deleted == '' AND userDocument.id == {:docId}
-        INNER JOIN people ppl ON participant.person == ppl.id
+        INNER JOIN people ppl ON participant.person == ppl.id AND ppl.deleted == ''
         LEFT JOIN users user ON user.person = ppl.id`,
 		selectArgs))
 

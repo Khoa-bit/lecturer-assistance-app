@@ -39,7 +39,7 @@ func GetRelationships(app *pocketbase.PocketBase, c echo.Context) error {
 		`SELECT relationships.* %s
       FROM relationships
         INNER JOIN users fromUser ON relationships.fromPerson = fromUser.person AND fromUser.id = '%s'
-        INNER JOIN people toPerson ON relationships.toPerson = toPerson.id
+        INNER JOIN people toPerson ON relationships.toPerson = toPerson.id AND toPerson.deleted == ''
         LEFT JOIN users toUser ON relationships.toPerson = toUser.person`,
 		selectArgs, authRecord.Id))
 

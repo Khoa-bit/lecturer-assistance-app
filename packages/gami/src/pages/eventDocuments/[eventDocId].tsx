@@ -60,6 +60,9 @@ function EventDocument({
   const eventDocument = dataParse.eventDocument;
   const baseDocument = eventDocument.expand?.fullDocument.expand?.document;
   const toFullDocuments = dataParse.toFullDocuments;
+  const toFullDocumentsList = toFullDocuments.items.sort((a, b) =>
+    a.expand.userDocument_name.localeCompare(b.expand.userDocument_name)
+  );
   const [toFullDocument, setToFullDocument] = useState(
     eventDocument.toFullDocument
   );
@@ -82,11 +85,11 @@ function EventDocument({
     hasEvents: false,
   };
 
-  const docLink = toFullDocuments.items.some(
+  const docLink = toFullDocumentsList.some(
     (fullDocument) => fullDocument.id == toFullDocument
   ) ? (
     <Link
-      className="absolute right-10 h-6"
+      className="absolute right-10 h-6 bg-white"
       href={`/fullDocuments/${toFullDocument}`}
     >
       <span className="material-symbols-rounded text-gray-500 [font-variation-settings:'FILL'_1] hover:text-blue-500">
@@ -125,7 +128,7 @@ function EventDocument({
       if (env.NEXT_PUBLIC_DEBUG_MODE)
         console.log("Successfully unsubscribe to documents collection");
     };
-  }, []);
+  }, [baseDocument?.id, eventDocument.id, pbClient]);
   return (
     <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
@@ -152,7 +155,7 @@ function EventDocument({
             id: "toFullDocument",
             label: "Parent document",
             name: "toFullDocument",
-            selectOptions: toFullDocuments.items.map((toFullDocument) => {
+            selectOptions: toFullDocumentsList.map((toFullDocument) => {
               return {
                 key: toFullDocument.id,
                 value: toFullDocument.id,

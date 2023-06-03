@@ -45,9 +45,11 @@ import { createHandleThumbnail } from "src/components/wysiwyg/documents/createHa
 import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
 import { env } from "src/env/client.mjs";
 import {
+  dateTimeFormat,
   dateToISOLikeButLocal,
   dateToISOLikeButLocalOrUndefined,
   dateToISOOrUndefined,
+  formatDate,
   formatDateToInput,
 } from "src/lib/input_handling";
 import type { PBCustom } from "src/types/pb-custom";
@@ -389,7 +391,8 @@ function FullDocument<TRecord>({
       </div>
       {baseDocument?.deleted && (
         <h2 className="w-full rounded bg-red-200 p-2 font-bold">
-          Document have been deleted on {baseDocument?.deleted}
+          Document have been deleted on{" "}
+          {formatDate(baseDocument?.deleted, dateTimeFormat)}
         </h2>
       )}
       <header className="flex w-full items-start gap-x-4">
@@ -699,7 +702,9 @@ export const fetchFullDocumentData: FetchFullDocumentDataFunc = async (
 
   const people = await pbServer
     .collection(Collections.People)
-    .getFullList<PeopleResponse<Education, Experience, Interests, unknown>>();
+    .getFullList<PeopleResponse<Education, Experience, Interests, unknown>>({
+      filter: `deleted = ''`,
+    });
 
   return {
     fullDocument,

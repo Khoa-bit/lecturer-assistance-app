@@ -10,6 +10,7 @@ import type {
   AcademicMaterialsGroupCustomResponse,
   CoursesCustomResponse,
   DepartmentsResponse,
+  DocumentsRecord,
   MajorsResponse,
   PeopleRecord,
   PeopleResponse,
@@ -59,6 +60,8 @@ import { createHandleAvatar } from "src/components/wysiwyg/documents/createHandl
 import { createHandlePersonThumbnail } from "src/components/wysiwyg/documents/createHandlePersonThumbnail";
 import { useSaveDoc } from "src/components/wysiwyg/documents/useSaveDoc";
 import {
+  dateTimeFormat,
+  dateToISOLikeButLocal,
   dateToISOLikeButLocalOrUndefined,
   formatDate,
   formatDateToInput,
@@ -71,6 +74,7 @@ import SuperJSON from "superjson";
 import account_circle_black from "../../../public/account_circle_black.png";
 import { differenceInMonths, formatDuration } from "date-fns";
 import { IcRoundVerified } from "../../components/icons/IcRoundVerified";
+import { useRouter } from "next/router";
 
 interface DocumentData {
   person: PeopleResponse<Education, Experience, Interests, UsersExpand>;
@@ -118,6 +122,7 @@ function Person({
   const allCourses = dataParse.allCourses;
   const isWrite =
     !person.isFaculty || (person.isFaculty && personId == user.person);
+  const router = useRouter();
 
   const {
     register,
@@ -362,7 +367,7 @@ function Person({
     ));
 
     return (
-      <section className="col-start-2 my-4 grid h-fit w-full grid-cols-[minmax(15rem,1fr)_minmax(0,2fr)] gap-4 rounded-lg bg-white px-6 py-5">
+      <>
         <section className="prose col-span-2 max-w-full">
           <h3 className="flex items-center gap-2 border-b-2">
             <IcRoundInfo className="h-6 text-gray-500"></IcRoundInfo>
@@ -442,7 +447,7 @@ function Person({
             Edit
           </button>
         )}
-      </section>
+      </>
     );
   }, [
     academicMaterialsDisplay,
@@ -460,6 +465,395 @@ function Person({
     values.personalEmail,
     values.phone,
     values.title,
+  ]);
+
+  const editForm = useMemo(() => {
+    return (
+      <>
+        <Input
+          {...({
+            name: "title",
+            id: "title",
+            label: "Title / Position",
+            register,
+            options: { required: true, disabled: !isWrite },
+          } as InputProps<PersonInput>)}
+        ></Input>
+        <Input
+          {...({
+            name: "email",
+            id: "email",
+            label: "University email",
+            register,
+            options: { disabled: true },
+          } as InputProps)}
+        ></Input>
+        <Input
+          {...({
+            name: "personId",
+            id: "personId",
+            label: "Person ID",
+            register,
+            options: { disabled: !isWrite },
+          } as InputProps<PersonInput>)}
+        ></Input>
+        <Input
+          {...({
+            name: "phone",
+            id: "phone",
+            label: "Phone",
+            register,
+            options: { disabled: !isWrite },
+          } as InputProps<PersonInput>)}
+        ></Input>
+        <Input
+          {...({
+            name: "personalEmail",
+            id: "personalEmail",
+            label: "Personal email",
+            register,
+            options: { disabled: !isWrite },
+            type: "email",
+          } as InputProps<PersonInput>)}
+        ></Input>
+        <Input
+          {...({
+            name: "contactRoom",
+            id: "contactRoom",
+            label: "Contact Room",
+            register,
+            options: { disabled: !isWrite },
+          } as InputProps<PersonInput>)}
+        ></Input>
+        <Input
+          {...({
+            name: "contactLocation",
+            id: "contactLocation",
+            label: "Contact Location",
+            register,
+            options: { disabled: !isWrite },
+          } as InputProps<PersonInput>)}
+        ></Input>
+        <Select
+          {...({
+            name: "gender",
+            id: "gender",
+            label: "Gender",
+            selectOptions: Object.entries(PeopleGenderOptions).map(
+              ([stringValue]) => {
+                return {
+                  key: stringValue,
+                  value: stringValue,
+                  content: stringValue,
+                } as SelectOption;
+              }
+            ),
+            register,
+            options: { required: true, disabled: !isWrite },
+          } as SelectProps<PersonInput>)}
+        >
+          <option value="" disabled>
+            Select gender
+          </option>
+        </Select>
+
+        <MajorDepartment
+          name="major"
+          initDepartmentId={person.expand?.major?.department ?? ""}
+          initMajorOptions={dataParse.majorOptions}
+          departments={departments}
+          pbClient={pbClient}
+          // This is usually get injected and without type check any way
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          register={register as any}
+          options={{ disabled: !isWrite }}
+        ></MajorDepartment>
+
+        <CardForm
+          {...({
+            name: "interests",
+            id: "interests",
+            label: "Interests",
+            defaultValue: { name: "", description: "" },
+            register,
+            control,
+            options: { disabled: !isWrite },
+            childrenFactory: (index) => (
+              <>
+                <Input
+                  {...({
+                    name: `interests.${index}.name` as const,
+                    id: `interests.${index}.name` as const,
+                    label: "Name",
+                    register,
+                    options: { required: true, disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <TextArea
+                  {...({
+                    name: `interests.${index}.description` as const,
+                    id: `interests.${index}.description` as const,
+                    label: "Description",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as TextAreaProps<PersonInput>)}
+                ></TextArea>
+              </>
+            ),
+          } as CardFormProps<PersonInput>)}
+        ></CardForm>
+
+        <CardForm
+          {...({
+            name: "education",
+            id: "education",
+            label: "Education",
+            defaultValue: {
+              school: "",
+              degree: "",
+              fieldOfStudy: "",
+              location: "",
+              grade: "",
+              startTime: formatDateToInput(new Date()),
+              endTime: undefined,
+              isCurrent: true,
+              description: "",
+            },
+            register,
+            control,
+            options: { disabled: !isWrite },
+            childrenFactory: (index) => (
+              <>
+                <Input
+                  {...({
+                    name: `education.${index}.school` as const,
+                    id: `education.${index}.school` as const,
+                    label: "School",
+                    register,
+                    options: { required: true, disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Input
+                  {...({
+                    name: `education.${index}.degree` as const,
+                    id: `education.${index}.degree` as const,
+                    label: "Degree",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Input
+                  {...({
+                    name: `education.${index}.fieldOfStudy` as const,
+                    id: `education.${index}.fieldOfStudy` as const,
+                    label: "Field of study",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Input
+                  {...({
+                    name: `education.${index}.location` as const,
+                    id: `education.${index}.location` as const,
+                    label: "Location",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Input
+                  {...({
+                    name: `education.${index}.grade` as const,
+                    id: `education.${index}.grade` as const,
+                    label: "Grade",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Input
+                  {...({
+                    name: `education.${index}.startTime` as const,
+                    id: `education.${index}.startTime` as const,
+                    label: "State date",
+                    type: "datetime-local",
+                    register,
+                    options: { required: true, disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Toggle
+                  {...({
+                    name: `education.${index}.isCurrent` as const,
+                    id: `education.${index}.isCurrent` as const,
+                    label: "Currently studying",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as ToggleProps<PersonInput>)}
+                ></Toggle>
+                <Input
+                  {...({
+                    name: `education.${index}.endTime` as const,
+                    id: `education.${index}.endTime` as const,
+                    label: "End date",
+                    type: "datetime-local",
+                    register,
+                    options: {
+                      disabled:
+                        !isWrite ||
+                        getValues(`education.${index}.isCurrent` as const),
+                    },
+                    min: dateToISOLikeButLocalOrUndefined(
+                      getValues(`education.${index}.startTime` as const)
+                    ),
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <TextArea
+                  {...({
+                    name: `education.${index}.description` as const,
+                    id: `education.${index}.description` as const,
+                    label: "Description",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as TextAreaProps<PersonInput>)}
+                ></TextArea>
+              </>
+            ),
+          } as CardFormProps<PersonInput>)}
+        ></CardForm>
+
+        <CardForm
+          {...({
+            name: "experience",
+            id: "experience",
+            label: "Experience",
+            defaultValue: {
+              title: "",
+              companyName: "",
+              location: "",
+              startTime: formatDateToInput(new Date()),
+              endTime: undefined,
+              isCurrent: true,
+              industry: "",
+              description: "",
+            },
+            register,
+            control,
+            options: { disabled: !isWrite },
+            childrenFactory: (index) => (
+              <>
+                <Input
+                  {...({
+                    name: `experience.${index}.title` as const,
+                    id: `experience.${index}.title` as const,
+                    label: "Title",
+                    register,
+                    options: { required: true, disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Input
+                  {...({
+                    name: `experience.${index}.companyName` as const,
+                    id: `experience.${index}.companyName` as const,
+                    label: "Company name",
+                    register,
+                    options: { required: true, disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Input
+                  {...({
+                    name: `experience.${index}.location` as const,
+                    id: `experience.${index}.location` as const,
+                    label: "Location",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Input
+                  {...({
+                    name: `experience.${index}.startTime` as const,
+                    id: `experience.${index}.startTime` as const,
+                    label: "Start date",
+                    type: "datetime-local",
+                    register,
+                    options: { required: true, disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Toggle
+                  {...({
+                    name: `experience.${index}.isCurrent` as const,
+                    id: `experience.${index}.isCurrent` as const,
+                    label: "Currently working",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as ToggleProps<PersonInput>)}
+                ></Toggle>
+                <Input
+                  {...({
+                    name: `experience.${index}.endTime` as const,
+                    id: `experience.${index}.endTime` as const,
+                    label: "End date",
+                    type: "datetime-local",
+                    register,
+                    options: {
+                      disabled:
+                        !isWrite ||
+                        getValues(`experience.${index}.isCurrent` as const),
+                    },
+                    min: dateToISOLikeButLocalOrUndefined(
+                      getValues(`experience.${index}.startTime` as const)
+                    ),
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <Input
+                  {...({
+                    name: `experience.${index}.industry` as const,
+                    id: `experience.${index}.industry` as const,
+                    label: "Industry",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as InputProps<PersonInput>)}
+                ></Input>
+                <TextArea
+                  {...({
+                    name: `experience.${index}.description` as const,
+                    id: `experience.${index}.description` as const,
+                    label: "Description",
+                    register,
+                    options: { disabled: !isWrite },
+                  } as TextAreaProps<PersonInput>)}
+                ></TextArea>
+              </>
+            ),
+          } as CardFormProps<PersonInput>)}
+        ></CardForm>
+
+        <button
+          className={`flex justify-center gap-2 rounded bg-gray-400 py-2 font-semibold text-white transition-colors hover:bg-blue-400 disabled:cursor-not-allowed disabled:bg-gray-200`}
+          onClick={() => setIsDisplay(true)}
+          disabled={!isWrite}
+        >
+          <IcRoundInsertDriveFile className="h-6"></IcRoundInsertDriveFile>
+          Display
+        </button>
+        <input
+          className={`rounded bg-blue-500 py-2 font-semibold text-white transition-colors hover:bg-blue-400 ${
+            hasSaved && "bg-gray-300 hover:bg-gray-300"
+          }`}
+          ref={submitRef}
+          type="submit"
+          disabled={!isWrite}
+          value="Save"
+        />
+      </>
+    );
+  }, [
+    control,
+    dataParse.majorOptions,
+    departments,
+    getValues,
+    hasSaved,
+    isWrite,
+    pbClient,
+    person.expand?.major?.department,
+    register,
   ]);
 
   // This css is currently duplicated with FullDocument.tsx component
@@ -480,6 +874,12 @@ function Person({
           />
         )}
       </div>
+      {person?.deleted && (
+        <h2 className="w-full rounded bg-red-200 p-2 font-bold">
+          Document have been deleted on{" "}
+          {formatDate(person?.deleted, dateTimeFormat)}
+        </h2>
+      )}
       <header className="flex w-full items-start gap-x-4">
         <label
           htmlFor="avatar"
@@ -544,6 +944,23 @@ function Person({
             />
           </>
         )}
+        {isWrite && (
+          <button
+            className="flex h-10 items-center"
+            onClick={() => {
+              router.back();
+              pbClient
+                .collection(Collections.People)
+                .update<PeopleResponse>(personId, {
+                  deleted: dateToISOLikeButLocal(new Date()),
+                } as DocumentsRecord);
+            }}
+          >
+            <span className="material-symbols-rounded text-gray-500 [font-variation-settings:'FILL'_1] hover:text-red-400">
+              delete
+            </span>
+          </button>
+        )}
       </header>
       <section className="w-full xl:grid xl:grid-cols-[1fr_2fr] xl:gap-4">
         {sharedDocuments && (
@@ -551,388 +968,13 @@ function Person({
             sharedDocuments={sharedDocuments}
           ></SharedDocumentsList>
         )}
-        {isDisplay ? (
-          display
-        ) : (
-          <form
-            className="col-start-2 my-4 grid h-fit w-full grid-cols-[minmax(15rem,1fr)_minmax(0,2fr)] gap-4 rounded-lg bg-white px-6 py-5"
-            ref={formRef}
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <Input
-              {...({
-                name: "title",
-                id: "title",
-                label: "Title / Position",
-                register,
-                options: { required: true, disabled: !isWrite },
-              } as InputProps<PersonInput>)}
-            ></Input>
-            <Input
-              {...({
-                name: "email",
-                id: "email",
-                label: "University email",
-                register,
-                options: { disabled: true },
-              } as InputProps)}
-            ></Input>
-            <Input
-              {...({
-                name: "personId",
-                id: "personId",
-                label: "Person ID",
-                register,
-                options: { disabled: !isWrite },
-              } as InputProps<PersonInput>)}
-            ></Input>
-            <Input
-              {...({
-                name: "phone",
-                id: "phone",
-                label: "Phone",
-                register,
-                options: { disabled: !isWrite },
-              } as InputProps<PersonInput>)}
-            ></Input>
-            <Input
-              {...({
-                name: "personalEmail",
-                id: "personalEmail",
-                label: "Personal email",
-                register,
-                options: { disabled: !isWrite },
-                type: "email",
-              } as InputProps<PersonInput>)}
-            ></Input>
-            <Input
-              {...({
-                name: "contactRoom",
-                id: "contactRoom",
-                label: "Contact Room",
-                register,
-                options: { disabled: !isWrite },
-              } as InputProps<PersonInput>)}
-            ></Input>
-            <Input
-              {...({
-                name: "contactLocation",
-                id: "contactLocation",
-                label: "Contact Location",
-                register,
-                options: { disabled: !isWrite },
-              } as InputProps<PersonInput>)}
-            ></Input>
-            <Select
-              {...({
-                name: "gender",
-                id: "gender",
-                label: "Gender",
-                selectOptions: Object.entries(PeopleGenderOptions).map(
-                  ([stringValue]) => {
-                    return {
-                      key: stringValue,
-                      value: stringValue,
-                      content: stringValue,
-                    } as SelectOption;
-                  }
-                ),
-                register,
-                options: { required: true, disabled: !isWrite },
-              } as SelectProps<PersonInput>)}
-            >
-              <option value="" disabled>
-                Select gender
-              </option>
-            </Select>
-
-            <MajorDepartment
-              name="major"
-              initDepartmentId={person.expand?.major?.department ?? ""}
-              initMajorOptions={dataParse.majorOptions}
-              departments={departments}
-              pbClient={pbClient}
-              // This is usually get injected and without type check any way
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              register={register as any}
-              options={{ disabled: !isWrite }}
-            ></MajorDepartment>
-
-            <CardForm
-              {...({
-                name: "interests",
-                id: "interests",
-                label: "Interests",
-                defaultValue: { name: "", description: "" },
-                register,
-                control,
-                options: { disabled: !isWrite },
-                childrenFactory: (index) => (
-                  <>
-                    <Input
-                      {...({
-                        name: `interests.${index}.name` as const,
-                        id: `interests.${index}.name` as const,
-                        label: "Name",
-                        register,
-                        options: { required: true, disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <TextArea
-                      {...({
-                        name: `interests.${index}.description` as const,
-                        id: `interests.${index}.description` as const,
-                        label: "Description",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as TextAreaProps<PersonInput>)}
-                    ></TextArea>
-                  </>
-                ),
-              } as CardFormProps<PersonInput>)}
-            ></CardForm>
-
-            <CardForm
-              {...({
-                name: "education",
-                id: "education",
-                label: "Education",
-                defaultValue: {
-                  school: "",
-                  degree: "",
-                  fieldOfStudy: "",
-                  location: "",
-                  grade: "",
-                  startTime: formatDateToInput(new Date()),
-                  endTime: undefined,
-                  isCurrent: true,
-                  description: "",
-                },
-                register,
-                control,
-                options: { disabled: !isWrite },
-                childrenFactory: (index) => (
-                  <>
-                    <Input
-                      {...({
-                        name: `education.${index}.school` as const,
-                        id: `education.${index}.school` as const,
-                        label: "School",
-                        register,
-                        options: { required: true, disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Input
-                      {...({
-                        name: `education.${index}.degree` as const,
-                        id: `education.${index}.degree` as const,
-                        label: "Degree",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Input
-                      {...({
-                        name: `education.${index}.fieldOfStudy` as const,
-                        id: `education.${index}.fieldOfStudy` as const,
-                        label: "Field of study",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Input
-                      {...({
-                        name: `education.${index}.location` as const,
-                        id: `education.${index}.location` as const,
-                        label: "Location",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Input
-                      {...({
-                        name: `education.${index}.grade` as const,
-                        id: `education.${index}.grade` as const,
-                        label: "Grade",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Input
-                      {...({
-                        name: `education.${index}.startTime` as const,
-                        id: `education.${index}.startTime` as const,
-                        label: "State date",
-                        type: "datetime-local",
-                        register,
-                        options: { required: true, disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Toggle
-                      {...({
-                        name: `education.${index}.isCurrent` as const,
-                        id: `education.${index}.isCurrent` as const,
-                        label: "Currently studying",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as ToggleProps<PersonInput>)}
-                    ></Toggle>
-                    <Input
-                      {...({
-                        name: `education.${index}.endTime` as const,
-                        id: `education.${index}.endTime` as const,
-                        label: "End date",
-                        type: "datetime-local",
-                        register,
-                        options: {
-                          disabled:
-                            !isWrite ||
-                            getValues(`education.${index}.isCurrent` as const),
-                        },
-                        min: dateToISOLikeButLocalOrUndefined(
-                          getValues(`education.${index}.startTime` as const)
-                        ),
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <TextArea
-                      {...({
-                        name: `education.${index}.description` as const,
-                        id: `education.${index}.description` as const,
-                        label: "Description",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as TextAreaProps<PersonInput>)}
-                    ></TextArea>
-                  </>
-                ),
-              } as CardFormProps<PersonInput>)}
-            ></CardForm>
-
-            <CardForm
-              {...({
-                name: "experience",
-                id: "experience",
-                label: "Experience",
-                defaultValue: {
-                  title: "",
-                  companyName: "",
-                  location: "",
-                  startTime: formatDateToInput(new Date()),
-                  endTime: undefined,
-                  isCurrent: true,
-                  industry: "",
-                  description: "",
-                },
-                register,
-                control,
-                options: { disabled: !isWrite },
-                childrenFactory: (index) => (
-                  <>
-                    <Input
-                      {...({
-                        name: `experience.${index}.title` as const,
-                        id: `experience.${index}.title` as const,
-                        label: "Title",
-                        register,
-                        options: { required: true, disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Input
-                      {...({
-                        name: `experience.${index}.companyName` as const,
-                        id: `experience.${index}.companyName` as const,
-                        label: "Company name",
-                        register,
-                        options: { required: true, disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Input
-                      {...({
-                        name: `experience.${index}.location` as const,
-                        id: `experience.${index}.location` as const,
-                        label: "Location",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Input
-                      {...({
-                        name: `experience.${index}.startTime` as const,
-                        id: `experience.${index}.startTime` as const,
-                        label: "Start date",
-                        type: "datetime-local",
-                        register,
-                        options: { required: true, disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Toggle
-                      {...({
-                        name: `experience.${index}.isCurrent` as const,
-                        id: `experience.${index}.isCurrent` as const,
-                        label: "Currently working",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as ToggleProps<PersonInput>)}
-                    ></Toggle>
-                    <Input
-                      {...({
-                        name: `experience.${index}.endTime` as const,
-                        id: `experience.${index}.endTime` as const,
-                        label: "End date",
-                        type: "datetime-local",
-                        register,
-                        options: {
-                          disabled:
-                            !isWrite ||
-                            getValues(`experience.${index}.isCurrent` as const),
-                        },
-                        min: dateToISOLikeButLocalOrUndefined(
-                          getValues(`experience.${index}.startTime` as const)
-                        ),
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <Input
-                      {...({
-                        name: `experience.${index}.industry` as const,
-                        id: `experience.${index}.industry` as const,
-                        label: "Industry",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as InputProps<PersonInput>)}
-                    ></Input>
-                    <TextArea
-                      {...({
-                        name: `experience.${index}.description` as const,
-                        id: `experience.${index}.description` as const,
-                        label: "Description",
-                        register,
-                        options: { disabled: !isWrite },
-                      } as TextAreaProps<PersonInput>)}
-                    ></TextArea>
-                  </>
-                ),
-              } as CardFormProps<PersonInput>)}
-            ></CardForm>
-
-            <button
-              className={`flex justify-center gap-2 rounded bg-gray-400 py-2 font-semibold text-white transition-colors hover:bg-blue-400 disabled:cursor-not-allowed disabled:bg-gray-200`}
-              onClick={() => setIsDisplay(true)}
-              disabled={!isWrite}
-            >
-              <IcRoundInsertDriveFile className="h-6"></IcRoundInsertDriveFile>
-              Display
-            </button>
-            <input
-              className={`rounded bg-blue-500 py-2 font-semibold text-white transition-colors hover:bg-blue-400 ${
-                hasSaved && "bg-gray-300 hover:bg-gray-300"
-              }`}
-              ref={submitRef}
-              type="submit"
-              disabled={!isWrite}
-              value="Save"
-            />
-          </form>
-        )}
+        <form
+          className="col-start-2 my-4 grid h-fit w-full grid-cols-[minmax(15rem,1fr)_minmax(0,2fr)] gap-4 rounded-lg bg-white px-6 py-5"
+          ref={formRef}
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          {isDisplay ? display : editForm}
+        </form>
       </section>
     </main>
   );

@@ -1,4 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
+import { IcRoundChevronRight } from "../icons/IcRoundChevronRight";
+import { IcRoundChevronLeft } from "../icons/IcRoundChevronLeft";
 
 interface buildPaginationLayoutParams {
   page: number;
@@ -7,7 +9,7 @@ interface buildPaginationLayoutParams {
 }
 
 interface PaginationButtonProps {
-  value: number | string;
+  value: number | string | JSX.Element;
   ariaLabel: string;
   onClick: () => void;
   isDisabled: boolean;
@@ -49,8 +51,8 @@ const Pagination = ({
     >
       <ul className="list-style-none flex gap-2">
         <PaginationButton
-          key={"«"}
-          value={"«"}
+          key={"IcRoundChevronLeft"}
+          value={<IcRoundChevronLeft></IcRoundChevronLeft>}
           ariaLabel={"Go to previous page"}
           onClick={() => setPage((page) => page - 1)}
           isDisabled={page == 1}
@@ -58,8 +60,8 @@ const Pagination = ({
         ></PaginationButton>
         {paginationElement}
         <PaginationButton
-          key={"»"}
-          value={"»"}
+          key={"IcRoundChevronRight"}
+          value={<IcRoundChevronRight></IcRoundChevronRight>}
           ariaLabel={"Go to next page"}
           onClick={() => setPage((page) => page + 1)}
           isDisabled={page == pageRange}
@@ -80,7 +82,7 @@ const PaginationButton = ({
   return (
     <li>
       <button
-        className={`relative block h-8 w-8
+        className={`relative flex h-8 w-8 items-center justify-center
         rounded border-0 outline-none focus:border-blue-300 focus:ring
         focus:ring-blue-200 focus:ring-offset-2
         ${

@@ -54,7 +54,7 @@ function Select<TFieldValues extends FieldValues = FieldValues>({
           }}
           defaultValue={defaultValue}
           {...rest}
-          className={`select-bordered select required:select-error invalid:select-error`}
+          className={`select-bordered select max-w-full required:select-error invalid:select-error`}
         >
           {children}
           {selectOptions.map((selectOption) => (
@@ -74,7 +74,7 @@ function Select<TFieldValues extends FieldValues = FieldValues>({
             }}
             defaultValue={defaultValue}
             {...rest}
-            className={`select-bordered select flex-grow`}
+            className={`select-bordered select max-w-full flex-grow`}
           >
             {children}
             {selectOptions.map((selectOption) => (

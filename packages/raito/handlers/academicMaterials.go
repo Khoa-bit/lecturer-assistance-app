@@ -90,7 +90,7 @@ func GetAcademicMaterialsWithParticipants(app *pocketbase.PocketBase, c echo.Con
               WHERE p.person = {:personId}
           ) AS userDocument
           INNER JOIN participants participant ON participant.document = userDocument.id
-          INNER JOIN people person ON person.id = participant.person
+          INNER JOIN people person ON person.id = participant.person AND person.deleted == ''
           INNER JOIN fullDocuments fullDocument ON fullDocument.document = userDocument.id AND fullDocument.internal = 'Academic material'
           INNER JOIN academicMaterials academicMaterial ON academicMaterial.fullDocument = fullDocument.id
           GROUP BY userDocument.id`,

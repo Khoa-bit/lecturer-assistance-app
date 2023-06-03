@@ -37,11 +37,6 @@ interface UsersExpand {
   major: MajorsResponse<MajorExpand>;
 }
 
-interface NameItem {
-  name: string;
-  hasAccount: boolean;
-}
-
 function People({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
@@ -75,29 +70,6 @@ function People({
   );
 }
 
-export const getServerSideProps = async ({
-  req,
-  resolvedUrl,
-}: GetServerSidePropsContext) => {
-  const { pbServer } = await getPBServer(req, resolvedUrl);
-
-  const people = await pbServer
-    .collection(Collections.People)
-    .getList<PeopleResponse<Education, Experience, Interests, UsersExpand>>(
-      undefined,
-      undefined,
-      {
-        expand: "users(person),major.department",
-      }
-    );
-
-  return {
-    props: {
-      data: SuperJSON.stringify({ people } as PeopleData),
-    },
-  };
-};
-
 function initPeopleColumns(): ColumnDef<
   PeopleResponse<Education, Experience, Interests, UsersExpand>
 >[] {
@@ -106,12 +78,7 @@ function initPeopleColumns(): ColumnDef<
 
   return [
     {
-      accessorFn: (item) => {
-        return {
-          name: item.name,
-          hasAccount: item.hasAccount,
-        };
-      },
+      accessorFn: (item) => item.name,
       id: "name",
       cell: (info) => (
         <IndexCell
@@ -119,8 +86,8 @@ function initPeopleColumns(): ColumnDef<
           href={getHref(info.row.original.id)}
         >
           <p className="flex items-center gap-1">
-            {(info.getValue() as NameItem).name}
-            {(info.getValue() as NameItem).hasAccount && (
+            {info.getValue() as string}
+            {info.row.original.hasAccount && (
               <IcRoundVerified className="h-4 w-4 text-blue-400"></IcRoundVerified>
             )}
           </p>
@@ -232,6 +199,38 @@ function initPeopleColumns(): ColumnDef<
     },
   ];
 }
+
+export const getServerSideProps = async ({
+  req,
+  resolvedUrl,
+}: GetServerSidePropsContext) => {
+  const { pbServer } = await getPBServer(req, resolvedUrl);
+
+  const people = await pbServer
+    .collection(Collections.People)
+    .getFullList<PeopleResponse<Education, Experience, Interests, UsersExpand>>(
+      {
+        filter: `deleted = ''`,
+        expand: "users(person),major.department",
+      }
+    );
+
+  const listResultsPeople: ListResult<
+    PeopleResponse<Education, Experience, Interests, UsersExpand>
+  > = {
+    page: 0,
+    perPage: people.length,
+    items: people,
+    totalItems: people.length,
+    totalPages: 1,
+  };
+
+  return {
+    props: {
+      data: SuperJSON.stringify({ people: listResultsPeople } as PeopleData),
+    },
+  };
+};
 
 People.getLayout = function getLayout(page: React.ReactElement) {
   return <MainLayout>{page}</MainLayout>;

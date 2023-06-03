@@ -220,7 +220,6 @@ export function ImportParticipantsInput({
                     },
                   })
                   .then((response) => {
-                    console.log(response);
                     setPreviewData(response);
                   })
                   .catch((err) => console.error(err));
