@@ -38,7 +38,6 @@ export function useSaveDoc<T extends FieldValues>({
 
   useEffect(() => {
     const handleWindowClose = (e: BeforeUnloadEvent) => {
-      console.log("handleWindowClose");
       if (hasSaved) return;
       e.preventDefault();
       submitForm();
@@ -46,7 +45,6 @@ export function useSaveDoc<T extends FieldValues>({
     };
 
     const handleBrowseAway = () => {
-      console.log("handleBrowseAway");
       if (hasSaved) return;
       submitForm();
       return;

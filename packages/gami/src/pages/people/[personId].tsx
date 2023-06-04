@@ -1032,7 +1032,7 @@ export const getServerSideProps = async ({
   const allRelatedCourses = await pbServer.apiGetList<CoursesCustomResponse>(
     `/api/user/getRelatedCourses/${personId}?fullList=true`
   );
-
+    
   const allCourses = new Set<string>();
   for (const course of allRelatedCourses.items) {
     allCourses.add(course.expand.courseTemplate_name);

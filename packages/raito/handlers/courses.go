@@ -85,7 +85,7 @@ func GetRelatedCourses(app *pocketbase.PocketBase, c echo.Context) error {
         SELECT d.*
         FROM users AS u
           INNER JOIN documents AS d ON d.owner = u.person AND d.deleted == ''
-        WHERE u.id = {:personId}
+        WHERE u.person = {:personId}
         ) as userDocument
         INNER JOIN fullDocuments AS fullDocument ON userDocument.id = fullDocument.document
         INNER JOIN courses AS course ON fullDocument.id = course.fullDocument

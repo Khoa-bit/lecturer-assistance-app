@@ -171,6 +171,7 @@ func ParticipantsXlsxImport(app *pocketbase.PocketBase, c echo.Context, isDryRun
 				return err
 			}
 
+			// There is a unique pair index of document and person id in Participant collection
 			if len(docId) == pbIdLen {
 				participantRecord := models.NewRecord(participantsCollection)
 				participantForm := forms.NewRecordUpsert(app, participantRecord)

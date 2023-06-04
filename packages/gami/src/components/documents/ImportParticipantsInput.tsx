@@ -14,12 +14,14 @@ interface ImportParticipantsInputProps {
   docId: string;
   disabled: boolean;
   pbClient: PBCustom;
+  addParticipantsCallback: (personIds: string[]) => Promise<boolean>;
 }
 
 export function ImportParticipantsInput({
   docId,
   disabled,
   pbClient,
+  addParticipantsCallback,
 }: ImportParticipantsInputProps) {
   const [isOpenImportPreviewModal, setIsOpenImportPreviewModal] =
     useState(false);
@@ -60,7 +62,7 @@ export function ImportParticipantsInput({
                   isDryRun: true,
                 },
               })
-              .then((response) => {
+              .then((response: ListResult<ParticipantsXlsxImportResponse>) => {
                 // set preview data
                 setPreviewData(response);
 
@@ -219,9 +221,17 @@ export function ImportParticipantsInput({
                       isDryRun: false,
                     },
                   })
-                  .then((response) => {
-                    setPreviewData(response);
-                  })
+                  .then(
+                    (response: ListResult<ParticipantsXlsxImportResponse>) => {
+                      setPreviewData(response);
+                      setIsOpenImportPreviewModal(false);
+                      addParticipantsCallback(
+                        response.items.map(
+                          (newDocParticipant) => newDocParticipant.ID
+                        )
+                      );
+                    }
+                  )
                   .catch((err) => console.error(err));
               }}
             >

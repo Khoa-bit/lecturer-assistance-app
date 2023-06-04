@@ -173,6 +173,7 @@ function EventDocument({
           <option value="" disabled>
             Link event to a document
           </option>
+          <option value=""></option>
         </Select>
       </FullDocument>
     </main>

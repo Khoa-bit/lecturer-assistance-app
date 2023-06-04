@@ -3,7 +3,6 @@ import * as fs from "fs";
 import type {
   DocumentsResponse,
   FullDocumentsResponse,
-  ParticipantsCustomResponse,
   PeopleResponse,
 } from "raito";
 import { Collections } from "raito";
@@ -26,7 +25,7 @@ interface DocumentsExpand {
 
 export interface InvitationRequestBody {
   docId: string;
-  participant: ParticipantsCustomResponse;
+  emails?: string[];
 }
 
 export interface InvitationResponse {
@@ -50,6 +49,11 @@ const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
     const invitationRequestBody = SuperJSON.parse<InvitationRequestBody>(
       req.body
     );
+
+    const emailsList =
+      invitationRequestBody.emails?.filter(
+        (email) => zodEmailValidator.safeParse(email).success
+      ) ?? [];
 
     const baseDocument = await pbServer
       .collection(Collections.Documents)
@@ -94,7 +98,7 @@ const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
     // Set up SMTP connection
     const message = await sendMailAsync({
       from: env.EMAIL_USER,
-      to: toEmail.data,
+      to: [toEmail.data, ...emailsList],
       subject: `Invitation to ${documentName} ${documentType} of ${documentOwner}`,
       html: htmlContent,
       attachments: [

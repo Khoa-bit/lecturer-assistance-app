@@ -70,19 +70,22 @@ function ParticipantsList({
   );
 
   const sendInvitation = useCallback(
-    async (allDocParticipant: ParticipantsCustomResponse) => {
+    async (allDocParticipants: ParticipantsCustomResponse[]) => {
       const requestBody: InvitationRequestBody = {
         docId,
-        participant: allDocParticipant,
+        emails: allDocParticipants.map(
+          (allDocParticipant) =>
+            tryGetFirstValidEmail([
+              allDocParticipant.expand.user_email,
+              allDocParticipant.personalEmail,
+            ]) ?? ""
+        ),
       };
 
-      const invitationResponse = await fetch(
-        `/api/email/invitation?toEmail=${tryGetFirstValidEmail([
-          allDocParticipant.personalEmail,
-          allDocParticipant.expand.user_email,
-        ])}`,
-        { method: "POST", body: SuperJSON.stringify(requestBody) }
-      )
+      const invitationResponse = await fetch(`/api/email/invitation}`, {
+        method: "POST",
+        body: SuperJSON.stringify(requestBody),
+      })
         .then((res) => {
           return res.json() as Promise<InvitationResponse>;
         })
@@ -93,6 +96,31 @@ function ParticipantsList({
       return invitationResponse;
     },
     [docId]
+  );
+
+  const addParticipantsCallback = useCallback(
+    async (personIds: string[]) => {
+      const allDocParticipants =
+        await pbClient?.apiGetList<ParticipantsCustomResponse>(
+          `/api/user/getAllDocParticipants/${docId}?fullList=true`
+        );
+
+      const newDocParticipants = allDocParticipants.items.filter(
+        (allDocParticipant) =>
+          personIds.some((personId) => personId == allDocParticipant.id)
+      );
+
+      setAllDocParticipants(allDocParticipants);
+      if (newDocParticipants.length > 0) {
+        setTimeout(
+          () => sendInvitation(newDocParticipants),
+          emailInvitationDelay
+        );
+      }
+
+      return true;
+    },
+    [docId, pbClient, sendInvitation]
   );
 
   const userParticipation = allDocParticipants.items.find(
@@ -117,6 +145,7 @@ function ParticipantsList({
         return (
           <li
             key={allDocParticipant.id}
+            id={allDocParticipant.id}
             className="flex w-full items-center justify-center gap-2 rounded p-2 hover:bg-gray-50"
           >
             <Link
@@ -177,6 +206,7 @@ function ParticipantsList({
                     .collection(Collections.Participants)
                     .delete(participantId);
 
+                  console.log("Deleted");
                   await pbClient
                     ?.apiGetList<ParticipantsCustomResponse>(
                       `/api/user/getAllDocParticipants/${docId}?fullList=true`
@@ -217,22 +247,7 @@ function ParticipantsList({
                 permission: ParticipantsPermissionOptions.read,
               } as ParticipantsRecord);
 
-            const allDocParticipants =
-              await pbClient?.apiGetList<ParticipantsCustomResponse>(
-                `/api/user/getAllDocParticipants/${docId}?fullList=true`
-              );
-
-            const allDocParticipant = allDocParticipants.items.find(
-              (allDocParticipant) =>
-                allDocParticipant.id == newDocParticipant.person
-            );
-
-            setAllDocParticipants(allDocParticipants);
-            if (allDocParticipant)
-              setTimeout(
-                () => sendInvitation(allDocParticipant),
-                emailInvitationDelay
-              );
+            addParticipantsCallback([newDocParticipant.person]);
           }}
           disabled={newPeopleOptions.length == 0}
           value=""
@@ -252,6 +267,7 @@ function ParticipantsList({
           docId={docId}
           disabled={disabled}
           pbClient={pbClient}
+          addParticipantsCallback={addParticipantsCallback}
         ></ImportParticipantsInput>
       )}
       <ol>
