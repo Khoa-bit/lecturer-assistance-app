@@ -1,5 +1,5 @@
-import type { PeopleResponse } from "raito";
-import { Collections } from "raito";
+import type { PeopleResponse } from "src/types/raito";
+import { Collections } from "src/types/raito";
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import type { PBCustom } from "src/types/pb-custom";
 

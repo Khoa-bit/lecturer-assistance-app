@@ -11,8 +11,8 @@ import type {
   RelationshipsResponse,
   StarredContactsCustomResponse,
   UsersResponse,
-} from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
 import type { SetStateAction } from "react";
 import { useState } from "react";
 import MainLayout from "src/components/layouts/MainLayout";

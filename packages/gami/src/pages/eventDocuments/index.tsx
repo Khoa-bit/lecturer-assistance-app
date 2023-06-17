@@ -9,8 +9,8 @@ import type { ListResult } from "pocketbase";
 import type {
   DocumentsStatusOptions,
   EventDocumentsCustomResponse,
-} from "raito";
-import { ParticipantsStatusOptions } from "raito";
+} from "src/types/raito";
+import { ParticipantsStatusOptions } from "src/types/raito";
 import type { StatusEventOptions } from "src/components/documents/StatusEvent";
 import StatusEvent, { eventStatus } from "src/components/documents/StatusEvent";
 import MainLayout from "src/components/layouts/MainLayout";

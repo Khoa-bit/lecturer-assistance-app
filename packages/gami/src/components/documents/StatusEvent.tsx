@@ -1,4 +1,4 @@
-import { DocumentsStatusOptions } from "raito";
+import { DocumentsStatusOptions } from "src/types/raito";
 
 export enum StatusEventOptions {
   "Up next" = "Up next",

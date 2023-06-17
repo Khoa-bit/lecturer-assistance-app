@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"raito-pocketbase/cronFunc"
 	"raito-pocketbase/handlers"
-	_ "raito-pocketbase/migrations"
+// 	_ "raito-pocketbase/migrations"
 	"strconv"
 	"strings"
 

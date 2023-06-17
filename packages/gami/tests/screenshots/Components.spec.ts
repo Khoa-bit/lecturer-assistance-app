@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { existsSync } from "fs";
 import sharp from "sharp";
-import { getStatusFileName } from "../../src/components/documents/Status";
+import { getStatusFileName } from "src/components/documents/Status";
 
 const expectedStatusPNGs = [
   "StatusClosed.png",

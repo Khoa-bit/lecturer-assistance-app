@@ -1,13 +1,10 @@
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
+import type {GetServerSidePropsContext, InferGetServerSidePropsType,} from "next";
 import Head from "next/head";
 import Link from "next/link";
-import type { ListResult } from "pocketbase";
-import type { FullDocumentsCustomResponse } from "raito";
+import type {ListResult} from "pocketbase";
+import type {FullDocumentsCustomResponse} from "src/types/raito";
 import MainLayout from "src/components/layouts/MainLayout";
-import { getPBServer } from "src/lib/pb_server";
+import {getPBServer} from "src/lib/pb_server";
 import SuperJSON from "superjson";
 
 interface FullDocumentsData {
@@ -16,8 +13,8 @@ interface FullDocumentsData {
 }
 
 function FullDocuments({
-  data,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+                         data,
+                       }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<FullDocumentsData>(data);
 
   const fullDocumentsList = dataParse.fullDocuments.items.map((fullDoc) => (
@@ -54,10 +51,10 @@ function FullDocuments({
 }
 
 export const getServerSideProps = async ({
-  req,
-  resolvedUrl,
-}: GetServerSidePropsContext) => {
-  const { pbServer } = await getPBServer(req, resolvedUrl);
+                                           req,
+                                           resolvedUrl,
+                                         }: GetServerSidePropsContext) => {
+  const {pbServer} = await getPBServer(req, resolvedUrl);
 
   const fullDocuments = await pbServer.apiGetList<FullDocumentsCustomResponse>(
     "/api/user/fullDocuments"

@@ -8,8 +8,8 @@ import type {
   FullDocumentsResponse,
   PersonalNotesRecord,
   PersonalNotesResponse,
-} from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
 import type {
   FullDocumentData,
   FullDocumentProps,

@@ -16,12 +16,12 @@ import type {
   PeopleResponse,
   SharedDocumentsCustomResponse,
   UsersResponse,
-} from "raito";
+} from "src/types/raito";
 import {
   AcademicMaterialsCategoryOptions,
   Collections,
   PeopleGenderOptions,
-} from "raito";
+} from "src/types/raito";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
@@ -1032,7 +1032,7 @@ export const getServerSideProps = async ({
   const allRelatedCourses = await pbServer.apiGetList<CoursesCustomResponse>(
     `/api/user/getRelatedCourses/${personId}?fullList=true`
   );
-    
+
   const allCourses = new Set<string>();
   for (const course of allRelatedCourses.items) {
     allCourses.add(course.expand.courseTemplate_name);

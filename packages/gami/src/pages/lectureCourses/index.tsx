@@ -1,4 +1,4 @@
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
@@ -6,7 +6,10 @@ import type {
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { CoursesCustomResponse, DocumentsStatusOptions } from "raito";
+import type {
+  CoursesCustomResponse,
+  DocumentsStatusOptions,
+} from "src/types/raito";
 import Status from "src/components/documents/Status";
 import MainLayout from "src/components/layouts/MainLayout";
 import IndexCell from "src/components/tanstackTable/IndexCell";

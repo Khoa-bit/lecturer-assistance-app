@@ -6,36 +6,38 @@
  */
 export function nextHeader(
   {
+    allowCors,
     contentTypeOptions,
     contentSecurityPolicy,
     frameOptions,
     referrerPolicy,
     xssProtection,
   } = {
-      contentTypeOptions: "nosniff",
-      contentSecurityPolicy: {
-        "base-uri": ["'none'"],
-        "child-src": ["'none'"],
-        "connect-src": ["*"],
-        "default-src": ["'self'"],
-        "font-src": ["'self'"],
-        "form-action": ["'self'"],
-        "frame-ancestors": ["'none'"],
-        "frame-src": ["'none'"],
-        "img-src": ["'self'", "data:", "localhost:8090"],
-        "manifest-src": ["'self'"],
-        "media-src": ["'self'"],
-        "object-src": ["'none'"],
-        // "prefetch-src": ["'self'"],
-        // "require-trusted-types-for": ["'script'"],
-        "script-src": ["'self'"],
-        "style-src": ["'self'"],
-        "worker-src": ["'self'"],
-      },
-      frameOptions: "DENY",
-      referrerPolicy: "no-referrer",
-      xssProtection: "1; mode=block",
-    }
+    allowCors: process.env.POCKETBASE_URL ?? "null",
+    contentTypeOptions: "nosniff",
+    contentSecurityPolicy: {
+      "base-uri": ["'none'"],
+      "child-src": ["'none'"],
+      "connect-src": ["*"],
+      "default-src": ["'self'"],
+      "font-src": ["'self'"],
+      "form-action": ["'self'"],
+      "frame-ancestors": ["'none'"],
+      "frame-src": ["'none'"],
+      "img-src": ["'self'", "data:", process.env.POCKETBASE_URL],
+      "manifest-src": ["'self'"],
+      "media-src": ["'self'"],
+      "object-src": ["'none'"],
+      // "prefetch-src": ["'self'"],
+      // "require-trusted-types-for": ["'script'"],
+      "script-src": ["'self'"],
+      "style-src": ["'self'"],
+      "worker-src": ["'self'"],
+    },
+    frameOptions: "DENY",
+    referrerPolicy: "no-referrer",
+    xssProtection: "1; mode=block",
+  }
 ) {
   /** @type {string[]} */
   const policies = [];
@@ -44,6 +46,10 @@ export function nextHeader(
   }
 
   return [
+    {
+      key: "Access-Control-Allow-Origin",
+      value: allowCors,
+    },
     {
       key: "X-Content-Type-Options",
       value: contentTypeOptions,
@@ -69,6 +75,7 @@ export function nextHeader(
 
 export function nextDevHeader() {
   return nextHeader({
+    allowCors: process.env.POCKETBASE_URL ?? "null",
     contentTypeOptions: "nosniff",
     contentSecurityPolicy: {
       "base-uri": ["'none'"],
@@ -79,7 +86,7 @@ export function nextDevHeader() {
       "form-action": ["'self'"],
       "frame-ancestors": ["'none'"],
       "frame-src": ["'none'"],
-      "img-src": ["'self'", "data:", "localhost:8090"],
+      "img-src": ["'self'", "data:", process.env.POCKETBASE_URL],
       "manifest-src": ["'self'"],
       // "media-src": ["'self'"],
       "object-src": ["'none'"],

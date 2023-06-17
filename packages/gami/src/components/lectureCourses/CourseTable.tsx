@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { CoursesCustomResponse } from "raito";
+import type { CoursesCustomResponse } from "src/types/raito";
 
 interface CoursesTableProps {
   lectureCourses: ListResult<CoursesCustomResponse>;

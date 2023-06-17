@@ -9,7 +9,7 @@ import {
 } from "./tiptapCommentExtension/commentHooks";
 import TipTapCommentCards from "./TipTapCommentCards";
 import type { PBCustom } from "../../types/pb-custom";
-import type { PeopleResponse } from "raito";
+import type { PeopleResponse } from "src/types/raito";
 
 interface TipTapProps {
   id?: string;

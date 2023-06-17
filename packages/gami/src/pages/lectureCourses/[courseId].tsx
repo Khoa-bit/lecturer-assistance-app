@@ -10,8 +10,11 @@ import type {
   CourseTemplatesResponse,
   DocumentsResponse,
   FullDocumentsResponse,
-} from "raito";
-import { Collections, CourseTemplatesAcademicProgramOptions } from "raito";
+} from "src/types/raito";
+import {
+  Collections,
+  CourseTemplatesAcademicProgramOptions,
+} from "src/types/raito";
 import type {
   FullDocumentData,
   FullDocumentProps,

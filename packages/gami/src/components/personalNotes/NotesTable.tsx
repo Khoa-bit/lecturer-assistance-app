@@ -4,7 +4,7 @@ import type {
   DocumentsPriorityOptions,
   DocumentsStatusOptions,
   PersonalNotesCustomResponse,
-} from "raito";
+} from "src/types/raito";
 import Priority from "../documents/Priority";
 import Status from "../documents/Status";
 
@@ -63,7 +63,7 @@ function PersonalNotesTable({ personalNotes }: PersonalNotesTableProps) {
       </td>
       <td>
         <Link
-          className="block w-10 truncate py-1 px-2"
+          className="block w-10 truncate px-2 py-1"
           href={`/personalNotes/${encodeURIComponent(personalNote.id)}`}
         >
           <span className="material-symbols-rounded">chevron_right</span>

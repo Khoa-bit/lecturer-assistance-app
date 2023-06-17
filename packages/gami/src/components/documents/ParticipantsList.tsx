@@ -6,12 +6,12 @@ import type {
   ParticipantsResponse,
   PeopleResponse,
   UsersResponse,
-} from "raito";
+} from "src/types/raito";
 import {
   Collections,
   ParticipantsPermissionOptions,
   ParticipantsStatusOptions,
-} from "raito";
+} from "src/types/raito";
 import React, { useCallback, useMemo, useState } from "react";
 import type { PBCustom } from "src/types/pb-custom";
 import account_circle_black from "../../../public/account_circle_black.png";

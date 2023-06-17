@@ -1,6 +1,6 @@
 import Link from "next/link";
-import type { AttachmentsResponse } from "raito";
-import { Collections } from "raito";
+import type { AttachmentsResponse } from "src/types/raito";
+import { Collections } from "src/types/raito";
 import type { Dispatch, SetStateAction } from "react";
 import { categorizeFile } from "src/lib/input_handling";
 import type { PBCustom } from "src/types/pb-custom";

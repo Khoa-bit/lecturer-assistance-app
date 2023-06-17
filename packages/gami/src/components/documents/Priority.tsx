@@ -1,4 +1,4 @@
-import { DocumentsPriorityOptions } from "raito";
+import { DocumentsPriorityOptions } from "src/types/raito";
 import HigherPrio from "../icons/HigherPrio";
 import HighPrio from "../icons/HighPrio";
 import LowerPrio from "../icons/LowerPrio";

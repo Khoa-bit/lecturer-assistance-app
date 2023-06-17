@@ -10,7 +10,7 @@ import type {
   AcademicMaterialsCustomResponse,
   DocumentsPriorityOptions,
   DocumentsStatusOptions,
-} from "raito";
+} from "src/types/raito";
 import { useMemo } from "react";
 import Priority from "src/components/documents/Priority";
 import Status from "src/components/documents/Status";

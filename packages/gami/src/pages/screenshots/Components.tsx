@@ -1,8 +1,7 @@
 import Status from "../../components/documents/Status";
-import {DocumentsStatusOptions} from "raito";
+import {DocumentsStatusOptions} from "src/types/raito";
 
 export function Components() {
-
   return (
     <div id="main" className="bg-white p-10">
       <Status screenshotMode={true} status={DocumentsStatusOptions.Todo}></Status>

@@ -10,7 +10,7 @@ import type {
   DocumentsPriorityOptions,
   DocumentsStatusOptions,
   PersonalNotesCustomResponse,
-} from "raito";
+} from "src/types/raito";
 import Priority from "src/components/documents/Priority";
 import Status from "src/components/documents/Status";
 import MainLayout from "src/components/layouts/MainLayout";

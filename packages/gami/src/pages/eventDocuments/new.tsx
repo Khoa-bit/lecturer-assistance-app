@@ -11,12 +11,12 @@ import type {
   EventDocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
-} from "raito";
+} from "src/types/raito";
 import {
   Collections,
   EventDocumentsRecurringOptions,
   FullDocumentsInternalOptions,
-} from "raito";
+} from "src/types/raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";

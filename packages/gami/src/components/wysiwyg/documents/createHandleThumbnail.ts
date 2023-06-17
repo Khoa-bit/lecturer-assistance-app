@@ -1,6 +1,6 @@
-import type { DocumentsResponse } from "raito";
-import { Collections } from "raito";
-import type { Dispatch, SetStateAction, ChangeEvent } from "react";
+import type { DocumentsResponse } from "src/types/raito";
+import { Collections } from "src/types/raito";
+import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import type { PBCustom } from "src/types/pb-custom";
 
 export function createHandleThumbnail(

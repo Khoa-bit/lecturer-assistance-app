@@ -1,5 +1,5 @@
-import type { DepartmentsResponse, MajorsResponse } from "raito";
-import { Collections } from "raito";
+import type { DepartmentsResponse, MajorsResponse } from "src/types/raito";
+import { Collections } from "src/types/raito";
 import { useEffect, useState } from "react";
 import type { FieldValues } from "react-hook-form";
 import { env } from "src/env/client.mjs";

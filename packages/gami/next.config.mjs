@@ -5,12 +5,13 @@
  */
 !process.env.SKIP_ENV_VALIDATION && (await import("./src/env/server.mjs"));
 
-const { nextHeader, nextDevHeader } = await import("./config/nextHeader.mjs");
+const {nextHeader, nextDevHeader} = await import("./config/nextHeader.mjs");
 
 const isDev = process.env.NODE_ENV !== "production";
 
 /** @type {import("next").NextConfig} */
 const config = {
+  output: "standalone",
   reactStrictMode: true,
   swcMinify: true,
   // i18n: {

@@ -3,8 +3,8 @@ import type {
   EventDocumentsRecord,
   ParticipantsCustomResponse,
   RemindersResponse,
-} from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
 import { getPBServer } from "../../../lib/pb_server";
 import { dateTimeFormat, formatDate } from "../../../lib/input_handling";
 import fs from "fs";
@@ -100,8 +100,6 @@ const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
       const htmlContent = mjml2html(mjmlContent, {
         keepComments: false,
       }).html;
-
-      fs.writeFileSync("src/mjml/reminderEmail.html", htmlContent, "utf-8");
 
       // Set up SMTP connection
       const message = await sendMailAsync({

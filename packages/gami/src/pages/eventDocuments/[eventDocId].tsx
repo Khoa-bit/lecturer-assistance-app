@@ -12,8 +12,8 @@ import type {
   EventDocumentsResponse,
   FullDocumentsCustomResponse,
   FullDocumentsResponse,
-} from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
 import { useEffect, useState } from "react";
 import type {
   FullDocumentData,

@@ -1,5 +1,5 @@
 import type { IncomingMessage } from "http";
-import type { UsersResponse } from "raito";
+import type { UsersResponse } from "src/types/raito";
 import { env } from "src/env/server.mjs";
 import type { PBCustom } from "src/types/pb-custom";
 import { pbServer } from "../global/pbServerGlobal";

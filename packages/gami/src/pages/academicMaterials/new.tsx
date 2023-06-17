@@ -5,18 +5,18 @@ import type {
 import Head from "next/head";
 import { useRouter } from "next/router";
 import type {
+  AcademicMaterialsRecord,
+  AcademicMaterialsResponse,
   DocumentsRecord,
   DocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
-  AcademicMaterialsRecord,
-  AcademicMaterialsResponse,
-} from "raito";
+} from "src/types/raito";
 import {
   AcademicMaterialsCategoryOptions,
+  Collections,
   FullDocumentsInternalOptions,
-} from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";

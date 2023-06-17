@@ -7,8 +7,8 @@ import type {
   EventDocumentsResponse,
   FullDocumentsResponse,
   PersonalNotesResponse,
-} from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
 import { getPBServer } from "src/lib/pb_server";
 
 const expandRedirect = [

@@ -1,5 +1,11 @@
-import type { CourseTemplatesRecord, CourseTemplatesResponse } from "raito";
-import { Collections, CourseTemplatesAcademicProgramOptions } from "raito";
+import type {
+  CourseTemplatesRecord,
+  CourseTemplatesResponse,
+} from "src/types/raito";
+import {
+  Collections,
+  CourseTemplatesAcademicProgramOptions,
+} from "src/types/raito";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";

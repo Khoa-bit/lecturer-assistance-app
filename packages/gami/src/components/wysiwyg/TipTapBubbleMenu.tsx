@@ -19,7 +19,7 @@ import { IcRoundFormatIndentIncrease } from "../icons/Wysiwyg/IcRoundFormatInden
 import { IcRoundFormatIndentDecrease } from "../icons/Wysiwyg/IcRoundFormatIndentDecrease";
 import { IcRoundColorLens } from "../icons/Wysiwyg/IcRoundColorLens";
 import { IcRoundComment } from "../icons/Wysiwyg/IcRoundComment";
-import { ParticipantsPermissionOptions } from "raito";
+import { ParticipantsPermissionOptions } from "src/types/raito";
 
 interface TipTapBubbleMenuProps {
   editor: Editor;

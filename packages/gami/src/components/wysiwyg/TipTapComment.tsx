@@ -1,7 +1,7 @@
 import {EditorContent, useEditor} from "@tiptap/react";
 import type {Step} from "prosemirror-transform";
-import type {PeopleResponse} from "raito";
-import {ParticipantsPermissionOptions} from "raito";
+import type {PeopleResponse} from "src/types/raito";
+import {ParticipantsPermissionOptions} from "src/types/raito";
 import {useEffect, useMemo, useState} from "react";
 import SuperJSON from "superjson";
 import {customExtensionsFull} from "./TipTap";

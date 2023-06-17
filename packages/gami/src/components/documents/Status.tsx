@@ -1,4 +1,4 @@
-import { DocumentsStatusOptions } from "raito";
+import { DocumentsStatusOptions } from "src/types/raito";
 
 interface StatusProps {
   status: DocumentsStatusOptions;

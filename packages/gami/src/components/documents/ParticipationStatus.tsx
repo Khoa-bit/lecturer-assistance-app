@@ -1,4 +1,4 @@
-import { ParticipantsStatusOptions } from "raito";
+import { ParticipantsStatusOptions } from "src/types/raito";
 import { IcRoundCheck } from "../icons/IcRoundCheck";
 import { IcRoundClose } from "../icons/IcRoundClose";
 import { IcRoundQuestionMark } from "../icons/IcRoundQuestionMark";

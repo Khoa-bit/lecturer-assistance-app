@@ -4,8 +4,8 @@ import type {
   DocumentsResponse,
   FullDocumentsResponse,
   PeopleResponse,
-} from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
 import SuperJSON from "superjson";
 import { getPBServer } from "../../../lib/pb_server";
 import { env } from "../../../env/server.mjs";

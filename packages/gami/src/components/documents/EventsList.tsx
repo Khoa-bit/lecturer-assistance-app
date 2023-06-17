@@ -4,7 +4,7 @@ import type {
   DocumentsResponse,
   EventDocumentsResponse,
   FullDocumentsResponse,
-} from "raito";
+} from "src/types/raito";
 import { useState } from "react";
 import { formatDate } from "src/lib/input_handling";
 import StatusEvent, { eventStatus, StatusEventOptions } from "./StatusEvent";

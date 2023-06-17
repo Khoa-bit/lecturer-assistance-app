@@ -8,8 +8,8 @@ import type {
   AcademicMaterialsResponse,
   DocumentsResponse,
   FullDocumentsResponse,
-} from "raito";
-import { AcademicMaterialsCategoryOptions, Collections } from "raito";
+} from "src/types/raito";
+import { AcademicMaterialsCategoryOptions, Collections } from "src/types/raito";
 import type {
   FullDocumentData,
   FullDocumentProps,

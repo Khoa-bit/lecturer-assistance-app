@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { PeopleResponse, UsersResponse } from "raito";
+import type { PeopleResponse, UsersResponse } from "src/types/raito";
 import type { Education, Experience, Interests } from "src/types/peopleJSON";
 
 interface UsersExpand {

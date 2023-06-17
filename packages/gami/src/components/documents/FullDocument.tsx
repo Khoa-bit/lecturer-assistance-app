@@ -12,14 +12,14 @@ import type {
   ParticipantsCustomResponse,
   PeopleResponse,
   UsersResponse,
-} from "raito";
+} from "src/types/raito";
 import {
   Collections,
   DocumentsPriorityOptions,
   DocumentsStatusOptions,
   EventDocumentsRecurringOptions,
   ParticipantsPermissionOptions,
-} from "raito";
+} from "src/types/raito";
 import type { HTMLInputTypeAttribute, ReactElement } from "react";
 import {
   Children,

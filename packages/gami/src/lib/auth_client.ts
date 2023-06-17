@@ -1,10 +1,10 @@
 import type PocketBase from "pocketbase";
-import type { UsersResponse } from "raito";
-import { Collections } from "raito";
-import { useContext } from "react";
-import { AuthContext } from "src/contexts/AuthContext";
-import type { AuthContextType } from "src/contexts/AuthContextProvider";
-import type { PBClearResponse } from "src/pages/api/auth/pbClear";
+import type {UsersResponse} from "src/types/raito";
+import {Collections} from "src/types/raito";
+import {useContext} from "react";
+import {AuthContext} from "src/contexts/AuthContext";
+import type {AuthContextType} from "src/contexts/AuthContextProvider";
+import type {PBClearResponse} from "src/pages/api/auth/pbClear";
 
 interface AuthWithPasswordAndCookieArgs {
   username: string;
@@ -44,10 +44,10 @@ interface ClearAuthStoreAndCookieArgs {
 }
 
 export async function _authWithPasswordAndCookie({
-  username,
-  password,
-  pbClient,
-}: AuthWithPasswordAndCookieArgs): Promise<UsersResponse> {
+                                                   username,
+                                                   password,
+                                                   pbClient,
+                                                 }: AuthWithPasswordAndCookieArgs): Promise<UsersResponse> {
   return await pbClient
     .collection(Collections.Users)
     .authWithPassword<UsersResponse>(username, password)
@@ -63,9 +63,9 @@ export async function _authWithPasswordAndCookie({
 }
 
 export async function _authWithOAuth2AndCookie({
-  provider,
-  pbClient,
-}: AuthWithOAuthAndCookieArgs): Promise<UsersResponse> {
+                                                 provider,
+                                                 pbClient,
+                                               }: AuthWithOAuthAndCookieArgs): Promise<UsersResponse> {
   return await pbClient
     .collection(Collections.Users)
     .authWithOAuth2<UsersResponse>({
@@ -83,9 +83,9 @@ export async function _authWithOAuth2AndCookie({
 }
 
 export async function _clearAuthStoreAndCookie({
-  pbClient,
-}: ClearAuthStoreAndCookieArgs): Promise<PBClearResponse> {
-  return await fetch("/api/auth/pbClear/", { method: "PUT" })
+                                                 pbClient,
+                                               }: ClearAuthStoreAndCookieArgs): Promise<PBClearResponse> {
+  return await fetch("/api/auth/pbClear/", {method: "PUT"})
     .then((res) => {
       pbClient.authStore.clear();
       return res.json() as Promise<PBClearResponse>;
@@ -96,9 +96,9 @@ export async function _clearAuthStoreAndCookie({
 }
 
 export async function _requestEmailVerification({
-  email,
-  pbClient,
-}: requestEmailVerificationArgs): Promise<boolean> {
+                                                  email,
+                                                  pbClient,
+                                                }: requestEmailVerificationArgs): Promise<boolean> {
   return await pbClient
     .collection(Collections.Users)
     .requestVerification(email)
@@ -111,9 +111,9 @@ export async function _requestEmailVerification({
 }
 
 export async function _confirmEmailVerification({
-  token,
-  pbClient,
-}: confirmEmailVerificationArgs): Promise<boolean> {
+                                                  token,
+                                                  pbClient,
+                                                }: confirmEmailVerificationArgs): Promise<boolean> {
   return await pbClient
     .collection(Collections.Users)
     .confirmVerification(token)
@@ -126,9 +126,9 @@ export async function _confirmEmailVerification({
 }
 
 export async function _requestPasswordResetEmail({
-  email,
-  pbClient,
-}: requestPasswordResetEmailArgs): Promise<boolean> {
+                                                   email,
+                                                   pbClient,
+                                                 }: requestPasswordResetEmailArgs): Promise<boolean> {
   return await pbClient
     .collection(Collections.Users)
     .requestPasswordReset(email)
@@ -141,11 +141,11 @@ export async function _requestPasswordResetEmail({
 }
 
 export async function _confirmPasswordResetEmail({
-  token,
-  newPassword,
-  newPasswordConfirm,
-  pbClient,
-}: confirmPasswordResetEmailArgs): Promise<boolean> {
+                                                   token,
+                                                   newPassword,
+                                                   newPasswordConfirm,
+                                                   pbClient,
+                                                 }: confirmPasswordResetEmailArgs): Promise<boolean> {
   return await pbClient
     .collection(Collections.Users)
     .confirmPasswordReset(token, newPassword, newPasswordConfirm)

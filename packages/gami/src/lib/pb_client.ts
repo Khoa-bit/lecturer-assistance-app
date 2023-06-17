@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import PocketBase from "pocketbase";
-import type { UsersResponse } from "raito";
+import type { UsersResponse } from "src/types/raito";
 import { useMemo } from "react";
 import { env } from "src/env/client.mjs";
 import type { PBCustom } from "src/types/pb-custom";

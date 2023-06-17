@@ -1,7 +1,6 @@
+import type { BaseQueryParams, ListResult } from "pocketbase";
 import type PocketBase from "pocketbase";
-import type { BaseQueryParams } from "pocketbase";
-import type { ListResult } from "pocketbase";
-import type { BaseSystemFields } from "raito";
+import type { BaseSystemFields } from "src/types/raito";
 
 export interface SimpleQueryParams extends BaseQueryParams {
   page?: number;

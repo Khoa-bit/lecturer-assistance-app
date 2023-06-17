@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import { FullDocumentsInternalOptions } from "raito";
-import type { SharedDocumentsCustomResponse } from "raito";
+import type { SharedDocumentsCustomResponse } from "src/types/raito";
+import { FullDocumentsInternalOptions } from "src/types/raito";
 import { sortDate } from "src/lib/input_handling";
 
 interface ParticipateDetailListProps {
@@ -10,7 +10,7 @@ interface ParticipateDetailListProps {
 
 function SharedDocumentsList({ sharedDocuments }: ParticipateDetailListProps) {
   return (
-    <div className="my-4 flex h-fit flex-col rounded-lg bg-white py-5 px-6">
+    <div className="my-4 flex h-fit flex-col rounded-lg bg-white px-6 py-5">
       <h2 className="flex border-0 border-b-4 p-2 font-semibold text-gray-600">
         Shared documents
       </h2>
@@ -31,7 +31,7 @@ function SharedDocumentsList({ sharedDocuments }: ParticipateDetailListProps) {
             return (
               <li key={sharedDocument.id}>
                 <Link
-                  className="flex items-center gap-2 rounded py-1 px-2 hover:bg-gray-50"
+                  className="flex items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
                   href={`/fullDocuments/${encodeURIComponent(
                     sharedDocument.id
                   )}`}
@@ -70,7 +70,7 @@ function SharedDocumentsList({ sharedDocuments }: ParticipateDetailListProps) {
             return (
               <li key={sharedDocument.id}>
                 <Link
-                  className="flex items-center gap-2 rounded py-1 px-2 hover:bg-gray-50"
+                  className="flex items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
                   href={`/fullDocuments/${encodeURIComponent(
                     sharedDocument.id
                   )}`}

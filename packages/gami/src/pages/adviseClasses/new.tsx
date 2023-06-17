@@ -13,11 +13,13 @@ import type {
   FullDocumentsRecord,
   FullDocumentsResponse,
   MajorsResponse,
-  PeopleRecord,
   PeopleResponse,
-} from "raito";
-import { FullDocumentsInternalOptions } from "raito";
-import { ClassesAcademicProgramOptions, Collections } from "raito";
+} from "src/types/raito";
+import {
+  ClassesAcademicProgramOptions,
+  Collections,
+  FullDocumentsInternalOptions,
+} from "src/types/raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getCurrentCohort } from "src/lib/input_handling";

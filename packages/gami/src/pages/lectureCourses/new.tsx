@@ -11,11 +11,8 @@ import type {
   DocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
-  PeopleRecord,
-  PeopleResponse,
-} from "raito";
-import { FullDocumentsInternalOptions } from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections, FullDocumentsInternalOptions } from "src/types/raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getCurrentSemester } from "src/lib/input_handling";

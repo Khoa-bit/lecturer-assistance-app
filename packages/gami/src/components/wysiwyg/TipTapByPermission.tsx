@@ -1,5 +1,5 @@
-import type { AttachmentsResponse, PeopleResponse } from "raito";
-import { ParticipantsPermissionOptions } from "raito";
+import type { AttachmentsResponse, PeopleResponse } from "src/types/raito";
+import { ParticipantsPermissionOptions } from "src/types/raito";
 import type { Dispatch, SetStateAction } from "react";
 import type { PBCustom } from "src/types/pb-custom";
 import TipTap from "./TipTap";

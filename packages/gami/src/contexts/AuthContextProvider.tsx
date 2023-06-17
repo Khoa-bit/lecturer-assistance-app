@@ -1,10 +1,10 @@
-import type { Admin, Record } from "pocketbase";
+import type {Admin, Record} from "pocketbase";
 import PocketBase from "pocketbase";
-import type { PeopleResponse, UsersResponse } from "raito";
-import { Collections } from "raito";
-import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
-import { env } from "src/env/client.mjs";
+import type {PeopleResponse, UsersResponse} from "src/types/raito";
+import {Collections} from "src/types/raito";
+import type {ReactNode} from "react";
+import {useEffect, useMemo, useState} from "react";
+import {env} from "src/env/client.mjs";
 import {
   _authWithOAuth2AndCookie,
   _authWithPasswordAndCookie,
@@ -14,8 +14,8 @@ import {
   _requestEmailVerification,
   _requestPasswordResetEmail,
 } from "src/lib/auth_client";
-import type { PBClearResponse } from "src/pages/api/auth/pbClear";
-import { AuthContext } from "./AuthContext";
+import type {PBClearResponse} from "src/pages/api/auth/pbClear";
+import {AuthContext} from "./AuthContext";
 
 interface PersonExpand {
   person: PeopleResponse;
@@ -51,8 +51,8 @@ interface AuthContextProviderProps {
 }
 
 export default function AuthContextProvider({
-  children,
-}: AuthContextProviderProps) {
+                                              children,
+                                            }: AuthContextProviderProps) {
   const pbClient = useMemo(
     () => new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL),
     []
@@ -102,22 +102,22 @@ export default function AuthContextProvider({
   };
 
   const signOut = async () => {
-    const pbClearResponse = await _clearAuthStoreAndCookie({ pbClient });
+    const pbClearResponse = await _clearAuthStoreAndCookie({pbClient});
     setIsValid(pbClient.authStore.isValid);
     setUser(pbClient.authStore.model as User | null);
     return pbClearResponse;
   };
 
   const requestEmailVerification = async (email: string) => {
-    return await _requestEmailVerification({ email, pbClient });
+    return await _requestEmailVerification({email, pbClient});
   };
 
   const confirmEmailVerification = async (token: string) => {
-    return await _confirmEmailVerification({ token, pbClient });
+    return await _confirmEmailVerification({token, pbClient});
   };
 
   const requestPasswordResetEmail = async (email: string) => {
-    return await _requestPasswordResetEmail({ email, pbClient });
+    return await _requestPasswordResetEmail({email, pbClient});
   };
 
   const confirmPasswordResetEmail = async (

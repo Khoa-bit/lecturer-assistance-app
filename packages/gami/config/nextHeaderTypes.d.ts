@@ -59,6 +59,7 @@ export type PermPolicyDirectiveList =
  * nextSafe's primary config object
  */
 export type NextHeaderProps = {
+  allowCors?: HeaderConfig;
   contentTypeOptions?: HeaderConfig;
   contentSecurityPolicy?: CSPConfig;
   frameOptions?: HeaderConfig;

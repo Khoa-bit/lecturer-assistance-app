@@ -6,8 +6,8 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next build && next start",
-    "mjml:build": "playwright test tests/screenshots/ --project firefox"
+    "start": "next start",
+    "mjml:build": "playwright test --quiet tests/screenshots/ --project firefox"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.14",
@@ -59,7 +59,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@playwright/test": "^1.33.0",
+    "@playwright/test": "^1.35.0",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
     "@types/crypto-js": "^4.1.1",
@@ -77,7 +77,6 @@
     "postcss": "^8.4.23",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.2.8",
-    "raito": "workspace:*",
     "tailwindcss": "^3.3.2",
     "typescript": "^5.0.4",
     "update-browserslist-db": "^1.0.11"

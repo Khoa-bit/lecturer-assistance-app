@@ -1,12 +1,12 @@
 // middleware.ts
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { _getPBMiddleware } from "./lib/pb_client";
+import type {NextRequest} from "next/server";
+import {NextResponse} from "next/server";
+import {_getPBMiddleware} from "./lib/pb_client";
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-  const { user } = _getPBMiddleware(
+  const {user} = _getPBMiddleware(
     `pb_auth=${
       request.cookies
         .get("pb_auth")
@@ -21,11 +21,7 @@ export async function middleware(request: NextRequest) {
     console.log(`Being redirect to ${redirectUrl.toString()}`);
 
     return NextResponse.redirect(redirectUrl);
-  } else if (
-    (!user && !request.nextUrl.pathname.startsWith("/auth")) ||
-    (process.env.NODE_ENV === "production" &&
-      request.nextUrl.pathname.startsWith("/auth/loginsecret"))
-  ) {
+  } else if (!user && !request.nextUrl.pathname.startsWith("/auth")) {
     url.pathname = `/auth/login/`;
     console.log(`Being redirect to ${url.toString()}`);
 

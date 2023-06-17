@@ -5,7 +5,7 @@ import IndexCellDefault from "../tanstackTable/IndexCellDefault";
 import { dateFormat, formatDate } from "../../lib/input_handling";
 import React, { useState } from "react";
 import type { ListResult } from "pocketbase";
-import type { ParticipantsXlsxImportResponse } from "raito/types/endpoints-types";
+import type { ParticipantsXlsxImportResponse } from "src/types/raito";
 import type { PBCustom } from "../../types/pb-custom";
 import { IcRoundDownload } from "../icons/IcRoundDownload";
 import { IcRoundUploadFile } from "../icons/IcRoundUploadFile";

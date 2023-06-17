@@ -4,7 +4,7 @@ import type {
   AcademicMaterialsCustomResponse,
   DocumentsPriorityOptions,
   DocumentsStatusOptions,
-} from "raito";
+} from "src/types/raito";
 import Priority from "../documents/Priority";
 import Status from "../documents/Status";
 
@@ -85,7 +85,7 @@ function AcademicMaterialsTable({
         </td>
         <td>
           <Link
-            className="block w-10 truncate py-1 px-2"
+            className="block w-10 truncate px-2 py-1"
             href={`/academicMaterials/${encodeURIComponent(
               academicMaterial.id
             )}`}

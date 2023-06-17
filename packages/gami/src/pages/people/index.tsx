@@ -11,8 +11,8 @@ import type {
   MajorsResponse,
   PeopleResponse,
   UsersResponse,
-} from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
 import MainLayout from "src/components/layouts/MainLayout";
 import IndexCell from "src/components/tanstackTable/IndexCell";
 import IndexHeaderCell from "src/components/tanstackTable/IndexHeaderCell";
