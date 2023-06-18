@@ -26,13 +26,19 @@ const config = {
         port: "8090",
         pathname: "/api/files/**",
       },
+      {
+        protocol: "http",
+        hostname: "raito",
+        port: "8090",
+        pathname: "/api/files/**",
+      },
     ],
   },
   async headers() {
     return [
       {
         source: "/:slug*",
-        headers: isDev ? nextDevHeader() : nextHeader(),
+        headers: nextDevHeader(),
       },
     ];
   },

@@ -24,6 +24,13 @@ export interface InvitationResponse {
 }
 
 const handler: NextApiHandler<InvitationResponse> = async (req, res) => {
+  if (req.cookies["pb_auth"] == null) {
+    res
+      .status(401)
+      .json({ message: "User is not authenticated", responseBody: [] });
+    return false;
+  }
+
   if (req.method === "GET") {
     const { pbServer, user } = await getPBServer(
       req,

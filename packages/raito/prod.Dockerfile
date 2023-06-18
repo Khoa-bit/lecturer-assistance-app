@@ -26,7 +26,13 @@ RUN go build -o main .
 # Step 2. Production image, copy all the files and run next
 FROM base AS runner
 
-COPY --from=builder main .
+WORKDIR /app
+
+# Don't run production as root
+RUN addgroup --system --gid 1001 golang && adduser --system --uid 1001 pocketbase
+USER pocketbase
+
+COPY --from=builder --chown=pocketbase:golang /app/main .
 
 # Note: Don't expose ports or declare volumes here, Compose will handle that for us
 

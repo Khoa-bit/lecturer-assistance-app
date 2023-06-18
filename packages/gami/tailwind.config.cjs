@@ -1,10 +1,10 @@
-const { fontFamily } = require('tailwindcss/defaultTheme')
+const {fontFamily} = require('tailwindcss/defaultTheme')
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   daisyui: {
-    themes: false,
+    themes: ["light"],
     // styled: false
   },
   theme: {
@@ -16,7 +16,7 @@ module.exports = {
         DEFAULT: {
           css: {
             // Remove margin from li
-            ".ProseMirror li :not(li)": { margin: 0 },
+            ".ProseMirror li :not(li)": {margin: 0},
             // Style the task list and task item to align with ul and ol's li ::marker
             '.ProseMirror ul[data-type="taskList"]': {
               "li:last-child": {
