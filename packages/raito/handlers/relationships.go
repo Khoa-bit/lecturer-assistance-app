@@ -10,7 +10,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 )
 
-// get all relationships of the current auth user
+// GetRelationships get all relationships of the current auth user
 func GetRelationships(app *pocketbase.PocketBase, c echo.Context) error {
 	authRecord, err := auth.GetUser(app, c)
 	if err != nil {
@@ -39,14 +39,14 @@ func GetRelationships(app *pocketbase.PocketBase, c echo.Context) error {
 		`SELECT relationships.* %s
       FROM relationships
         INNER JOIN users fromUser ON relationships.fromPerson = fromUser.person AND fromUser.id = '%s'
-        INNER JOIN people toPerson ON relationships.toPerson = toPerson.id
+        INNER JOIN people toPerson ON relationships.toPerson = toPerson.id AND toPerson.deleted == ''
         LEFT JOIN users toUser ON relationships.toPerson = toUser.person`,
 		selectArgs, authRecord.Id))
 
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
 }
 
-// Get all people that the current auth user doesn't have relationships with
+// GetNewRelationshipsOptions Get all people that the current auth user doesn't have relationships with
 func GetNewRelationshipsOptions(app *pocketbase.PocketBase, c echo.Context) error {
 	authRecord, err := auth.GetUser(app, c)
 	if err != nil {

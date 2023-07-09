@@ -7,5 +7,7 @@
       "database": "${workspaceFolder:lecturer-assistance-app}/packages/raito/pb_data/data.db"
     }
   ],
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "files.autoSave": "onFocusChange",
+  "vue.features.codeActions.enable": false
 }

@@ -5,12 +5,13 @@
  */
 !process.env.SKIP_ENV_VALIDATION && (await import("./src/env/server.mjs"));
 
-const { nextHeader, nextDevHeader } = await import("./config/nextHeader.mjs");
+const {nextHeader, nextDevHeader} = await import("./config/nextHeader.mjs");
 
 const isDev = process.env.NODE_ENV !== "production";
 
 /** @type {import("next").NextConfig} */
 const config = {
+  output: "standalone",
   reactStrictMode: true,
   swcMinify: true,
   // i18n: {
@@ -25,13 +26,19 @@ const config = {
         port: "8090",
         pathname: "/api/files/**",
       },
+      {
+        protocol: "http",
+        hostname: "raito",
+        port: "8090",
+        pathname: "/api/files/**",
+      },
     ],
   },
   async headers() {
     return [
       {
         source: "/:slug*",
-        headers: isDev ? nextDevHeader() : nextHeader(),
+        headers: nextDevHeader(),
       },
     ];
   },

@@ -1,6 +1,6 @@
-import type { AttachmentsResponse } from "raito";
-import { Collections } from "raito";
-import type { Dispatch, SetStateAction, ChangeEvent } from "react";
+import type { AttachmentsResponse } from "src/types/raito";
+import { Collections } from "src/types/raito";
+import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { isFulfilled, isRejected } from "src/lib/promises/checkState";
 import type { PBCustom } from "src/types/pb-custom";
 

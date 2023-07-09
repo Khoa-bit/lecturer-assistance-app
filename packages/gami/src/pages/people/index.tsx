@@ -1,3 +1,4 @@
+import type { ColumnDef } from "@tanstack/react-table";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
@@ -5,48 +6,198 @@ import type {
 import Head from "next/head";
 import Link from "next/link";
 import type { ListResult } from "pocketbase";
-import type { PeopleResponse, UsersResponse } from "raito";
-import { Collections } from "raito";
+import type {
+  DepartmentsResponse,
+  MajorsResponse,
+  PeopleResponse,
+  UsersResponse,
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
 import MainLayout from "src/components/layouts/MainLayout";
+import IndexCell from "src/components/tanstackTable/IndexCell";
+import IndexHeaderCell from "src/components/tanstackTable/IndexHeaderCell";
+import IndexTable from "src/components/tanstackTable/IndexTable";
 import { getPBServer } from "src/lib/pb_server";
+import type { Education, Experience, Interests } from "src/types/peopleJSON";
 import SuperJSON from "superjson";
+import { IcRoundVerified } from "../../components/icons/IcRoundVerified";
 
 interface PeopleData {
-  people: ListResult<PeopleResponse<UsersExpand>>;
+  people: ListResult<
+    PeopleResponse<Education, Experience, Interests, UsersExpand>
+  >;
+}
+
+interface MajorExpand {
+  department: DepartmentsResponse;
 }
 
 interface UsersExpand {
   "users(person)": UsersResponse;
+  major: MajorsResponse<MajorExpand>;
 }
 
 function People({
   data,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<PeopleData>(data);
-
-  const peopleList = dataParse.people.items.map((person) => (
-    <li key={person.id}>
-      <Link href={`/people/${encodeURIComponent(person.id)}`}>
-        {`${person.name} - ${JSON.stringify(
-          person.expand?.["users(person)"]?.email
-        )}`}
-      </Link>
-    </li>
-  )) ?? <p>{"Error when fetching full documents :<"}</p>;
+  const people = dataParse.people;
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-lg flex-col px-4 py-8">
       <Head>
         <title>People</title>
       </Head>
-      <h1>People</h1>
-      <Link className="text-blue-700 underline" href="/people/new">
-        New Person (This new button should only be visible when user cannot find
-        the people they are looking for)
-      </Link>
-      <ol>{peopleList}</ol>
-    </>
+      <header className="flex w-full justify-between">
+        <h1 className="text-2xl font-bold">People</h1>
+
+        <Link
+          className="flex justify-center rounded bg-blue-500 p-3 font-bold text-white hover:bg-blue-400"
+          href="/people/new"
+        >
+          <span className="material-symbols-rounded select-none">add</span> Add
+          new person
+        </Link>
+      </header>
+      <section className="my-4 rounded-lg bg-white px-7 py-5">
+        <IndexTable
+          heading="My personal notes"
+          initData={people}
+          columns={initPeopleColumns()}
+        ></IndexTable>
+      </section>
+    </main>
   );
+}
+
+function initPeopleColumns(): ColumnDef<
+  PeopleResponse<Education, Experience, Interests, UsersExpand>
+>[] {
+  const getHref = (lectureCourseId: string) =>
+    `/people/${encodeURIComponent(lectureCourseId)}`;
+
+  return [
+    {
+      accessorFn: (item) => item.name,
+      id: "name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[12rem]"
+          href={getHref(info.row.original.id)}
+        >
+          <p className="flex items-center gap-1">
+            {info.getValue() as string}
+            {info.row.original.hasAccount && (
+              <IcRoundVerified className="h-4 w-4 text-blue-400"></IcRoundVerified>
+            )}
+          </p>
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[12rem]">Name</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.personId,
+      id: "personId",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">ID</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.title,
+      id: "title",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Position</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) =>
+        [item.personalEmail, item.expand?.["users(person)"]?.email]
+          .filter((email) => email != undefined && email != "")
+          .join(", "),
+      id: "email",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Email</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => (item.isFaculty ? "Yes" : "No"),
+      id: "isFaculty",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[6rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[6rem]">Is Faculty</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand?.major?.name,
+      id: "major_name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Major</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+    {
+      accessorFn: (item) => item.expand?.major?.expand?.department?.name,
+      id: "department_name",
+      cell: (info) => (
+        <IndexCell
+          className="min-w-[10rem]"
+          href={getHref(info.row.original.id)}
+        >
+          {info.getValue() as string}
+        </IndexCell>
+      ),
+      header: () => (
+        <IndexHeaderCell className="min-w-[10rem]">Department</IndexHeaderCell>
+      ),
+      footer: () => null,
+    },
+  ];
 }
 
 export const getServerSideProps = async ({
@@ -57,13 +208,26 @@ export const getServerSideProps = async ({
 
   const people = await pbServer
     .collection(Collections.People)
-    .getList<PeopleResponse<UsersExpand>>(undefined, undefined, {
-      expand: "users(person)",
-    });
+    .getFullList<PeopleResponse<Education, Experience, Interests, UsersExpand>>(
+      {
+        filter: `deleted = ''`,
+        expand: "users(person),major.department",
+      }
+    );
+
+  const listResultsPeople: ListResult<
+    PeopleResponse<Education, Experience, Interests, UsersExpand>
+  > = {
+    page: 0,
+    perPage: people.length,
+    items: people,
+    totalItems: people.length,
+    totalPages: 1,
+  };
 
   return {
     props: {
-      data: SuperJSON.stringify({ people } as PeopleData),
+      data: SuperJSON.stringify({ people: listResultsPeople } as PeopleData),
     },
   };
 };

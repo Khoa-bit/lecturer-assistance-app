@@ -1,39 +1,37 @@
-import { Color } from "@tiptap/extension-color";
-import Highlight from "@tiptap/extension-highlight";
-import Link from "@tiptap/extension-link";
-import Mention from "@tiptap/extension-mention";
-import TaskItem from "@tiptap/extension-task-item";
-import TaskList from "@tiptap/extension-task-list";
-import TextAlign from "@tiptap/extension-text-align";
-import TextStyle from "@tiptap/extension-text-style";
-import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useMemo, useState } from "react";
-import { formatDate } from "src/lib/input_handling";
 import SuperJSON from "superjson";
-import CustomImage from "./customImageExtension/image";
-import suggestion from "./suggestion";
-import { Comment } from "./tiptapCommentExtension/comment";
+import { customExtensionsFull } from "./TipTap";
 import {
   getCommentFunctions,
   useCommentState,
   useInitComments,
 } from "./tiptapCommentExtension/commentHooks";
+import TipTapCommentCards from "./TipTapCommentCards";
+import type { PBCustom } from "../../types/pb-custom";
+import type { PeopleResponse } from "src/types/raito";
 
 interface TipTapProps {
+  id?: string;
   richText: string;
+  pbClient?: PBCustom;
+  userPerson?: PeopleResponse;
 }
 
-const dateTimeFormat = "dd-MM-yyyy HH:mm:ss";
+const TipTapView = ({ id, richText, pbClient, userPerson }: TipTapProps) => {
+  const username = userPerson?.name ?? "Anonymous";
+  const userId = userPerson?.id ?? "";
+  const userAvatar = userPerson?.avatar ?? "";
 
-const TipTapView = ({ richText }: TipTapProps) => {
   const content: object = SuperJSON.parse(
-    richText.length >= 2 ? richText : "{}"
+    richText.length >= 2
+      ? richText
+      : `{"json":{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":"left"}},{"type":"paragraph","attrs":{"textAlign":"left"}},{"type":"paragraph","attrs":{"textAlign":"left"}},{"type":"paragraph","attrs":{"textAlign":"left"}}]}}`
   );
 
   const [prevContent, setPrevContent] = useState(content);
 
+  const commentState = useCommentState();
   const {
     commentText,
     setCommentText,
@@ -43,15 +41,16 @@ const TipTapView = ({ richText }: TipTapProps) => {
     setActiveCommentDialog,
     allCommentSpans,
     setAllCommentSpans,
-  } = useCommentState();
+  } = commentState;
 
+  const commentFunctions = getCommentFunctions();
   const {
     findAllCommentSpans,
     getActiveCommentDialog,
     setComment,
     toggleComment,
     unsetComment,
-  } = getCommentFunctions();
+  } = commentFunctions;
 
   const editor = useEditor({
     editable: false,
@@ -66,47 +65,38 @@ const TipTapView = ({ richText }: TipTapProps) => {
 
     editorProps: {
       attributes: {
-        class: "prose",
+        class: "prose w-full mx-auto focus:outline-none",
       },
     },
 
-    extensions: [
-      StarterKit,
-      TextAlign.configure({
-        types: ["heading", "paragraph"],
-      }),
-      Highlight,
-      Link,
-      TextStyle,
-      Color,
-      Typography,
-      CustomImage,
-      TaskList.configure({
-        HTMLAttributes: {
-          class: "pl-0",
-        },
-      }),
-      TaskItem.configure({
-        nested: true,
-      }),
-      Mention.configure({
-        HTMLAttributes: {
-          class: "mention",
-        },
-        suggestion,
-      }),
-      Comment,
-    ],
+    extensions: customExtensionsFull,
     content: content,
   });
 
   useEffect(() => {
-    if (SuperJSON.stringify(prevContent) == SuperJSON.stringify(content))
+    if (
+      SuperJSON.stringify(prevContent) == SuperJSON.stringify(content) ||
+      !editor
+    ) {
       return;
+    }
 
-    editor?.commands.setContent(content);
+    // Save cursor position
+    const { tr } = editor.view.state;
+
+    // Reload cursor position
+    editor
+      ?.chain()
+      .setContent(content)
+      .setTextSelection({
+        from: tr.selection.$from.pos,
+        to: tr.selection.$to.pos,
+      })
+      .focus()
+      .run();
+
     setPrevContent(content);
-  }, [editor?.commands, content, prevContent]);
+  }, [content, prevContent, editor]);
 
   useInitComments(editor, setAllCommentSpans);
 
@@ -131,43 +121,21 @@ const TipTapView = ({ richText }: TipTapProps) => {
 
   return (
     <div>
-      <EditorContent key="editor" className="prose" editor={editor} />
+      <EditorContent id={id} key="editor" editor={editor} />
 
-      <section className="flex flex-col">
-        {allUniqueComments.map((comment, i) => {
-          if (!comment.commentDialog.comments) return <></>;
-
-          return (
-            <article
-              className={`comment external-comment my-2 overflow-hidden rounded-md bg-gray-100 shadow-lg transition-all ${
-                comment.commentDialog.uuid === activeCommentDialog.uuid
-                  ? "ml-4"
-                  : "ml-8"
-              }`}
-              key={i + "external_comment"}
-            >
-              {comment.commentDialog.comments.map((jsonComment, j: number) => {
-                return (
-                  <article
-                    key={`${j}_${Math.random()}`}
-                    className="external-comment border-b-2 border-gray-200 p-3"
-                  >
-                    <div className="comment-details">
-                      <strong>{jsonComment.username}</strong>
-
-                      <span className="date-time ml-1 text-xs">
-                        {formatDate(jsonComment.time, dateTimeFormat)}
-                      </span>
-                    </div>
-
-                    <span className="content">{jsonComment.content}</span>
-                  </article>
-                );
-              })}
-            </article>
-          );
-        })}
-      </section>
+      {pbClient && (
+        <TipTapCommentCards
+          allUniqueComments={allUniqueComments}
+          editor={editor}
+          pbClient={pbClient}
+          userId={userId}
+          userAvatar={userAvatar}
+          username={username}
+          canComment={false}
+          commentState={commentState}
+          commentFunctions={commentFunctions}
+        ></TipTapCommentCards>
+      )}
     </div>
   );
 };

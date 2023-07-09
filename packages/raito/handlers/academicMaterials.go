@@ -7,6 +7,7 @@ import (
 	"raito-pocketbase/handlers/model"
 
 	"github.com/labstack/echo/v5"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 )
 
@@ -41,6 +42,61 @@ func GetAcademicMaterials(app *pocketbase.PocketBase, c echo.Context) error {
       INNER JOIN fullDocuments AS fullDocument ON userDocument.id = fullDocument.document
       INNER JOIN academicMaterials AS academicMaterial ON fullDocument.id = academicMaterial.fullDocument`,
 		selectArgs, authRecord.Id))
+
+	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
+}
+
+func GetAcademicMaterialsWithParticipants(app *pocketbase.PocketBase, c echo.Context) error {
+	_, err := auth.GetUser(app, c)
+	if err != nil {
+		return err
+	}
+
+	personId := c.PathParam("personId")
+	if err != nil {
+		return err
+	}
+
+	mainCollectionName := "documents"
+	hasGroupBy := true
+	fieldMetadataList := model.FieldMetaDataList{}
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("people", "person", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
+	fieldMetadataList, err = fieldMetadataList.AppendCollectionByNameOrId("academicMaterials", "academicMaterial", hasGroupBy, app)
+	if err != nil {
+		return err
+	}
+
+	selectArgs := model.BuildSelectArgs(fieldMetadataList, hasGroupBy)
+
+	query := app.Dao().DB().NewQuery(fmt.Sprintf(
+		`SELECT userDocument.* %s
+      FROM
+          (
+              SELECT
+                  userDocument.*
+              FROM
+                  documents userDocument
+              WHERE userDocument.owner = {:personId}
+              UNION
+              SELECT
+                  userDocument.*
+              FROM
+                  participants p
+                  INNER JOIN documents userDocument ON p.document = userDocument.id
+                  AND userDocument.deleted == ''
+              WHERE p.person = {:personId}
+          ) AS userDocument
+          INNER JOIN participants participant ON participant.document = userDocument.id
+          INNER JOIN people person ON person.id = participant.person AND person.deleted == ''
+          INNER JOIN fullDocuments fullDocument ON fullDocument.document = userDocument.id AND fullDocument.internal = 'Academic material'
+          INNER JOIN academicMaterials academicMaterial ON academicMaterial.fullDocument = fullDocument.id
+          GROUP BY userDocument.id`,
+		selectArgs))
+
+	query.Bind(dbx.Params{"personId": personId})
 
 	return model.GetRequestHandler(app, c, query, mainCollectionName, hasGroupBy, fieldMetadataList)
 }

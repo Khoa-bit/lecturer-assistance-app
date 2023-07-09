@@ -1,10 +1,15 @@
 package main
 
 import (
+	"fmt"
+	"github.com/robfig/cron/v3"
 	"log"
-
+	"net/http"
+	"raito-pocketbase/cronFunc"
 	"raito-pocketbase/handlers"
-	_ "raito-pocketbase/migrations"
+// 	_ "raito-pocketbase/migrations"
+	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
@@ -13,22 +18,19 @@ import (
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 )
 
-// DefaultPerPage specifies the default returned search result items.
-const DefaultPerPage int = 30
-
-// MaxPerPage specifies the maximum allowed search result items returned in a single page.
-const MaxPerPage int = 500
-
-// Result defines the returned search result structure.
-type Result struct {
-	Page       int `json:"page"`
-	PerPage    int `json:"perPage"`
-	TotalItems int `json:"totalItems"`
-	TotalPages int `json:"totalPages"`
-	Items      any `json:"items"`
-}
-
 func main() {
+	// Create a new cron job
+	cronJob := cron.New()
+
+	// Add func to the cron job
+	cronFunc.AddSendMailEveryMinFunc(cronJob)
+
+	// Start the cron job
+	cronJob.Start()
+
+	// Defer stopping the cron job
+	defer cronJob.Stop()
+
 	app := pocketbase.New()
 
 	migratecmd.MustRegister(app, app.RootCmd, &migratecmd.Options{
@@ -42,85 +44,110 @@ func main() {
 		)
 
 		// Get all event documents
-		subGroup.GET("/eventDocuments", func(c echo.Context) error {
+		// Deprecated since events page now shows upcoming and part events
+		subGroup.GET("/getEventDocuments", func(c echo.Context) error {
 			return handlers.GetEventDocuments(app, c)
 		})
 
-		// Get all event documents that the current user participate in
-		subGroup.GET("/participatedEventDocuments", func(c echo.Context) error {
+		// Get all upcoming events for auth user
+		// Deprecated since events page now shows upcoming and part events
+		subGroup.GET("/getUpcomingEvents", func(c echo.Context) error {
+			return handlers.GetUpcomingEvents(app, c)
+		})
+
+		// Get all past events for auth user
+		// Deprecated since events page now shows upcoming and part events
+		subGroup.GET("/getPastEvents", func(c echo.Context) error {
+			return handlers.GetPastEvents(app, c)
+		})
+
+		// Get all event documents that the current user participates in
+		// Deprecated since events page now shows upcoming and part events
+		subGroup.GET("/getParticipatedEventDocuments", func(c echo.Context) error {
 			return handlers.GetParticipatedEventDocuments(app, c)
 		})
 
-		// Get all full documents for events documents
+		// Get all user's full documents for event documents
 		// Full documents is now shared base for other documents
 		subGroup.GET("/fullDocuments", func(c echo.Context) error {
 			return handlers.GetFullDocuments(app, c)
 		})
 
-		// Get all full documents that the current user participate in
+		// Get all full documents that the current user participates in
 		// Full documents is now shared base for other documents
 		subGroup.GET("/participatedFullDocuments", func(c echo.Context) error {
 			return handlers.GetParticipatedFullDocuments(app, c)
 		})
 
+		// Get all user's write-access full documents for event documents
+		// Full documents are now shared base for other documents
+		subGroup.GET("/getHasWriteFullDocuments", func(c echo.Context) error {
+			return handlers.GetHasWriteFullDocuments(app, c)
+		})
+
 		// Get all academic materials
-		subGroup.GET("/academicMaterials", func(c echo.Context) error {
+		subGroup.GET("/getAcademicMaterials", func(c echo.Context) error {
 			return handlers.GetAcademicMaterials(app, c)
 		})
 
-		// Get all academic materials that the current user participate in
-		subGroup.GET("/participatedAcademicMaterials", func(c echo.Context) error {
+		// Get all academic materials that the current user participates in
+		subGroup.GET("/getParticipatedAcademicMaterials", func(c echo.Context) error {
 			return handlers.GetParticipatedAcademicMaterials(app, c)
 		})
 
+		// Get all academic materials and all participants
+		subGroup.GET("/getAcademicMaterialsWithParticipants/:personId", func(c echo.Context) error {
+			return handlers.GetAcademicMaterialsWithParticipants(app, c)
+		})
+
 		// Get all personalNotes of the current user
-		subGroup.GET("/personalNotes", func(c echo.Context) error {
+		subGroup.GET("/getPersonalNotes", func(c echo.Context) error {
 			return handlers.GetPersonalNotes(app, c)
 		})
 
-		// Get all personalNotes that the current user participate in
-		subGroup.GET("/participatedPersonalNotes", func(c echo.Context) error {
+		// Get all personalNotes that the current user participates in
+		subGroup.GET("/getParticipatedPersonalNotes", func(c echo.Context) error {
 			return handlers.GetParticipatedPersonalNotes(app, c)
 		})
 
 		// Get all classes of the current user
-		subGroup.GET("/classes", func(c echo.Context) error {
+		subGroup.GET("/getClasses", func(c echo.Context) error {
 			return handlers.GetClasses(app, c)
 		})
 
-		// Get all event documents that the current user participate in
-		subGroup.GET("/participatedClasses", func(c echo.Context) error {
+		// Get all event documents that the current user participates in
+		subGroup.GET("/getParticipatedClasses", func(c echo.Context) error {
 			return handlers.GetParticipatedClasses(app, c)
 		})
 
 		// Get all courses of the current user
-		subGroup.GET("/courses", func(c echo.Context) error {
+		subGroup.GET("/getCourses", func(c echo.Context) error {
 			return handlers.GetCourses(app, c)
 		})
 
-		// Get all event documents that the current user participate in
-		subGroup.GET("/participatedCourses", func(c echo.Context) error {
+		// Get all event documents that the current user participates in
+		subGroup.GET("/getParticipatedCourses", func(c echo.Context) error {
 			return handlers.GetParticipatedCourses(app, c)
 		})
 
-		// Get all starred relationships with the current user
-		subGroup.GET("/relationships", func(c echo.Context) error {
-			return handlers.GetRelationships(app, c)
+		// Get all event documents that the current user participates in
+		subGroup.GET("/getRelatedCourses/:personId", func(c echo.Context) error {
+			return handlers.GetRelatedCourses(app, c)
 		})
 
 		// Get all participants from the current user's documents
-		subGroup.GET("/allAcrossParticipants", func(c echo.Context) error {
-			return handlers.GetAllAcrossParticipants(app, c)
+		subGroup.GET("/getContacts", func(c echo.Context) error {
+			return handlers.GetContacts(app, c)
 		})
 
 		// Get all starred participants from the current user's documents
-		subGroup.GET("/getStarredParticipants", func(c echo.Context) error {
-			return handlers.GetStarredParticipants(app, c)
+		subGroup.GET("/getStarredContacts", func(c echo.Context) error {
+			return handlers.GetStarredContacts(app, c)
 		})
 
-		// Get all documents that the query person participate in the current user's document
-		subGroup.GET("/getAllDocParticipation/:toPerson", func(c echo.Context) error {
-			return handlers.GetAllDocParticipation(app, c)
+		// Get all documents that the query person participates in the current user's document
+		subGroup.GET("/getSharedDocuments/:toPerson", func(c echo.Context) error {
+			return handlers.GetSharedDocuments(app, c)
 		})
 
 		// Get all participants for the current user's particular doc
@@ -128,11 +155,55 @@ func main() {
 			return handlers.GetAllDocParticipants(app, c)
 		})
 
+		// Get all starred relationships with the current user
+		// Deprecated since We don't need to add contact manually anymore - add star will automatically add new relationships
+		subGroup.GET("/getRelationships", func(c echo.Context) error {
+			return handlers.GetRelationships(app, c)
+		})
+
 		// Get all possible new relationships options for the current user.
 		// Deprecated since We don't need to add contact manually anymore - add star will automatically add new relationships
-		subGroup.GET("/newRelationshipsOptions", func(c echo.Context) error {
+		subGroup.GET("/getNewRelationshipsOptions", func(c echo.Context) error {
 			return handlers.GetNewRelationshipsOptions(app, c)
 		})
+
+		// Import people from an excel file template (Dry-run mode available as QueryParam `?isDryRun`)
+		subGroup.POST("/importPeople", func(c echo.Context) error {
+			isDryRun, err := strconv.ParseBool(c.QueryParam("isDryRun"))
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, fmt.Errorf("invalid isDryRun query parameter").Error())
+			}
+			return handlers.ParticipantsXlsxImport(app, c, isDryRun, "")
+		})
+
+		// Import people from an excel file template and assign them to be participants for a document (Dry-run mode available as QueryParam `?isDryRun`)
+		subGroup.POST("/importParticipants/:docId", func(c echo.Context) error {
+			isDryRun, err := strconv.ParseBool(c.QueryParam("isDryRun"))
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, fmt.Errorf("invalid isDryRun query parameter").Error())
+			}
+			// To import as participants, we need to add docId
+			docId := c.PathParam("docId")
+			return handlers.ParticipantsXlsxImport(app, c, isDryRun, docId)
+		})
+
+		return nil
+	})
+
+	app.OnRecordBeforeAuthWithOAuth2Request().Add(func(e *core.RecordAuthWithOAuth2Event) error {
+		if !strings.Contains(e.OAuth2User.Email, "@hcmiu.edu.vn") {
+			return fmt.Errorf("email doesn't contain '@hcmiu.edu.vn' => not a faculty account: %s", e.OAuth2User.Email)
+		}
+
+		err := handlers.CreatePersonRecordForUser(app, e)
+		if err != nil {
+			return err
+		}
+
+		err = handlers.CreatePersonRecordForUser(app, e)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})

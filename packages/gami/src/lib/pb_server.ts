@@ -1,5 +1,5 @@
 import type { IncomingMessage } from "http";
-import type { UsersResponse } from "raito";
+import type { UsersResponse } from "src/types/raito";
 import { env } from "src/env/server.mjs";
 import type { PBCustom } from "src/types/pb-custom";
 import { pbServer } from "../global/pbServerGlobal";
@@ -19,7 +19,12 @@ export async function getPBServer(
   }
 
   // load the store data from the request cookie string
-  pbServer.authStore.loadFromCookie(req?.headers?.cookie || "");
+  pbServer.authStore.loadFromCookie(
+    req?.headers?.cookie?.replace(
+      "%2C%22record%22%3A%7B",
+      "%2C%22model%22%3A%7B"
+    ) ?? ""
+  );
 
   // // Default token expires in 14 days
   // // Approximate 24 clicks/day * 14 days = 336 (clicks/14 days)

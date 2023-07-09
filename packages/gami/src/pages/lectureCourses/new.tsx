@@ -11,11 +11,8 @@ import type {
   DocumentsResponse,
   FullDocumentsRecord,
   FullDocumentsResponse,
-  PeopleRecord,
-  PeopleResponse,
-} from "raito";
-import { FullDocumentsInternalOptions } from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections, FullDocumentsInternalOptions } from "src/types/raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getCurrentSemester } from "src/lib/input_handling";
@@ -82,10 +79,6 @@ export const getServerSideProps = async ({
       internal: FullDocumentsInternalOptions.Course,
     } as FullDocumentsRecord);
 
-  const person = await pbServer
-    .collection(Collections.People)
-    .getOne<PeopleResponse>(user.person);
-
   const lectureCourse = await pbServer
     .collection(Collections.Courses)
     .create<CoursesResponse>({
@@ -93,14 +86,6 @@ export const getServerSideProps = async ({
       courseTemplate: undefined,
       semester: getCurrentSemester(),
     } as CoursesRecord);
-
-  if (!person.isAdvisor) {
-    await pbServer
-      .collection(Collections.People)
-      .update<PeopleResponse>(person.id, {
-        isAdvisor: true,
-      } as PeopleRecord);
-  }
 
   const newEventDocUrl = `/lectureCourses/${lectureCourse.id}`;
 

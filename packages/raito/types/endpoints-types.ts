@@ -2,181 +2,330 @@ import {
   AcademicMaterialsResponse,
   ClassesResponse,
   CoursesResponse,
+  DocumentsResponse,
   EventDocumentsResponse,
   FullDocumentsResponse,
   PeopleResponse,
   PersonalNotesResponse,
+  RelationshipsResponse,
 } from './pocketbase-types';
 
-// Deprecated since We don't need to add contact manually anymore - add star will automatically add new relationships
-// export interface RelationshipsCustomResponse extends RelationshipsResponse {
-//   expand: {
-//     fromUser_created: string;
-//     fromUser_id: string;
-//     fromUser_person: string;
-//     fromUser_updated: string;
-//     toPerson_avatar: string;
-//     toPerson_created: string;
-//     toPerson_deleted: string;
-//     toPerson_department: string;
-//     toPerson_gender: string;
-//     toPerson_id: string;
-//     toPerson_name: string;
-//     toPerson_personId: string;
-//     toPerson_personalEmail: string;
-//     toPerson_phone: string;
-//     toPerson_placeOfBirth: string;
-//     toPerson_title: string;
-//     toPerson_updated: string;
-//     toUser_created: string;
-//     toUser_id: string;
-//     toUser_person: string;
-//     toUser_updated: string;
-//   };
-// }
+// GetEventDocuments, GetParticipatedEventDocuments are missing CustomResponse types
 
+// GetUpcomingEvents, GetPastEvents
 export interface EventDocumentsCustomResponse extends EventDocumentsResponse {
   expand: {
-    userDocument_id: string;
-    userDocument_name: string;
-    userDocument_thumbnail: string;
-    userDocument_priority: string;
-    userDocument_status: string;
-    userDocument_richText: string;
-    userDocument_diffHash: string;
-    userDocument_owner: string;
-    userDocument_attachmentsHash: string;
-    userDocument_deleted: string;
-    userDocument_created: string;
-    userDocument_updated: string;
+    document_attachmentsHash: string;
+    document_created: string;
+    document_deleted: string;
+    document_description: string;
+    document_diffHash: string;
+    document_endTime: string;
+    document_id: string;
+    document_name: string;
+    document_owner: string;
+    document_priority: string;
+    document_richText: string;
+    document_startTime: string;
+    document_status: string;
+    document_thumbnail: string;
+    document_updated: string;
+    fullDocument_created: string;
+    fullDocument_document: string;
+    fullDocument_id: string;
+    fullDocument_internal: string;
+    fullDocument_updated: string;
+    participant_created: string;
+    participant_document: string;
+    participant_id: string;
+    participant_note: string;
+    participant_permission: string;
+    participant_person: string;
+    participant_role: string;
+    participant_status: string;
+    participant_updated: string;
   };
 }
 
+// GetFullDocuments, GetParticipatedFullDocuments, GetHasWriteFullDocuments
 export interface FullDocumentsCustomResponse extends FullDocumentsResponse {
   expand: {
+    userDocument_attachmentsHash: string;
+    userDocument_created: string;
+    userDocument_deleted: string;
+    userDocument_diffHash: string;
     userDocument_id: string;
     userDocument_name: string;
-    userDocument_thumbnail: string;
-    userDocument_priority: string;
-    userDocument_status: string;
-    userDocument_richText: string;
-    userDocument_diffHash: string;
     userDocument_owner: string;
-    userDocument_attachmentsHash: string;
-    userDocument_deleted: string;
-    userDocument_created: string;
+    userDocument_priority: string;
+    userDocument_richText: string;
+    userDocument_status: string;
+    userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
+// GetSharedDocuments
+export interface SharedDocumentsCustomResponse extends FullDocumentsResponse {
+  expand: {
+    participant_created: string;
+    participant_document: string;
+    participant_id: string;
+    participant_note: string;
+    participant_permission: string;
+    participant_person: string;
+    participant_role: string;
+    participant_status: string;
+    participant_updated: string;
+    userDocument_attachmentsHash: string;
+    userDocument_created: string;
+    userDocument_deleted: string;
+    userDocument_diffHash: string;
+    userDocument_id: string;
+    userDocument_name: string;
+    userDocument_owner: string;
+    userDocument_priority: string;
+    userDocument_richText: string;
+    userDocument_status: string;
+    userDocument_thumbnail: string;
+    userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
+  };
+}
+
+// GetAcademicMaterials, GetParticipatedAcademicMaterials
 export interface AcademicMaterialsCustomResponse
   extends AcademicMaterialsResponse {
   expand: {
+    userDocument_attachmentsHash: string;
+    userDocument_created: string;
+    userDocument_deleted: string;
+    userDocument_diffHash: string;
     userDocument_id: string;
     userDocument_name: string;
-    userDocument_thumbnail: string;
-    userDocument_priority: string;
-    userDocument_status: string;
-    userDocument_richText: string;
-    userDocument_diffHash: string;
     userDocument_owner: string;
-    userDocument_attachmentsHash: string;
-    userDocument_deleted: string;
-    userDocument_created: string;
+    userDocument_priority: string;
+    userDocument_richText: string;
+    userDocument_status: string;
+    userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
+// GetAcademicMaterialsWithParticipants
+export interface AcademicMaterialsGroupCustomResponse
+  extends DocumentsResponse {
+  expand: {
+    academicMaterial_category_list: string[];
+    academicMaterial_created_list: string[];
+    academicMaterial_fullDocument_list: string[];
+    academicMaterial_id_list: string[];
+    academicMaterial_updated_list: string[];
+    person_avatar_list: string[];
+    person_contactLocation_list: string[];
+    person_contactRoom_list: string[];
+    person_created_list: string[];
+    person_deleted_list: string[];
+    person_education_list: string[];
+    person_experience_list: string[];
+    person_gender_list: string[];
+    person_id_list: string[];
+    person_interests_list: string[];
+    person_isFaculty_list: string[];
+    person_major_list: string[];
+    person_name_list: string[];
+    person_personId_list: string[];
+    person_personalEmail_list: string[];
+    person_phone_list: string[];
+    person_placeOfBirth_list: string[];
+    person_thumbnail_list: string[];
+    person_title_list: string[];
+    person_updated_list: string[];
+  };
+}
+
+// GetPersonalNotes, GetParticipatedPersonalNotes
 export interface PersonalNotesCustomResponse extends PersonalNotesResponse {
   expand: {
+    userDocument_attachmentsHash: string;
+    userDocument_created: string;
+    userDocument_deleted: string;
+    userDocument_diffHash: string;
     userDocument_id: string;
     userDocument_name: string;
-    userDocument_thumbnail: string;
-    userDocument_priority: string;
-    userDocument_status: string;
-    userDocument_richText: string;
-    userDocument_diffHash: string;
     userDocument_owner: string;
-    userDocument_attachmentsHash: string;
-    userDocument_deleted: string;
-    userDocument_created: string;
+    userDocument_priority: string;
+    userDocument_richText: string;
+    userDocument_status: string;
+    userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
+// GetClasses, GetParticipatedClasses
 export interface ClassesCustomResponse extends ClassesResponse {
   expand: {
+    major_created: string;
+    major_department: string;
+    major_id: string;
+    major_name: string;
+    major_updated: string;
+    userDocument_attachmentsHash: string;
+    userDocument_created: string;
+    userDocument_deleted: string;
+    userDocument_diffHash: string;
     userDocument_id: string;
     userDocument_name: string;
-    userDocument_thumbnail: string;
-    userDocument_priority: string;
-    userDocument_status: string;
-    userDocument_richText: string;
-    userDocument_diffHash: string;
     userDocument_owner: string;
-    userDocument_attachmentsHash: string;
-    userDocument_deleted: string;
-    userDocument_created: string;
+    userDocument_priority: string;
+    userDocument_richText: string;
+    userDocument_status: string;
+    userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
+// GetCourses, GetParticipatedCourses
 export interface CoursesCustomResponse extends CoursesResponse {
   expand: {
+    courseTemplate_academicProgram: string;
+    courseTemplate_courseId: string;
+    courseTemplate_created: string;
+    courseTemplate_id: string;
+    courseTemplate_name: string;
+    courseTemplate_periodsCount: string;
+    courseTemplate_updated: string;
+    userDocument_attachmentsHash: string;
+    userDocument_created: string;
+    userDocument_deleted: string;
+    userDocument_diffHash: string;
     userDocument_id: string;
     userDocument_name: string;
-    userDocument_thumbnail: string;
-    userDocument_priority: string;
-    userDocument_status: string;
-    userDocument_richText: string;
-    userDocument_diffHash: string;
     userDocument_owner: string;
-    userDocument_attachmentsHash: string;
-    userDocument_deleted: string;
-    userDocument_created: string;
+    userDocument_priority: string;
+    userDocument_richText: string;
+    userDocument_status: string;
+    userDocument_thumbnail: string;
     userDocument_updated: string;
+    userDocument_startTime: string;
+    userDocument_endTime: string;
   };
 }
 
+// GetContacts
+export interface ContactsCustomResponse extends PeopleResponse {
+  expand: {
+    user_created: string;
+    user_email: string;
+    user_id: string;
+    user_person: string;
+    user_updated: string;
+    major_created: string;
+    major_department: string;
+    major_id: string;
+    major_name: string;
+    major_updated: string;
+    department_created: string;
+    department_id: string;
+    department_name: string;
+    department_updated: string;
+  };
+}
+
+// GetStarredContacts
+export interface StarredContactsCustomResponse extends ContactsCustomResponse {
+  expand: {
+    relationship_created: string;
+    relationship_fromPerson: string;
+    relationship_id: string;
+    relationship_toPerson: string;
+    relationship_updated: string;
+    user_created: string;
+    user_email: string;
+    user_id: string;
+    user_person: string;
+    user_updated: string;
+    major_created: string;
+    major_department: string;
+    major_id: string;
+    major_name: string;
+    major_updated: string;
+    department_created: string;
+    department_id: string;
+    department_name: string;
+    department_updated: string;
+  };
+}
+
+// GetAllDocParticipants
 export interface ParticipantsCustomResponse extends PeopleResponse {
   expand: {
-    eventDocument_created_list: string[];
-    eventDocument_document_list: string[];
-    eventDocument_endTime_list: string[];
-    eventDocument_fullDocument_list: string[];
-    eventDocument_id_list: string[];
-    eventDocument_recurring_list: string[];
-    eventDocument_startTime_list: string[];
-    eventDocument_updated_list: string[];
-    fullDocument_category_list: string[];
-    fullDocument_created_list: string[];
-    fullDocument_document_list: string[];
-    fullDocument_id_list: string[];
-    fullDocument_updated_list: string[];
-    participant_created_list: string[];
-    participant_document_list: string[];
-    participant_id_list: string[];
-    participant_note_list: string[];
-    participant_permission_list: string[];
-    participant_person_list: string[];
-    participant_role_list: string[];
-    participant_updated_list: string[];
-    relationship_created_list: string[];
-    relationship_fromPerson_list: string[];
-    relationship_id_list: string[];
-    relationship_toPerson_list: string[];
-    relationship_updated_list: string[];
-    userDocument_created_list: string[];
-    userDocument_diffHash_list: string[];
-    userDocument_id_list: string[];
-    userDocument_name_list: string[];
-    userDocument_owner_list: string[];
-    userDocument_attachmentsHash: string;
-    userDocument_deleted: string;
-    userDocument_priority_list: string[];
-    userDocument_richText_list: string[];
-    userDocument_status_list: string[];
-    userDocument_thumbnail_list: string[];
-    userDocument_updated_list: string[];
+    participant_created: string;
+    participant_document: string;
+    participant_id: string;
+    participant_note: string;
+    participant_permission: string;
+    participant_person: string;
+    participant_role: string;
+    participant_status: string;
+    participant_updated: string;
+    user_created: string;
+    user_email: string;
+    user_id: string;
+    user_person: string;
+    user_updated: string;
   };
+}
+
+// Deprecated since We don't need to add contact manually anymore - add star will automatically add new relationships
+// GetRelationships, GetNewRelationshipsOptions
+export interface RelationshipsCustomResponse extends RelationshipsResponse {
+  expand: {
+    fromUser_created: string;
+    fromUser_id: string;
+    fromUser_person: string;
+    fromUser_updated: string;
+    toPerson_avatar: string;
+    toPerson_created: string;
+    toPerson_deleted: string;
+    toPerson_department: string;
+    toPerson_gender: string;
+    toPerson_id: string;
+    toPerson_name: string;
+    toPerson_personId: string;
+    toPerson_personalEmail: string;
+    toPerson_phone: string;
+    toPerson_placeOfBirth: string;
+    toPerson_title: string;
+    toPerson_updated: string;
+    toUser_created: string;
+    toUser_id: string;
+    toUser_person: string;
+    toUser_updated: string;
+  };
+}
+
+// ParticipantsXlsxImport
+export interface ParticipantsXlsxImportResponse {
+  ID: string;
+  No: number;
+  StudentID: string;
+  LastName: string;
+  FirstName: string;
+  DOB: string;
+  Gender: string;
+  MajorID: string;
+  Major: string;
+  DepartmentID: string;
+  Class: string;
+  Exists: boolean;
 }

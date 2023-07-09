@@ -4,8 +4,8 @@ import type {
 } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import type { PeopleRecord, PeopleResponse } from "raito";
-import { Collections } from "raito";
+import type { PeopleRecord, PeopleResponse } from "src/types/raito";
+import { Collections } from "src/types/raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";
@@ -43,7 +43,10 @@ export const getServerSideProps = async ({
 
   const person = await pbServer
     .collection(Collections.People)
-    .create<PeopleResponse>({} as PeopleRecord);
+    .create<PeopleResponse>({
+      contactLocation:
+        "International University, Block 6, Linh Trung Ward, Thu Duc District, HCM City, Vietnam",
+    } as PeopleRecord);
 
   const newPersonUrl = `/people/${person.id}`;
 

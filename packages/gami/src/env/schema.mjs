@@ -1,5 +1,5 @@
 // @ts-check
-import { z } from "zod";
+import {z} from "zod";
 
 /**
  * Specify your server-side environment variables schema here.
@@ -9,6 +9,9 @@ export const serverSchema = z.object({
   DEBUG_MODE: z.enum(["true", "false"]),
   NODE_ENV: z.enum(["development", "test", "production"]),
   POCKETBASE_URL: z.string().url(),
+  GAMI_URL: z.string().url(),
+  EMAIL_USER: z.string().email(),
+  EMAIL_PASSWORD: z.string()
 });
 
 /**

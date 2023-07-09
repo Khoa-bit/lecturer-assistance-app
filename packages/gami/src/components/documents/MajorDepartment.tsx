@@ -1,5 +1,5 @@
-import type { DepartmentsResponse, MajorsResponse } from "raito";
-import { Collections } from "raito";
+import type { DepartmentsResponse, MajorsResponse } from "src/types/raito";
+import { Collections } from "src/types/raito";
 import { useEffect, useState } from "react";
 import type { FieldValues } from "react-hook-form";
 import { env } from "src/env/client.mjs";
@@ -7,6 +7,10 @@ import type { PBCustom } from "src/types/pb-custom";
 import type { FullDocumentChildProps } from "./FullDocument";
 import type { SelectOption, SelectProps } from "./Select";
 import Select from "./Select";
+
+interface DepartmentExpand {
+  department: DepartmentsResponse;
+}
 
 interface MajorDepartmentProps<TFieldValues extends FieldValues = FieldValues>
   extends FullDocumentChildProps<TFieldValues> {
@@ -44,7 +48,7 @@ function MajorDepartment({
       const majorOptions = await pbClient
         .collection(Collections.Majors)
         .getFullList<MajorsResponse>({
-          filter: `department="${departmentId}"`,
+          filter: `department.id = "${departmentId}"`,
         })
         .catch(() => undefined);
 
@@ -57,6 +61,8 @@ function MajorDepartment({
       <Select
         {...({
           name: "department",
+          id: "department",
+          label: "Department",
           register,
           selectOptions: departments.map((department) => {
             return {
@@ -73,13 +79,15 @@ function MajorDepartment({
           defaultValue: departmentId,
         } as SelectProps<MajorDepartmentInput>)}
       >
-        <option value="" disabled hidden>
+        <option value="" disabled>
           Select department
         </option>
       </Select>
       <Select
         {...({
           name: "major",
+          id: "major",
+          label: "Major",
           register,
           selectOptions: majorOptions.map((major) => {
             return {
@@ -91,7 +99,7 @@ function MajorDepartment({
           options: { ...options, required: true },
         } as SelectProps<MajorDepartmentInput>)}
       >
-        <option value="" disabled hidden>
+        <option value="" disabled>
           Select major
         </option>
       </Select>
@@ -118,10 +126,30 @@ export const fetchMajorDepartment: FetchMajorDepartmentFunc = async (
   const majorOptions = await pbServer
     .collection(Collections.Majors)
     .getFullList<MajorsResponse>({
-      filter: `department="${departmentId}"`,
+      filter: `department.id = "${departmentId}"`,
     });
 
   return { departments, majorOptions };
+};
+
+export type FetchOneMajorDepartmentFunc = (
+  majorId: string,
+  pbCustom: PBCustom
+) => Promise<{
+  majorDepartment: MajorsResponse<DepartmentExpand>;
+}>;
+
+export const fetchOneMajorDepartment: FetchOneMajorDepartmentFunc = async (
+  majorId,
+  pbCustom
+) => {
+  const majorDepartment = await pbCustom
+    .collection(Collections.Majors)
+    .getOne<MajorsResponse<DepartmentExpand>>(majorId, {
+      expand: `department`,
+    });
+
+  return { majorDepartment };
 };
 
 export default MajorDepartment;

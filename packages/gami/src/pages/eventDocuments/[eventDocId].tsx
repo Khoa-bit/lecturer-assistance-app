@@ -3,15 +3,18 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import type { ListResult } from "pocketbase";
 import type {
+  DocumentsRecord,
   DocumentsResponse,
   EventDocumentsRecord,
   EventDocumentsResponse,
   FullDocumentsCustomResponse,
   FullDocumentsResponse,
-} from "raito";
-import { Collections, EventDocumentsRecurringOptions } from "raito";
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
+import { useEffect, useState } from "react";
 import type {
   FullDocumentData,
   FullDocumentProps,
@@ -19,26 +22,26 @@ import type {
 import FullDocument, {
   fetchFullDocumentData,
 } from "src/components/documents/FullDocument";
-import type { InputProps } from "src/components/documents/Input";
-import Input from "src/components/documents/Input";
 import type {
   SelectOption,
   SelectProps,
 } from "src/components/documents/Select";
 import Select from "src/components/documents/Select";
 import MainLayout from "src/components/layouts/MainLayout";
-import { dateToISOLikeButLocalOrUndefined } from "src/lib/input_handling";
 import { usePBClient } from "src/lib/pb_client";
 import { getPBServer } from "src/lib/pb_server";
 import SuperJSON from "superjson";
+import { env } from "../../env/client.mjs";
+import { dateToPb, pbToDate } from "../../lib/input_handling";
 
 interface DocumentData {
   fullDocumentData: FullDocumentData;
   eventDocument: EventDocumentsResponse<FullDocumentsExpand>;
   toFullDocuments: ListResult<FullDocumentsCustomResponse>;
-
   pbAuthCookie: string;
 }
+
+const remindBeforeMinutes = 30;
 
 interface FullDocumentsExpand {
   fullDocument: FullDocumentsResponse<DocumentsExpand>;
@@ -55,9 +58,17 @@ function EventDocument({
 
   const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
   const eventDocument = dataParse.eventDocument;
+  const baseDocument = eventDocument.expand?.fullDocument.expand?.document;
   const toFullDocuments = dataParse.toFullDocuments;
+  const toFullDocumentsList = toFullDocuments.items.sort((a, b) =>
+    a.expand.userDocument_name.localeCompare(b.expand.userDocument_name)
+  );
+  const [toFullDocument, setToFullDocument] = useState(
+    eventDocument.toFullDocument
+  );
   const fullDocumentData = dataParse.fullDocumentData;
 
+  const isEventOwner = baseDocument?.owner === user.person;
   const childCollectionName = Collections.EventDocuments;
   const childId = eventDocument.id;
 
@@ -66,39 +77,65 @@ function EventDocument({
     childId,
     ...fullDocumentData,
     pbClient,
-    user,
     childrenDefaultValue: {
       fullDocument: eventDocument.fullDocument,
-      startTime: dateToISOLikeButLocalOrUndefined(eventDocument.startTime),
-      endTime: dateToISOLikeButLocalOrUndefined(eventDocument.endTime),
       recurring: eventDocument.recurring,
-      toFullDocument: eventDocument.toFullDocument,
+      toFullDocument: toFullDocument,
     },
     hasEvents: false,
   };
 
+  const docLink = toFullDocumentsList.some(
+    (fullDocument) => fullDocument.id == toFullDocument
+  ) ? (
+    <Link
+      className="absolute right-10 h-6 bg-white"
+      href={`/fullDocuments/${toFullDocument}`}
+    >
+      <span className="material-symbols-rounded text-gray-500 [font-variation-settings:'FILL'_1] hover:text-blue-500">
+        link
+      </span>
+    </Link>
+  ) : (
+    <></>
+  );
+
+  useEffect(() => {
+    if (!baseDocument?.id) return;
+
+    const unsubscribeFunc = pbClient
+      .collection(Collections.Documents)
+      .subscribe<DocumentsRecord>(baseDocument.id, (data) => {
+        if (!data.record.startTime) return;
+
+        const startTime = pbToDate(data.record.startTime);
+        startTime.setMinutes(startTime.getMinutes() - remindBeforeMinutes);
+
+        console.log("... Trying to update reminder ...", eventDocument.id);
+
+        pbClient
+          .collection(Collections.EventDocuments)
+          .update<EventDocumentsRecord>(eventDocument.id, {
+            reminderAt: dateToPb(startTime),
+          } as EventDocumentsRecord)
+          .then(() => {
+            console.log(">>> Successfully update reminder", eventDocument.id);
+          });
+      });
+
+    return () => {
+      unsubscribeFunc.then((func) => func());
+      if (env.NEXT_PUBLIC_DEBUG_MODE)
+        console.log("Successfully unsubscribe to documents collection");
+    };
+  }, [baseDocument?.id, eventDocument.id, pbClient]);
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
-        <title>Full Document</title>
+        <title>Event Document</title>
       </Head>
-      <h1>Full Document</h1>
       <FullDocument {...fullDocumentProps}>
-        <Input
-          {...({
-            name: "startTime",
-            options: { required: true },
-            type: "datetime-local",
-          } as InputProps<EventDocumentsRecord>)}
-        ></Input>
-        <Input
-          {...({
-            name: "endTime",
-            options: { required: true },
-            type: "datetime-local",
-          } as InputProps<EventDocumentsRecord>)}
-        ></Input>
-        <Select
+        {/* <Select
           {...({
             name: "recurring",
             selectOptions: Object.entries(EventDocumentsRecurringOptions).map(
@@ -112,27 +149,34 @@ function EventDocument({
             ),
             options: { required: true },
           } as SelectProps<EventDocumentsRecord>)}
-        ></Select>
+        ></Select> */}
         <Select
           {...({
+            id: "toFullDocument",
+            label: "Parent document",
             name: "toFullDocument",
-            selectOptions: toFullDocuments.items.map((toFullDocument) => {
+            selectOptions: toFullDocumentsList.map((toFullDocument) => {
               return {
                 key: toFullDocument.id,
                 value: toFullDocument.id,
                 content: toFullDocument.expand.userDocument_name,
               } as SelectOption;
             }),
-            options: { required: true },
-            defaultValue: eventDocument.toFullDocument,
+            onChange: (e) => {
+              setToFullDocument(e.currentTarget.value);
+            },
+            element: docLink,
+            defaultValue: toFullDocument,
+            disabled: !isEventOwner,
           } as SelectProps<EventDocumentsRecord>)}
         >
-          <option value="" disabled hidden>
+          <option value="" disabled>
             Link event to a document
           </option>
+          <option value=""></option>
         </Select>
       </FullDocument>
-    </>
+    </main>
   );
 }
 
@@ -152,7 +196,7 @@ export const getServerSideProps = async ({
 
   const toFullDocuments =
     await pbServer.apiGetList<FullDocumentsCustomResponse>(
-      "/api/user/fullDocuments?fullList=true"
+      "/api/user/getHasWriteFullDocuments?fullList=true"
     );
 
   const fullDocument = eventDocument.expand?.fullDocument;

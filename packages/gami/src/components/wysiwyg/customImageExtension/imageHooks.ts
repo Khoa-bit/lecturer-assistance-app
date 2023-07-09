@@ -1,7 +1,7 @@
 import type { Editor } from "@tiptap/react";
 import type { EditorView } from "prosemirror-view";
-import type { AttachmentsResponse } from "raito";
-import { Collections } from "raito";
+import type { AttachmentsResponse } from "src/types/raito";
+import { Collections } from "src/types/raito";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";
 import type { PBCustom } from "src/types/pb-custom";

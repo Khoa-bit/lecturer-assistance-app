@@ -11,9 +11,8 @@ import type {
   FullDocumentsResponse,
   PersonalNotesRecord,
   PersonalNotesResponse,
-} from "raito";
-import { FullDocumentsInternalOptions } from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections, FullDocumentsInternalOptions } from "src/types/raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getPBServer } from "src/lib/pb_server";

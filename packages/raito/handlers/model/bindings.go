@@ -1,61 +1,78 @@
 package model
 
 import (
-	"fmt"
-	"strings"
+  "fmt"
+  "strings"
 
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/models"
-	"github.com/pocketbase/pocketbase/models/schema"
+  "github.com/pocketbase/dbx"
+  "github.com/pocketbase/pocketbase"
+  "github.com/pocketbase/pocketbase/models"
+  "github.com/pocketbase/pocketbase/models/schema"
 )
 
-// `AppendCollectionByNameOrId` finds a single collection by its name (case insensitive) or id and append to chained `FieldMetadataList`.
+// AppendCollectionByNameOrId `AppendCollectionByNameOrId` finds a single collection by its name (case-insensitive) or id and append to chain `FieldMetadataList`.
 func (fieldMetadataList FieldMetaDataList) AppendCollectionByNameOrId(nameOrId string, alias string, hasGroupBy bool, app *pocketbase.PocketBase) (FieldMetaDataList, error) {
-	collection := &models.Collection{}
+  collection := &models.Collection{}
 
-	err := app.Dao().CollectionQuery().
-		AndWhere(dbx.NewExp("[[id]] = {:id} OR LOWER([[name]])={:name}", dbx.Params{
-			"id":   nameOrId,
-			"name": strings.ToLower(nameOrId),
-		})).
-		Limit(1).
-		One(collection)
-	if err != nil {
-		return nil, err
-	}
+  err := app.Dao().CollectionQuery().
+    AndWhere(dbx.NewExp("[[id]] = {:id} OR LOWER([[name]])={:name}", dbx.Params{
+      "id":   nameOrId,
+      "name": strings.ToLower(nameOrId),
+    })).
+    Limit(1).
+    One(collection)
+  if err != nil {
+    return nil, err
+  }
 
-	suffix := ""
-	if hasGroupBy {
-		suffix = "_list"
-	}
+  suffix := ""
+  if hasGroupBy {
+    suffix = "_list"
+  }
 
-	// Base Model: id, updated, created
-	baseModelFields := schema.BaseModelFieldNames()
-	// Collection's Unique Fields: name, email, gender, etc.
-	collectionFields := collection.Schema.Fields()
-	newFieldMetadata := make(FieldMetaDataList, len(baseModelFields)+len(collectionFields))
+  // Base Model: id, updated, created
+  baseModelFields := schema.BaseModelFieldNames()
+  // Collection's Unique Fields: name, email, gender, etc.
+  collectionFields := collection.Schema.Fields()
+  newFieldMetadata := make(FieldMetaDataList, len(baseModelFields)+len(collectionFields))
 
-	index := 0
-	// load base model fields
-	for _, field := range baseModelFields {
-		newFieldMetadata[index] = FieldMetadata{
-			Column:   fmt.Sprintf("%s.%s", alias, field),
-			Alias:    fmt.Sprintf("%s_%s%s", alias, field, suffix),
-			DataType: STRING,
-		}
-		index++
-	}
+  index := 0
+  // load base model fields
+  for _, field := range baseModelFields {
+    newFieldMetadata[index] = FieldMetadata{
+      Column:   fmt.Sprintf("%s.%s", alias, field),
+      Alias:    fmt.Sprintf("%s_%s%s", alias, field, suffix),
+      DataType: STRING,
+    }
+    index++
+  }
 
-	// load schema fields
-	for _, field := range collectionFields {
-		newFieldMetadata[index] = FieldMetadata{
-			Column:   fmt.Sprintf("%s.%s", alias, field.Name),
-			Alias:    fmt.Sprintf("%s_%s%s", alias, field.Name, suffix),
-			DataType: toDataType(field.Type),
-		}
-		index++
-	}
+  // load schema fields
+  for _, field := range collectionFields {
+    newFieldMetadata[index] = FieldMetadata{
+      Column:   fmt.Sprintf("%s.%s", alias, field.Name),
+      Alias:    fmt.Sprintf("%s_%s%s", alias, field.Name, suffix),
+      DataType: toDataType(field.Type),
+    }
+    index++
+  }
 
-	return append(fieldMetadataList, newFieldMetadata...), nil
+  return append(fieldMetadataList, newFieldMetadata...), nil
+}
+
+func (fieldMetadataList FieldMetaDataList) AppendColumnAliases(columnAliases []string, dataTypes []string) (FieldMetaDataList, error) {
+  if len(columnAliases) != len(dataTypes) {
+    return nil, fmt.Errorf("each column must correspond to a single datatype")
+  }
+  newFieldMetadata := make(FieldMetaDataList, len(columnAliases))
+
+  for index, columnAlias := range columnAliases {
+    newFieldMetadata[index] = FieldMetadata{
+      Column:   "",
+      Alias:    columnAlias,
+      DataType: toDataType(dataTypes[index]),
+    }
+  }
+
+  return append(fieldMetadataList, newFieldMetadata...), nil
 }

@@ -1,30 +1,39 @@
-import type { Admin, Record } from "pocketbase";
+import type {Admin, Record} from "pocketbase";
 import PocketBase from "pocketbase";
-import type { UsersResponse } from "raito";
-import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
-import { env } from "src/env/client.mjs";
+import type {PeopleResponse, UsersResponse} from "src/types/raito";
+import {Collections} from "src/types/raito";
+import type {ReactNode} from "react";
+import {useEffect, useMemo, useState} from "react";
+import {env} from "src/env/client.mjs";
 import {
+  _authWithOAuth2AndCookie,
   _authWithPasswordAndCookie,
   _clearAuthStoreAndCookie,
-  _requestEmailVerification,
   _confirmEmailVerification,
-  _requestPasswordResetEmail,
   _confirmPasswordResetEmail,
+  _requestEmailVerification,
+  _requestPasswordResetEmail,
 } from "src/lib/auth_client";
-import type { PBClearResponse } from "src/pages/api/auth/pbClear";
-import { AuthContext } from "./AuthContext";
+import type {PBClearResponse} from "src/pages/api/auth/pbClear";
+import {AuthContext} from "./AuthContext";
+
+interface PersonExpand {
+  person: PeopleResponse;
+}
 
 // Casting to convert (Record | Admin | null) from authStore.model to UsersResponse
 export type User = UsersResponse & (Record | Admin | null);
 
 export type AuthContextType = {
   isValid: boolean;
-  user: UsersResponse | null;
+  userPerson: UsersResponse<PersonExpand> | null;
   pbClient: PocketBase;
   signInWithPassword: (
     username: string,
     password: string
+  ) => Promise<UsersResponse | undefined>;
+  signInWithOAuth2AndCookie: (
+    provider: string
   ) => Promise<UsersResponse | undefined>;
   signOut: () => Promise<PBClearResponse | undefined>;
   requestEmailVerification: (email: string) => Promise<boolean>;
@@ -42,14 +51,29 @@ interface AuthContextProviderProps {
 }
 
 export default function AuthContextProvider({
-  children,
-}: AuthContextProviderProps) {
+                                              children,
+                                            }: AuthContextProviderProps) {
   const pbClient = useMemo(
     () => new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL),
     []
   );
   const [isValid, setIsValid] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [userPerson, setUserPerson] =
+    useState<UsersResponse<PersonExpand> | null>();
+
+  useEffect(() => {
+    if (!user) return;
+
+    pbClient
+      .collection(Collections.Users)
+      .getOne<UsersResponse<PersonExpand>>(user.id, {
+        expand: "person",
+      })
+      .then((userPerson) => {
+        setUserPerson(userPerson);
+      });
+  }, [pbClient, user]);
 
   useEffect(() => {
     setIsValid(pbClient.authStore.isValid);
@@ -67,23 +91,33 @@ export default function AuthContextProvider({
     return usersResponse;
   };
 
+  const signInWithOAuth2AndCookie = async (provider: string) => {
+    const usersResponse = await _authWithOAuth2AndCookie({
+      provider,
+      pbClient,
+    });
+    setIsValid(pbClient.authStore.isValid);
+    setUser(pbClient.authStore.model as User | null);
+    return usersResponse;
+  };
+
   const signOut = async () => {
-    const pbClearResponse = await _clearAuthStoreAndCookie({ pbClient });
+    const pbClearResponse = await _clearAuthStoreAndCookie({pbClient});
     setIsValid(pbClient.authStore.isValid);
     setUser(pbClient.authStore.model as User | null);
     return pbClearResponse;
   };
 
   const requestEmailVerification = async (email: string) => {
-    return await _requestEmailVerification({ email, pbClient });
+    return await _requestEmailVerification({email, pbClient});
   };
 
   const confirmEmailVerification = async (token: string) => {
-    return await _confirmEmailVerification({ token, pbClient });
+    return await _confirmEmailVerification({token, pbClient});
   };
 
   const requestPasswordResetEmail = async (email: string) => {
-    return await _requestPasswordResetEmail({ email, pbClient });
+    return await _requestPasswordResetEmail({email, pbClient});
   };
 
   const confirmPasswordResetEmail = async (
@@ -101,9 +135,10 @@ export default function AuthContextProvider({
 
   const context = {
     isValid,
-    user,
+    userPerson,
     pbClient,
     signInWithPassword,
+    signInWithOAuth2AndCookie,
     signOut,
     requestEmailVerification,
     confirmEmailVerification,

@@ -8,8 +8,8 @@ import type {
   AcademicMaterialsResponse,
   DocumentsResponse,
   FullDocumentsResponse,
-} from "raito";
-import { AcademicMaterialsCategoryOptions, Collections } from "raito";
+} from "src/types/raito";
+import { AcademicMaterialsCategoryOptions, Collections } from "src/types/raito";
 import type {
   FullDocumentData,
   FullDocumentProps,
@@ -46,7 +46,7 @@ function AcademicMaterial({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
+  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
   const academicMaterial = dataParse.academicMaterial;
   const fullDocumentData = dataParse.fullDocumentData;
 
@@ -58,7 +58,6 @@ function AcademicMaterial({
     childId,
     ...fullDocumentData,
     pbClient,
-    user,
     childrenDefaultValue: {
       fullDocument: academicMaterial.fullDocument,
       category: academicMaterial.category,
@@ -66,15 +65,16 @@ function AcademicMaterial({
   };
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
         <title>Personal notes</title>
       </Head>
-      <h1>Personal notes</h1>
       <FullDocument {...fullDocumentProps}>
         <Select
           {...({
             name: "category",
+            id: "category",
+            label: "Category",
             selectOptions: Object.entries(AcademicMaterialsCategoryOptions).map(
               ([stringValue]) => {
                 return {
@@ -88,7 +88,7 @@ function AcademicMaterial({
           } as SelectProps<AcademicMaterialsRecord>)}
         ></Select>
       </FullDocument>
-    </>
+    </main>
   );
 }
 

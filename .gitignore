@@ -37,3 +37,11 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# local env files
+# do not commit any .env files to git, except for the .env.example file.
+.env
+.env*.local
+
+# Docker
+/docker/*/volumes

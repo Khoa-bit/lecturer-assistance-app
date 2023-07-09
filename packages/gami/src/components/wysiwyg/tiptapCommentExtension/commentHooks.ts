@@ -1,5 +1,4 @@
 import type { Editor } from "@tiptap/core";
-import { type } from "os";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
 import SuperJSON from "superjson";
@@ -18,12 +17,14 @@ export interface CommentDialog {
 }
 
 export interface UserComment {
+  userId: string;
+  userAvatar: string;
   username: string;
   time: number;
   content: string;
 }
 
-interface useCommentReturns {
+export interface GetCommentFunctionsRetuns {
   findAllCommentSpans: (editor: Editor) => CommentSpan[];
   getActiveCommentDialog: getActiveCommentDialogType;
   setComment: (
@@ -31,13 +32,32 @@ interface useCommentReturns {
     commentText: string,
     allCommentSpans: CommentSpan[],
     activeCommentDialog: CommentDialog,
+    userId: string,
+    userAvatar: string,
     username: string
   ) => boolean;
   toggleComment: (editor: Editor) => boolean;
   unsetComment: (editor: Editor) => boolean;
 }
 
-export function useCommentState() {
+export interface UseCommentStateReturns {
+  setIsTextSelected: (
+    value: ((prevState: boolean) => boolean) | boolean
+  ) => void;
+  activeCommentDialog: CommentDialog;
+  setCommentText: (value: ((prevState: string) => string) | string) => void;
+  setActiveCommentDialog: (
+    value: ((prevState: CommentDialog) => CommentDialog) | CommentDialog
+  ) => void;
+  setAllCommentSpans: (
+    value: ((prevState: CommentSpan[]) => CommentSpan[]) | CommentSpan[]
+  ) => void;
+  isTextSelected: boolean;
+  allCommentSpans: CommentSpan[];
+  commentText: string;
+}
+
+export function useCommentState(): UseCommentStateReturns {
   const [commentText, setCommentText] = useState("");
 
   const [isTextSelected, setIsTextSelected] = useState(false);
@@ -60,7 +80,7 @@ export function useCommentState() {
   };
 }
 
-export function getCommentFunctions(): useCommentReturns {
+export function getCommentFunctions(): GetCommentFunctionsRetuns {
   return {
     findAllCommentSpans,
     getActiveCommentDialog,
@@ -146,6 +166,8 @@ const setComment = (
   commentText: string,
   allCommentSpans: CommentSpan[],
   activeCommentDialog: CommentDialog,
+  userId: string,
+  userAvatar: string,
   username: string
 ): boolean => {
   if (!commentText.trim().length) return false;
@@ -155,7 +177,9 @@ const setComment = (
   let commentDialog: string;
   if (commentsArray) {
     commentsArray.push({
+      userId,
       username,
+      userAvatar,
       time: Date.now(),
       content: commentText,
     });
@@ -169,7 +193,9 @@ const setComment = (
       uuid: Math.random().toString(),
       comments: [
         {
+          userId,
           username,
+          userAvatar,
           time: Date.now(),
           content: commentText,
         },

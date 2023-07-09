@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  gami:
+    container_name: gami
+    build:
+      context: ../../packages/gami
+      dockerfile: ../../packages/gami/prod.Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      my_network:
+  raito:
+    container_name: raito
+    build:
+      context: ../../packages/raito
+      dockerfile: ../../packages/raito/prod.Dockerfile
+    restart: always
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./volumes/pb_data:/app/pb_data
+      - ./volumes/migrations:/app/migrations
+    networks:
+      my_network:
+
+  # Add more containers below (nginx, postgres, etc.)
+
+# Define a network, which allows containers to communicate
+# with each other, by using their container name as a hostname
+networks:
+  my_network:
+    external: true

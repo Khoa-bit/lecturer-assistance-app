@@ -4,16 +4,18 @@ import type {
   BaseSystemFields,
   ClassesResponse,
   CoursesResponse,
+  EventDocumentsResponse,
   FullDocumentsResponse,
   PersonalNotesResponse,
-} from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
 import { getPBServer } from "src/lib/pb_server";
 
 const expandRedirect = [
   "academicMaterials(fullDocument)",
   "classes(fullDocument)",
   "courses(fullDocument)",
+  "eventDocuments(fullDocument)",
   "personalNotes(fullDocument)",
 ];
 
@@ -21,6 +23,7 @@ interface RedirectExpand {
   "academicMaterials(fullDocument)"?: AcademicMaterialsResponse;
   "classes(fullDocument)"?: ClassesResponse;
   "courses(fullDocument)"?: CoursesResponse;
+  "eventDocuments(fullDocument)"?: EventDocumentsResponse;
   "personalNotes(fullDocument)"?: PersonalNotesResponse;
 }
 
@@ -41,9 +44,11 @@ export const getServerSideProps = async ({
     .collection(Collections.FullDocuments)
     .getOne<FullDocumentsResponse<RedirectExpand>>(fullDocId, {
       expand: expandStr,
-    });
+    })
+    .then((value) => value)
+    .catch(() => null);
 
-  if (!fullDocument.expand)
+  if (!fullDocument?.expand)
     return {
       redirect: {
         destination: "/notFound",
@@ -65,6 +70,9 @@ export const getServerSideProps = async ({
       break;
     case Collections.Courses:
       uri = "lectureCourses";
+      break;
+    case Collections.EventDocuments:
+      uri = "eventDocuments";
       break;
     case Collections.PersonalNotes:
       uri = "personalNotes";

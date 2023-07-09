@@ -10,8 +10,8 @@ import type {
   DocumentsResponse,
   FullDocumentsResponse,
   MajorsResponse,
-} from "raito";
-import { ClassesTrainingSystemOptions, Collections } from "raito";
+} from "src/types/raito";
+import { ClassesAcademicProgramOptions, Collections } from "src/types/raito";
 import type {
   FullDocumentData,
   FullDocumentProps,
@@ -61,7 +61,7 @@ function ClassDocument({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
+  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
   const adviseClass = dataParse.adviseClass;
   const fullDocumentData = dataParse.fullDocumentData;
   const departments = dataParse.departments;
@@ -75,32 +75,34 @@ function ClassDocument({
     childId,
     ...fullDocumentData,
     pbClient,
-    user,
     childrenDefaultValue: {
       fullDocument: adviseClass.fullDocument,
       cohort: adviseClass.cohort,
       major: adviseClass.major,
-      trainingSystem: adviseClass.trainingSystem,
+      academicProgram: adviseClass.academicProgram,
       classId: adviseClass.classId,
     },
   };
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
-        <title>Full Document</title>
+        <title>Advise classes</title>
       </Head>
-      <h1>Full Document</h1>
       <FullDocument {...fullDocumentProps}>
         <Input
           {...({
             name: "classId",
+            id: "classId",
+            label: "Class ID",
             options: { required: true },
           } as InputProps<ClassesRecord>)}
         ></Input>
         <Input
           {...({
             name: "cohort",
+            id: "cohort",
+            label: "Cohort",
             options: { required: true },
           } as InputProps<ClassesRecord>)}
         ></Input>
@@ -113,8 +115,10 @@ function ClassDocument({
         ></MajorDepartment>
         <Select
           {...({
-            name: "trainingSystem",
-            selectOptions: Object.entries(ClassesTrainingSystemOptions).map(
+            name: "academicProgram",
+            id: "academicProgram",
+            label: "Academic program",
+            selectOptions: Object.entries(ClassesAcademicProgramOptions).map(
               ([stringValue]) => {
                 return {
                   key: stringValue,
@@ -127,7 +131,7 @@ function ClassDocument({
           } as SelectProps<ClassesRecord>)}
         ></Select>
       </FullDocument>
-    </>
+    </main>
   );
 }
 

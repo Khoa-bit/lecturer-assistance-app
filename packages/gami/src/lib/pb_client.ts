@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import PocketBase from "pocketbase";
-import type { UsersResponse } from "raito";
+import type { UsersResponse } from "src/types/raito";
 import { useMemo } from "react";
 import { env } from "src/env/client.mjs";
 import type { PBCustom } from "src/types/pb-custom";
@@ -23,7 +23,9 @@ export function usePBClient(pbAuthCookie: string): {
     const pb = new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL) as PBCustom;
 
     // load the store data from the request cookie string
-    pb.authStore.loadFromCookie(pbAuthCookie);
+    pb.authStore.loadFromCookie(
+      pbAuthCookie.replace("%2C%22record%22%3A%7B", "%2C%22model%22%3A%7B")
+    );
 
     return pb;
   }, [pbAuthCookie, router.asPath]);
@@ -32,7 +34,6 @@ export function usePBClient(pbAuthCookie: string): {
   const user = pbClient.authStore.model as unknown as UsersResponse | undefined;
 
   if (!user) {
-    router.push("/internalServerError");
     throw new Error("500 - Unauthenticated user must have been redirect");
   }
 
@@ -42,7 +43,7 @@ export function usePBClient(pbAuthCookie: string): {
   return { pbClient, user };
 }
 
-export function _middlewarePBClient(
+export function _getPBMiddleware(
   pbAuthCookie: string,
   pathname: string
 ): {
@@ -52,14 +53,16 @@ export function _middlewarePBClient(
   // Information Logging if a new client is initialized
   if (env.NEXT_PUBLIC_DEBUG_MODE === "true") {
     console.log(
-      `debug - Initializing new PocketBase Client instance... ${pathname} (middleware)`
+      `debug - Initializing new PocketBase Middleware instance... ${pathname} (middleware)`
     );
   }
 
   const pbClient = new PocketBase(env.NEXT_PUBLIC_POCKETBASE_URL) as PBCustom;
 
   // load the store data from the request cookie string
-  pbClient.authStore.loadFromCookie(pbAuthCookie);
+  pbClient.authStore.loadFromCookie(
+    pbAuthCookie.replace("%2C%22record%22%3A%7B", "%2C%22model%22%3A%7B")
+  );
 
   const user = pbClient.authStore.model as unknown as UsersResponse | undefined;
 

@@ -8,8 +8,8 @@ import type {
   FullDocumentsResponse,
   PersonalNotesRecord,
   PersonalNotesResponse,
-} from "raito";
-import { Collections } from "raito";
+} from "src/types/raito";
+import { Collections } from "src/types/raito";
 import type {
   FullDocumentData,
   FullDocumentProps,
@@ -41,7 +41,7 @@ function PersonalNotes({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const dataParse = SuperJSON.parse<DocumentData>(data);
 
-  const { pbClient, user } = usePBClient(dataParse.pbAuthCookie);
+  const { pbClient } = usePBClient(dataParse.pbAuthCookie);
   const fullDocumentData = dataParse.fullDocumentData;
   const personalNote = dataParse.personalNote;
 
@@ -53,20 +53,18 @@ function PersonalNotes({
     childId,
     ...fullDocumentData,
     pbClient,
-    user,
     childrenDefaultValue: {
       fullDocument: personalNote.fullDocument,
     },
   };
 
   return (
-    <>
+    <main className="mx-auto flex max-w-screen-2xl flex-col items-center px-4">
       <Head>
         <title>Personal notes</title>
       </Head>
-      <h1>Personal notes</h1>
       <FullDocument {...fullDocumentProps}></FullDocument>
-    </>
+    </main>
   );
 }
 

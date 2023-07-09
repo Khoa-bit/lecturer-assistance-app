@@ -1,0 +1,78 @@
+<mjml>
+  <mj-head>
+    <mj-preview>
+      Invitation to a document or an event
+    </mj-preview>
+  </mj-head>
+  <mj-body>
+    <mj-section background-color="#f9fafb">
+      <mj-column>
+        <mj-image width="125px" src="{{logo}}"></mj-image>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#f9fafb" padding-top="0">
+      <mj-column>
+        <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">Your are reminded to
+          <b>{{documentName}}</b>
+          {{documentType}}
+        </mj-text>
+        <mj-text color="#1e293b">{{description}}</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#f9fafb" padding-top="0">
+      <mj-column width="23%" vertical-align="middle">
+        <mj-text color="#1e293b">Owner:</mj-text>
+      </mj-column>
+      <mj-column vertical-align="middle">
+        <mj-text font-size="16px" align="center">{{owner}}</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#f9fafb" padding-top="0">
+      <mj-column width="23%" vertical-align="middle">
+        <mj-text color="#1e293b">Timeline:</mj-text>
+      </mj-column>
+      <mj-column vertical-align="middle">
+        <mj-text font-size="16px" align="center">{{startTime}}</mj-text>
+        <mj-divider width="32px" border-width="2px" padding="3px"></mj-divider>
+        <mj-text font-size="16px" align="center">{{endTime}}</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#f9fafb" padding-top="0">
+      <mj-column width="23%" vertical-align="middle">
+        <mj-text color="#1e293b">Of document:</mj-text>
+      </mj-column>
+      <mj-column vertical-align="middle">
+        <mj-button background-color="#dbeafe" color="#1d4ed8" inner-padding="5px 10px" border-radius="20px"
+                   href="{{toDocumentNameLink}}?emailLink=true">{{toDocumentName}}
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#f9fafb" padding-top="0">
+      <mj-column width="23%" vertical-align="middle">
+        <mj-text color="#1e293b">Priority:</mj-text>
+      </mj-column>
+      <mj-column vertical-align="middle">
+        <mj-text font-size="16px" align="center">{{priority}}</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#f9fafb" padding-top="0">
+      <mj-column width="23%" vertical-align="middle">
+        <mj-text color="#1e293b">Status:</mj-text>
+      </mj-column>
+      <mj-column vertical-align="middle">
+        <mj-image width="80px" src="{{status}}" alt="{{statusAlt}}"></mj-image>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#f9fafb" padding-top="0">
+      <mj-column>
+        <mj-button background-color="#3b82f6" href="{{invitationLink}}?emailLink=true">Details</mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -13,11 +13,13 @@ import type {
   FullDocumentsRecord,
   FullDocumentsResponse,
   MajorsResponse,
-  PeopleRecord,
   PeopleResponse,
-} from "raito";
-import { FullDocumentsInternalOptions } from "raito";
-import { ClassesTrainingSystemOptions, Collections } from "raito";
+} from "src/types/raito";
+import {
+  ClassesAcademicProgramOptions,
+  Collections,
+  FullDocumentsInternalOptions,
+} from "src/types/raito";
 import { useEffect } from "react";
 import MainLayout from "src/components/layouts/MainLayout";
 import { getCurrentCohort } from "src/lib/input_handling";
@@ -88,16 +90,8 @@ export const getServerSideProps = async ({
       fullDocument: baseFullDocument.id,
       cohort: getCurrentCohort(),
       major: person.major,
-      trainingSystem: ClassesTrainingSystemOptions.Undergraduate,
+      academicProgram: ClassesAcademicProgramOptions.Undergraduate,
     } as ClassesRecord);
-
-  if (!person.isLecturer) {
-    await pbServer
-      .collection(Collections.People)
-      .update<PeopleResponse>(person.id, {
-        isLecturer: true,
-      } as PeopleRecord);
-  }
 
   const newFullDocUrl = `/adviseClasses/${adviseClass.id}`;
 
